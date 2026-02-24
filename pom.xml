@@ -5,7 +5,6 @@
 
   <modelVersion>4.0.0</modelVersion>
 
-  <!-- ADDED: Spring Boot parent (manages dependency versions + sensible defaults) -->
   <parent>
     <groupId>org.springframework.boot</groupId>
     <artifactId>spring-boot-starter-parent</artifactId>
@@ -22,19 +21,43 @@
 
   <properties>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-
-    <!-- CHANGED: prefer Spring Boot's java.version property -->
     <java.version>21</java.version>
   </properties>
 
   <dependencies>
-    <!-- ADDED: Spring Web (REST controllers, embedded server) -->
+    <!-- Web / REST -->
     <dependency>
       <groupId>org.springframework.boot</groupId>
       <artifactId>spring-boot-starter-web</artifactId>
     </dependency>
 
-    <!-- ADDED: Spring Boot test starter (includes JUnit Jupiter, AssertJ, Mockito, etc.) -->
+    <!-- JPA / Hibernate -->
+    <dependency>
+      <groupId>org.springframework.boot</groupId>
+      <artifactId>spring-boot-starter-data-jpa</artifactId>
+    </dependency>
+
+    <!-- PostgreSQL JDBC driver -->
+    <dependency>
+      <groupId>org.postgresql</groupId>
+      <artifactId>postgresql</artifactId>
+      <scope>runtime</scope>
+    </dependency>
+
+    <!-- ADDED: Spring Boot 4 Flyway starter (needed for auto-configuration) -->
+    <dependency>
+      <groupId>org.springframework.boot</groupId>
+      <artifactId>spring-boot-starter-flyway</artifactId>
+    </dependency>
+
+    <!-- Flyway PostgreSQL support -->
+    <dependency>
+      <groupId>org.flywaydb</groupId>
+      <artifactId>flyway-database-postgresql</artifactId>
+      <scope>runtime</scope>
+    </dependency>
+
+    <!-- Tests -->
     <dependency>
       <groupId>org.springframework.boot</groupId>
       <artifactId>spring-boot-starter-test</artifactId>
@@ -44,7 +67,6 @@
 
   <build>
     <plugins>
-      <!-- ADDED: enables mvn spring-boot:run and packaging support -->
       <plugin>
         <groupId>org.springframework.boot</groupId>
         <artifactId>spring-boot-maven-plugin</artifactId>
