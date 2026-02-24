@@ -1,6 +1,8 @@
 package ar.ss.betting.persistence.entity;
 
 import jakarta.persistence.*;
+import org.hibernate.annotations.JdbcTypeCode;
+import org.hibernate.type.SqlTypes;
 
 import java.time.LocalDateTime;
 import java.util.Objects;
@@ -36,19 +38,18 @@ public class ModelRunEntity {
     private int fullGuardsCount;
 
     /**
-     * JSONB columns:
-     * - selections_json: matchNumber -> ["HOME_WIN","DRAW"] etc
-     * - weights_json: your AdjustmentWeights snapshot
-     * - decision_parameters_json: DecisionParameters snapshot
-     *
-     * Stored as String for simplicity now; can later map to JsonNode / POJO.
+     * JSONB columns stored as Strings, but bound as SQL JSON.
+     * This makes Hibernate send correct parameter types to PostgreSQL.
      */
+    @JdbcTypeCode(SqlTypes.JSON)
     @Column(name = "selections_json", nullable = false, columnDefinition = "jsonb")
     private String selectionsJson;
 
+    @JdbcTypeCode(SqlTypes.JSON)
     @Column(name = "weights_json", nullable = false, columnDefinition = "jsonb")
     private String weightsJson;
 
+    @JdbcTypeCode(SqlTypes.JSON)
     @Column(name = "decision_parameters_json", nullable = false, columnDefinition = "jsonb")
     private String decisionParametersJson;
 

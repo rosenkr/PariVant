@@ -17,6 +17,16 @@ import java.util.Objects;
  */
 public class DecisionParameters {
 
+    // Default constants (explicit names, easy to tweak later)
+    public static final double DEFAULT_PROBABILITY_FLOOR_TOPPTIPSET = 0.12;
+    public static final double DEFAULT_PROBABILITY_FLOOR_STRYKTIPSET = 0.18;
+
+    public static final double DEFAULT_VALUE_THRESHOLD_TOPPTIPSET = 0.02;
+    public static final double DEFAULT_VALUE_THRESHOLD_STRYKTIPSET = 0.04;
+
+    public static final int DEFAULT_MAX_FULL_GUARDS_TOPPTIPSET = 1;
+    public static final int DEFAULT_MAX_FULL_GUARDS_STRYKTIPSET = 2;
+
     // Probability floor for considering an outcome as a value-candidate
     private final double probabilityFloorTopptipset;
     private final double probabilityFloorStryktipset;
@@ -62,6 +72,8 @@ public class DecisionParameters {
         }
     }
 
+    // --- Resolution methods (keep these, used by the model) ---
+
     public double probabilityFloor(GameType gameType) {
         Objects.requireNonNull(gameType);
         return (gameType == GameType.TOPPTIPSET) ? probabilityFloorTopptipset : probabilityFloorStryktipset;
@@ -77,6 +89,32 @@ public class DecisionParameters {
         return (gameType == GameType.TOPPTIPSET) ? maxFullGuardsTopptipset : maxFullGuardsStryktipset;
     }
 
+    // --- Getters (needed for persistence snapshot & API transparency) ---
+
+    public double getProbabilityFloorTopptipset() {
+        return probabilityFloorTopptipset;
+    }
+
+    public double getProbabilityFloorStryktipset() {
+        return probabilityFloorStryktipset;
+    }
+
+    public double getValueThresholdTopptipset() {
+        return valueThresholdTopptipset;
+    }
+
+    public double getValueThresholdStryktipset() {
+        return valueThresholdStryktipset;
+    }
+
+    public int getMaxFullGuardsTopptipset() {
+        return maxFullGuardsTopptipset;
+    }
+
+    public int getMaxFullGuardsStryktipset() {
+        return maxFullGuardsStryktipset;
+    }
+
     /**
      * Default parameters approximating the choices you've made so far:
      * - Topptipset slightly riskier (lower floor & threshold)
@@ -85,12 +123,12 @@ public class DecisionParameters {
      */
     public static DecisionParameters defaults() {
         return new DecisionParameters(
-                0.12, // Topptipset floor
-                0.18, // 13-match games floor
-                0.02, // Topptipset tau
-                0.04, // 13-match games tau
-                1,    // max full guards Topptipset
-                2     // max full guards Stryktipset/Europatipset
+                DEFAULT_PROBABILITY_FLOOR_TOPPTIPSET,
+                DEFAULT_PROBABILITY_FLOOR_STRYKTIPSET,
+                DEFAULT_VALUE_THRESHOLD_TOPPTIPSET,
+                DEFAULT_VALUE_THRESHOLD_STRYKTIPSET,
+                DEFAULT_MAX_FULL_GUARDS_TOPPTIPSET,
+                DEFAULT_MAX_FULL_GUARDS_STRYKTIPSET
         );
     }
 }
