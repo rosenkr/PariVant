@@ -5,41 +5,49 @@
 
   <modelVersion>4.0.0</modelVersion>
 
+  <!-- ADDED: Spring Boot parent (manages dependency versions + sensible defaults) -->
+  <parent>
+    <groupId>org.springframework.boot</groupId>
+    <artifactId>spring-boot-starter-parent</artifactId>
+    <version>4.0.3</version>
+    <relativePath/>
+  </parent>
+
   <groupId>ar.ss.betting</groupId>
   <artifactId>betting-model</artifactId>
   <version>1.0-SNAPSHOT</version>
   <packaging>jar</packaging>
 
   <name>betting-model</name>
-  <url>http://maven.apache.org</url>
 
   <properties>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-    <maven.compiler.source>21</maven.compiler.source>
-    <maven.compiler.target>21</maven.compiler.target>
-    <junit.jupiter.version>5.10.0</junit.jupiter.version>
+
+    <!-- CHANGED: prefer Spring Boot's java.version property -->
+    <java.version>21</java.version>
   </properties>
 
   <dependencies>
-    <!-- JUnit 5 -->
+    <!-- ADDED: Spring Web (REST controllers, embedded server) -->
     <dependency>
-      <groupId>org.junit.jupiter</groupId>
-      <artifactId>junit-jupiter</artifactId>
-      <version>${junit.jupiter.version}</version>
+      <groupId>org.springframework.boot</groupId>
+      <artifactId>spring-boot-starter-web</artifactId>
+    </dependency>
+
+    <!-- ADDED: Spring Boot test starter (includes JUnit Jupiter, AssertJ, Mockito, etc.) -->
+    <dependency>
+      <groupId>org.springframework.boot</groupId>
+      <artifactId>spring-boot-starter-test</artifactId>
       <scope>test</scope>
     </dependency>
   </dependencies>
 
   <build>
     <plugins>
-      <!-- Maven Surefire Plugin for running JUnit 5 -->
+      <!-- ADDED: enables mvn spring-boot:run and packaging support -->
       <plugin>
-        <groupId>org.apache.maven.plugins</groupId>
-        <artifactId>maven-surefire-plugin</artifactId>
-        <version>3.1.2</version>
-        <configuration>
-          <useModulePath>false</useModulePath>
-        </configuration>
+        <groupId>org.springframework.boot</groupId>
+        <artifactId>spring-boot-maven-plugin</artifactId>
       </plugin>
     </plugins>
   </build>
