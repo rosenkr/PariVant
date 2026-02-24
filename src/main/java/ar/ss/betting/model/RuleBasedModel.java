@@ -12,19 +12,34 @@ import java.util.stream.Collectors;
  * Rule-based model with two layers:
  *
  * Layer 1 (Base pick):
- * - Choose exactly one outcome for each match. Total cost initially = 1 row.
+ * - Choose exactly one outcome for each match using BaseOutcomeSelector.
  *
  * Layer 2 (Coverage allocation):
  * - Spend budget by expanding some matches from single -> half guard (2 outcomes).
- * - In Step B baseline, we do NOT use full guards (3 outcomes).
+ * - In Step C.1 we still do NOT use full guards (3 outcomes).
  *
- * The key design: we separate "choose base outcome" from "where to allocate coverage".
- * In Step C, we will plug in real scoring using odds/public distribution/etc.
+ * Later in Step C:
+ * - Coverage ranking will use uncertainty/value from inputs.
+ * - expandToHalfGuard will choose the best second outcome based on context.
+ * - full guards will be introduced with soft constraints.
  */
 public class RuleBasedModel implements GameModel {
 
+    private final BaseOutcomeSelector baseOutcomeSelector;
+
+    public RuleBasedModel() {
+        this(new BaseOutcomeSelector());
+    }
+
+    public RuleBasedModel(BaseOutcomeSelector baseOutcomeSelector) {
+        this.baseOutcomeSelector = Objects.requireNonNull(baseOutcomeSelector);
+    }
+
     @Override
-    public ModelSelectionResult generateSelection(GameRound gameRound, int maxBudgetInSek) {
+    public ModelSelectionResult generateSelection(GameRound gameRound, ModelInput modelInput, int maxBudgetInSek) {
+
+        Objects.requireNonNull(gameRound, "gameRound cannot be null");
+        Objects.requireNonNull(modelInput, "modelInput cannot be null");
 
         if (maxBudgetInSek <= 0) {
             throw new IllegalArgumentException("Budget must be positive");
@@ -33,7 +48,9 @@ public class RuleBasedModel implements GameModel {
         // ---- Layer 1: base picks (all singles) ----
         Map<Integer, Outcome> basePicks = new HashMap<>();
         for (Match match : gameRound.getMatches()) {
-            basePicks.put(match.getMatchNumber(), chooseSingleOutcome(match));
+            MatchContext ctx = modelInput.getMatchContext(match.getMatchNumber());
+            Outcome base = baseOutcomeSelector.chooseBaseOutcome(gameRound.getGameType(), ctx);
+            basePicks.put(match.getMatchNumber(), base);
         }
 
         // Selections start as singles
@@ -43,7 +60,6 @@ public class RuleBasedModel implements GameModel {
                         e -> Set.of(e.getValue())
                 ));
 
-        // Initial cost is 1 row
         int halfGuardsToUse = computeHalfGuards(gameRound.getMatches().size(), maxBudgetInSek);
 
         // ---- Layer 2: allocate half guards ----
@@ -75,20 +91,8 @@ public class RuleBasedModel implements GameModel {
     }
 
     /**
-     * Layer 1 decision: choose exactly one outcome for a match.
-     *
-     * Step B baseline: placeholder always picks HOME_WIN.
-     * Step C: will use odds/public distribution/etc.
-     */
-    protected Outcome chooseSingleOutcome(Match match) {
-        return Outcome.HOME_WIN;
-    }
-
-    /**
-     * Rank matches by how beneficial it is to add coverage (half-guard).
-     *
-     * Step B baseline: deterministic ordering (by match number).
-     * Step C: replace with real uncertainty/value scoring.
+     * Step C.1 baseline ranking: deterministic ordering (by match number).
+     * Step C.2/C.3: will replace with uncertainty/value based ranking.
      */
     protected List<Match> rankMatchesForCoverage(GameRound gameRound, Map<Integer, Outcome> basePicks) {
         List<Match> matches = new ArrayList<>(gameRound.getMatches());
@@ -97,20 +101,14 @@ public class RuleBasedModel implements GameModel {
     }
 
     /**
-     * Layer 2 action: expand a single outcome to a half-guard.
-     *
-     * Step B baseline: {HOME_WIN, DRAW} regardless of base pick (placeholder).
-     * Step C: choose the "best second outcome" for that match (e.g., add AWAY_WIN if needed).
+     * Step C.1 baseline: return a placeholder half-guard.
+     * Step C.3: choose baseOutcome + best alternative outcome based on MatchContext.
      */
     protected Set<Outcome> expandToHalfGuard(Outcome baseOutcome) {
-        // Minimal placeholder half-guard.
-        // NOTE: In Step C we'll improve this to include baseOutcome + best alternate outcome.
+        // Minimal placeholder half-guard; refined later.
         return Set.of(Outcome.HOME_WIN, Outcome.DRAW);
     }
 
-    /**
-     * For Step B baseline, we use only half-guards to reach the largest power-of-two <= budget.
-     */
     private int computeHalfGuards(int numberOfMatches, int budget) {
         int half = 0;
         int cost = 1;

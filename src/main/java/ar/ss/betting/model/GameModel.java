@@ -5,9 +5,10 @@ import ar.ss.betting.domain.GameRound;
 /**
  * Strategy interface for different betting models.
  *
- * Note: returns ModelSelectionResult (not Coupon) to keep the model as a pure engine.
+ * ModelInput contains match-level probabilities from market and public distribution.
+ * The domain (GameRound) stays clean and independent of data providers.
  */
 public interface GameModel {
 
-    ModelSelectionResult generateSelection(GameRound gameRound, int maxBudgetInSek);
+    ModelSelectionResult generateSelection(GameRound gameRound, ModelInput modelInput, int maxBudgetInSek);
 }
