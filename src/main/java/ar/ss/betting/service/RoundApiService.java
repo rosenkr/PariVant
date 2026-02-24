@@ -1,11 +1,16 @@
 package ar.ss.betting.service;
 
-import ar.ss.betting.domain.*;
+import ar.ss.betting.domain.GameRound;
+import ar.ss.betting.domain.GameType;
+import ar.ss.betting.domain.Match;
+import ar.ss.betting.domain.Team;
 import ar.ss.betting.model.*;
 import ar.ss.betting.persistence.entity.GameRoundEntity;
 import ar.ss.betting.persistence.entity.MatchEntity;
+import ar.ss.betting.persistence.entity.ModelRunEntity;
 import ar.ss.betting.persistence.repo.GameRoundRepository;
 import ar.ss.betting.persistence.repo.MatchRepository;
+import ar.ss.betting.persistence.repo.ModelRunRepository;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
@@ -16,17 +21,25 @@ public class RoundApiService {
 
     private final GameRoundRepository gameRoundRepository;
     private final MatchRepository matchRepository;
+    private final ModelRunRepository modelRunRepository;
     private final RoundPersistenceService roundPersistenceService;
 
     public RoundApiService(GameRoundRepository gameRoundRepository,
                            MatchRepository matchRepository,
+                           ModelRunRepository modelRunRepository,
                            RoundPersistenceService roundPersistenceService) {
         this.gameRoundRepository = Objects.requireNonNull(gameRoundRepository);
         this.matchRepository = Objects.requireNonNull(matchRepository);
+        this.modelRunRepository = Objects.requireNonNull(modelRunRepository);
         this.roundPersistenceService = Objects.requireNonNull(roundPersistenceService);
     }
 
-    public long createRound(GameType gameType, LocalDateTime roundStart, List<ar.ss.betting.api.dto.ModelSelectionRequestDto.MatchDto> matchesDto) {
+    // --- Write paths (C4) ---
+
+    public long createRound(GameType gameType,
+                            LocalDateTime roundStart,
+                            List<ar.ss.betting.api.dto.ModelSelectionRequestDto.MatchDto> matchesDto) {
+
         Objects.requireNonNull(gameType);
         Objects.requireNonNull(roundStart);
         Objects.requireNonNull(matchesDto);
@@ -79,6 +92,60 @@ public class RoundApiService {
         return roundPersistenceService.saveModelRun(roundId, budgetInSek, result, weights, params).id();
     }
 
+    // --- Read paths (C5) ---
+
+    public RoundView getRound(long roundId) {
+        GameRoundEntity roundEntity = gameRoundRepository.findById(roundId)
+                .orElseThrow(() -> new IllegalArgumentException("Round not found: " + roundId));
+
+        List<MatchEntity> matchEntities = matchRepository.findByGameRoundIdOrderByMatchNumberAsc(roundId);
+
+        List<RoundView.MatchView> matches = new ArrayList<>(matchEntities.size());
+        for (MatchEntity m : matchEntities) {
+            matches.add(new RoundView.MatchView(
+                    m.getMatchNumber(),
+                    m.getStartDate(),
+                    m.getHomeTeamName(),
+                    m.getAwayTeamName()
+            ));
+        }
+
+        return new RoundView(
+                roundEntity.getId(),
+                roundEntity.getGameType(),
+                roundEntity.getStartDate(),
+                matches
+        );
+    }
+
+    public List<ModelRunView> getModelRuns(long roundId) {
+        // Validate round exists (better error message than empty list)
+        if (!gameRoundRepository.existsById(roundId)) {
+            throw new IllegalArgumentException("Round not found: " + roundId);
+        }
+
+        List<ModelRunEntity> runs = modelRunRepository.findByGameRoundIdOrderByGeneratedAtDesc(roundId);
+
+        List<ModelRunView> views = new ArrayList<>(runs.size());
+        for (ModelRunEntity r : runs) {
+            views.add(new ModelRunView(
+                    r.getId(),
+                    r.getModelName(),
+                    r.getGeneratedAt(),
+                    r.getBudgetInSek(),
+                    r.getTotalCostInSek(),
+                    r.getHalfGuardsCount(),
+                    r.getFullGuardsCount(),
+                    r.getSelectionsJson(),
+                    r.getWeightsJson(),
+                    r.getDecisionParametersJson()
+            ));
+        }
+        return views;
+    }
+
+    // --- Internal helpers ---
+
     private GameRound loadRoundDomain(long roundId) {
         GameRoundEntity roundEntity = gameRoundRepository.findById(roundId)
                 .orElseThrow(() -> new IllegalArgumentException("Round not found: " + roundId));
@@ -130,4 +197,21 @@ public class RoundApiService {
     private int defaultIfNull(Integer v, int def) {
         return (v == null) ? def : v;
     }
+
+    // --- View records returned to controller ---
+
+    public record RoundView(long id, GameType gameType, LocalDateTime startDate, List<MatchView> matches) {
+        public record MatchView(int matchNumber, LocalDateTime startDate, String homeTeamName, String awayTeamName) { }
+    }
+
+    public record ModelRunView(long id,
+                               String modelName,
+                               LocalDateTime generatedAt,
+                               int budgetInSek,
+                               int totalCostInSek,
+                               int halfGuardsCount,
+                               int fullGuardsCount,
+                               String selectionsJson,
+                               String weightsJson,
+                               String decisionParametersJson) { }
 }

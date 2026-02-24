@@ -21,11 +21,8 @@ public class RoundController {
         this.roundApiService = Objects.requireNonNull(roundApiService);
     }
 
-    /**
-     * Create/persist a betting round + matches.
-     *
-     * Request reuses ModelSelectionRequestDto.MatchDto to avoid duplicating DTO types.
-     */
+    // --- C4 write endpoints ---
+
     @PostMapping
     public ResponseEntity<CreateRoundResponse> createRound(@RequestBody CreateRoundRequest request) {
         long id = roundApiService.createRound(
@@ -36,9 +33,6 @@ public class RoundController {
         return ResponseEntity.ok(new CreateRoundResponse(id));
     }
 
-    /**
-     * Run model for an existing persisted round and store the model run.
-     */
     @PostMapping("/{roundId}/model-runs")
     public ResponseEntity<CreateModelRunResponse> createModelRun(@PathVariable long roundId,
                                                                  @RequestBody CreateModelRunRequest request) {
@@ -52,6 +46,18 @@ public class RoundController {
         );
 
         return ResponseEntity.ok(new CreateModelRunResponse(modelRunId));
+    }
+
+    // --- C5 read endpoints ---
+
+    @GetMapping("/{roundId}")
+    public ResponseEntity<RoundApiService.RoundView> getRound(@PathVariable long roundId) {
+        return ResponseEntity.ok(roundApiService.getRound(roundId));
+    }
+
+    @GetMapping("/{roundId}/model-runs")
+    public ResponseEntity<List<RoundApiService.ModelRunView>> getModelRuns(@PathVariable long roundId) {
+        return ResponseEntity.ok(roundApiService.getModelRuns(roundId));
     }
 
     // --- Request/Response records (keeps file count low) ---
