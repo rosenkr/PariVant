@@ -16,12 +16,13 @@ import java.util.stream.Collectors;
  *
  * Layer 2 (Coverage allocation):
  * - Spend budget by expanding some matches from single -> half guard (2 outcomes).
- * - In Step C.1 we still do NOT use full guards (3 outcomes).
  *
- * Later in Step C:
- * - Coverage ranking will use uncertainty/value from inputs.
- * - expandToHalfGuard will choose the best second outcome based on context.
- * - full guards will be introduced with soft constraints.
+ * Step C.2 changes:
+ * - Coverage ranking uses uncertainty derived from internal probabilities.
+ * - expandToHalfGuard chooses the best alternative outcome based on internal probabilities.
+ *
+ * For now: internal probabilities == market probabilities.
+ * Later: internal probabilities will be adjusted using form, injuries, weather, etc. with user weights.
  */
 public class RuleBasedModel implements GameModel {
 
@@ -62,8 +63,8 @@ public class RuleBasedModel implements GameModel {
 
         int halfGuardsToUse = computeHalfGuards(gameRound.getMatches().size(), maxBudgetInSek);
 
-        // ---- Layer 2: allocate half guards ----
-        List<Match> rankedForCoverage = rankMatchesForCoverage(gameRound, basePicks);
+        // ---- Layer 2: allocate half guards based on uncertainty ----
+        List<Match> rankedForCoverage = rankMatchesForCoverage(gameRound, modelInput);
 
         int appliedHalfGuards = 0;
         for (Match match : rankedForCoverage) {
@@ -73,8 +74,9 @@ public class RuleBasedModel implements GameModel {
 
             int matchNumber = match.getMatchNumber();
             Outcome base = basePicks.get(matchNumber);
+            MatchContext ctx = modelInput.getMatchContext(matchNumber);
 
-            selections.put(matchNumber, expandToHalfGuard(base));
+            selections.put(matchNumber, expandToHalfGuard(base, ctx));
             appliedHalfGuards++;
         }
 
@@ -91,22 +93,81 @@ public class RuleBasedModel implements GameModel {
     }
 
     /**
-     * Step C.1 baseline ranking: deterministic ordering (by match number).
-     * Step C.2/C.3: will replace with uncertainty/value based ranking.
+     * Coverage allocation ranking:
+     * - Higher uncertainty means higher priority to add coverage.
+     *
+     * uncertainty = 1 - max_o p_i(o)
+     *
+     * For now p_i == market probabilities.
+     * Later p_i will be adjusted probabilities from many factors with weights.
      */
-    protected List<Match> rankMatchesForCoverage(GameRound gameRound, Map<Integer, Outcome> basePicks) {
+    protected List<Match> rankMatchesForCoverage(GameRound gameRound, ModelInput modelInput) {
         List<Match> matches = new ArrayList<>(gameRound.getMatches());
-        matches.sort(Comparator.comparingInt(Match::getMatchNumber));
+
+        matches.sort((a, b) -> {
+            double ua = uncertainty(a.getMatchNumber(), modelInput);
+            double ub = uncertainty(b.getMatchNumber(), modelInput);
+            int cmp = Double.compare(ub, ua); // descending uncertainty
+            if (cmp != 0) return cmp;
+            return Integer.compare(a.getMatchNumber(), b.getMatchNumber()); // deterministic tie-break
+        });
+
         return matches;
     }
 
+    protected double uncertainty(int matchNumber, ModelInput modelInput) {
+        MatchContext ctx = modelInput.getMatchContext(matchNumber);
+        ProbabilityTriple internal = getInternalProbabilities(ctx);
+
+        double max = Math.max(internal.get(Outcome.HOME_WIN),
+                Math.max(internal.get(Outcome.DRAW), internal.get(Outcome.AWAY_WIN)));
+
+        return 1.0 - max;
+    }
+
     /**
-     * Step C.1 baseline: return a placeholder half-guard.
-     * Step C.3: choose baseOutcome + best alternative outcome based on MatchContext.
+     * Step C.2: Choose the second outcome for a half-guard based on internal probabilities.
+     *
+     * For now: internal == market.
+     * Later: internal will include adjustments and may prefer a different "second best".
      */
-    protected Set<Outcome> expandToHalfGuard(Outcome baseOutcome) {
-        // Minimal placeholder half-guard; refined later.
-        return Set.of(Outcome.HOME_WIN, Outcome.DRAW);
+    protected Set<Outcome> expandToHalfGuard(Outcome baseOutcome, MatchContext ctx) {
+        ProbabilityTriple internal = getInternalProbabilities(ctx);
+
+        Outcome bestAlt = bestAlternativeOutcome(baseOutcome, internal);
+
+        // Use LinkedHashSet to keep deterministic iteration order (base first).
+        LinkedHashSet<Outcome> set = new LinkedHashSet<>();
+        set.add(baseOutcome);
+        set.add(bestAlt);
+        return Collections.unmodifiableSet(set);
+    }
+
+    protected Outcome bestAlternativeOutcome(Outcome baseOutcome, ProbabilityTriple internal) {
+        Outcome best = null;
+        double bestP = Double.NEGATIVE_INFINITY;
+
+        for (Outcome o : List.of(Outcome.HOME_WIN, Outcome.DRAW, Outcome.AWAY_WIN)) {
+            if (o == baseOutcome) continue;
+            double p = internal.get(o);
+            if (p > bestP) {
+                bestP = p;
+                best = o;
+            }
+        }
+
+        // Should never be null because there are 3 outcomes.
+        return Objects.requireNonNull(best);
+    }
+
+    /**
+     * Internal probability source.
+     *
+     * Step C.2 baseline: return market probabilities.
+     * Future: return adjusted probabilities (market + form/injuries/weather/etc using weights).
+     */
+    protected ProbabilityTriple getInternalProbabilities(MatchContext ctx) {
+        return ctx.getMarketProbabilities();
     }
 
     private int computeHalfGuards(int numberOfMatches, int budget) {

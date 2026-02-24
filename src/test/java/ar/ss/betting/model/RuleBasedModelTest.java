@@ -35,10 +35,8 @@ class RuleBasedModelTest {
         Map<Integer, MatchContext> ctx = new HashMap<>();
 
         for (Match match : round.getMatches()) {
-            // Neutral-ish defaults: market favorite HOME_WIN, public similar
             ProbabilityTriple market = new ProbabilityTriple(0.50, 0.25, 0.25);
             ProbabilityTriple pub = new ProbabilityTriple(0.50, 0.25, 0.25);
-
             ctx.put(match.getMatchNumber(), new MatchContext(market, pub));
         }
 
@@ -126,7 +124,7 @@ class RuleBasedModelTest {
     }
 
     @Test
-    void shouldOnlyProduceSinglesOrHalfGuardsInStepC1() {
+    void shouldOnlyProduceSinglesOrHalfGuardsInStepC2() {
         GameRound round = createTopptipsetRound8Matches();
         ModelInput input = createNeutralModelInputForRound(round);
         GameModel model = new RuleBasedModel();
@@ -135,7 +133,7 @@ class RuleBasedModelTest {
 
         for (Set<Outcome> sel : result.getSelections().values()) {
             assertTrue(sel.size() == 1 || sel.size() == 2,
-                    "Selection size must be 1 or 2 in Step C.1");
+                    "Selection size must be 1 or 2 in Step C.2");
         }
 
         assertEquals(0, result.getFullGuardsCount());
@@ -160,20 +158,13 @@ class RuleBasedModelTest {
     void basePickShouldChooseOutcomeWithBestValueGap() {
         GameRound round = createTopptipsetRound8Matches();
 
-        // Only care about match 1 for this test; others can be neutral defaults.
         Map<Integer, MatchContext> ctx = new HashMap<>();
-
         for (Match match : round.getMatches()) {
             ProbabilityTriple market = new ProbabilityTriple(0.50, 0.25, 0.25);
             ProbabilityTriple pub = new ProbabilityTriple(0.50, 0.25, 0.25);
             ctx.put(match.getMatchNumber(), new MatchContext(market, pub));
         }
 
-        // For match 1:
-        // market: 1=0.55, X=0.25, 2=0.20
-        // public: 1=0.80, X=0.10, 2=0.10
-        // value gaps:
-        // v(1)= -0.25, v(X)= +0.15, v(2)= +0.10 => best is DRAW
         ctx.put(1, new MatchContext(
                 new ProbabilityTriple(0.55, 0.25, 0.20),
                 new ProbabilityTriple(0.80, 0.10, 0.10)
@@ -181,10 +172,82 @@ class RuleBasedModelTest {
 
         ModelInput input = new ModelInput(ctx);
 
-        // Use budget=1 to avoid coverage overriding the selection size, making it a pure base-pick check.
         GameModel model = new RuleBasedModel();
         ModelSelectionResult result = model.generateSelection(round, input, 1);
 
         assertEquals(Set.of(Outcome.DRAW), result.getSelections().get(1));
+    }
+
+    @Test
+    void coverageShouldPrioritizeMostUncertainMatch() {
+        GameRound round = createTopptipsetRound8Matches();
+
+        Map<Integer, MatchContext> ctx = new HashMap<>();
+        for (Match match : round.getMatches()) {
+            // Default: fairly certain (max=0.70 -> uncertainty 0.30)
+            ctx.put(match.getMatchNumber(), new MatchContext(
+                    new ProbabilityTriple(0.70, 0.20, 0.10),
+                    new ProbabilityTriple(0.70, 0.20, 0.10)
+            ));
+        }
+
+        // Make match 7 highly uncertain (max=0.36 -> uncertainty 0.64)
+        ctx.put(7, new MatchContext(
+                new ProbabilityTriple(0.34, 0.30, 0.36),
+                new ProbabilityTriple(0.34, 0.30, 0.36)
+        ));
+
+        ModelInput input = new ModelInput(ctx);
+
+        // budget=2 => exactly one half guard
+        GameModel model = new RuleBasedModel();
+        ModelSelectionResult result = model.generateSelection(round, input, 2);
+
+        // Only match 7 should have size 2 (half-guard), because it's most uncertain.
+        long halfGuardCount = result.getSelections().entrySet().stream()
+                .filter(e -> e.getValue().size() == 2)
+                .count();
+        assertEquals(1, halfGuardCount);
+
+        assertEquals(2, result.getSelections().get(7).size());
+    }
+
+    @Test
+    void halfGuardShouldAddBestAlternativeAccordingToInternalProbabilities() {
+        GameRound round = createTopptipsetRound8Matches();
+
+        Map<Integer, MatchContext> ctx = new HashMap<>();
+        for (Match match : round.getMatches()) {
+            ctx.put(match.getMatchNumber(), new MatchContext(
+                    new ProbabilityTriple(0.50, 0.25, 0.25),
+                    new ProbabilityTriple(0.50, 0.25, 0.25)
+            ));
+        }
+
+        // For match 1: market says HOME strongest, AWAY second, DRAW weakest
+        // base pick in this test is enforced by budget=1? No, we want coverage so budget=2.
+        // We'll set public = market so baseOutcome becomes HOME (baseline).
+        ctx.put(1, new MatchContext(
+                new ProbabilityTriple(0.60, 0.10, 0.30),
+                new ProbabilityTriple(0.60, 0.10, 0.30)
+        ));
+
+        // Make match 1 the most uncertain among all by making others very certain.
+        for (int i = 2; i <= 8; i++) {
+            ctx.put(i, new MatchContext(
+                    new ProbabilityTriple(0.90, 0.05, 0.05),
+                    new ProbabilityTriple(0.90, 0.05, 0.05)
+            ));
+        }
+
+        ModelInput input = new ModelInput(ctx);
+
+        // budget=2 => one half guard applied to the most uncertain match (match 1)
+        GameModel model = new RuleBasedModel();
+        ModelSelectionResult result = model.generateSelection(round, input, 2);
+
+        // Base for match 1 should be HOME (public==market, baseline is HOME).
+        // Best alternative should be AWAY (0.30) rather than DRAW (0.10).
+        assertEquals(Set.of(Outcome.HOME_WIN, Outcome.AWAY_WIN), result.getSelections().get(1));
     }
 }
