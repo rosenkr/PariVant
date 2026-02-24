@@ -9,35 +9,38 @@ import java.util.*;
 import java.util.stream.Collectors;
 
 /**
- * Rule-based model with two layers:
+ * Rule-based betting model.
  *
- * Layer 1 (Base pick):
- * - Choose exactly one outcome for each match using BaseOutcomeSelector.
+ * TruthEngine:
+ *   - InternalProbabilityCalculator (weighted signals -> internal probabilities)
  *
- * Layer 2 (Coverage allocation):
- * - Spend budget by expanding some matches from single -> half guard (2 outcomes).
+ * DecisionEngine:
+ *   - BaseOutcomeSelector (value logic using internal probs + public distribution)
  *
- * Step C.2 changes:
- * - Coverage ranking uses uncertainty derived from internal probabilities.
- * - expandToHalfGuard chooses the best alternative outcome based on internal probabilities.
- *
- * For now: internal probabilities == market probabilities.
- * Later: internal probabilities will be adjusted using form, injuries, weather, etc. with user weights.
+ * CoverageEngine:
+ *   - Uncertainty-based ranking (using internal probabilities)
+ *   - Expansion using internal probabilities
  */
 public class RuleBasedModel implements GameModel {
 
     private final BaseOutcomeSelector baseOutcomeSelector;
+    private final InternalProbabilityCalculator probabilityCalculator;
+    private final AdjustmentWeights weights;
 
-    public RuleBasedModel() {
-        this(new BaseOutcomeSelector());
+    public RuleBasedModel(AdjustmentWeights weights) {
+        this.baseOutcomeSelector = new BaseOutcomeSelector();
+        this.probabilityCalculator = new InternalProbabilityCalculator();
+        this.weights = Objects.requireNonNull(weights);
     }
 
-    public RuleBasedModel(BaseOutcomeSelector baseOutcomeSelector) {
-        this.baseOutcomeSelector = Objects.requireNonNull(baseOutcomeSelector);
+    public RuleBasedModel() {
+        this(AdjustmentWeights.none());
     }
 
     @Override
-    public ModelSelectionResult generateSelection(GameRound gameRound, ModelInput modelInput, int maxBudgetInSek) {
+    public ModelSelectionResult generateSelection(GameRound gameRound,
+                                                  ModelInput modelInput,
+                                                  int maxBudgetInSek) {
 
         Objects.requireNonNull(gameRound, "gameRound cannot be null");
         Objects.requireNonNull(modelInput, "modelInput cannot be null");
@@ -46,15 +49,30 @@ public class RuleBasedModel implements GameModel {
             throw new IllegalArgumentException("Budget must be positive");
         }
 
-        // ---- Layer 1: base picks (all singles) ----
+        Map<Integer, ProbabilityTriple> internalProbs = new HashMap<>();
         Map<Integer, Outcome> basePicks = new HashMap<>();
+
+        // ---- Layer 1: compute internal probabilities + base picks ----
         for (Match match : gameRound.getMatches()) {
-            MatchContext ctx = modelInput.getMatchContext(match.getMatchNumber());
-            Outcome base = baseOutcomeSelector.chooseBaseOutcome(gameRound.getGameType(), ctx);
-            basePicks.put(match.getMatchNumber(), base);
+
+            int matchNumber = match.getMatchNumber();
+            MatchContext ctx = modelInput.getMatchContext(matchNumber);
+
+            ProbabilityTriple internal =
+                    probabilityCalculator.calculateInternalProbabilities(ctx, weights);
+
+            internalProbs.put(matchNumber, internal);
+
+            Outcome base =
+                    baseOutcomeSelector.chooseBaseOutcome(
+                            gameRound.getGameType(),
+                            internal,
+                            ctx.getPublicProbabilities()
+                    );
+
+            basePicks.put(matchNumber, base);
         }
 
-        // Selections start as singles
         Map<Integer, Set<Outcome>> selections = basePicks.entrySet().stream()
                 .collect(Collectors.toMap(
                         Map.Entry::getKey,
@@ -63,24 +81,22 @@ public class RuleBasedModel implements GameModel {
 
         int halfGuardsToUse = computeHalfGuards(gameRound.getMatches().size(), maxBudgetInSek);
 
-        // ---- Layer 2: allocate half guards based on uncertainty ----
-        List<Match> rankedForCoverage = rankMatchesForCoverage(gameRound, modelInput);
+        // ---- Layer 2: coverage allocation ----
+        List<Integer> rankedMatches = rankByUncertainty(internalProbs);
 
         int appliedHalfGuards = 0;
-        for (Match match : rankedForCoverage) {
-            if (appliedHalfGuards >= halfGuardsToUse) {
-                break;
-            }
+        for (Integer matchNumber : rankedMatches) {
 
-            int matchNumber = match.getMatchNumber();
+            if (appliedHalfGuards >= halfGuardsToUse) break;
+
             Outcome base = basePicks.get(matchNumber);
-            MatchContext ctx = modelInput.getMatchContext(matchNumber);
+            ProbabilityTriple internal = internalProbs.get(matchNumber);
 
-            selections.put(matchNumber, expandToHalfGuard(base, ctx));
+            selections.put(matchNumber, expandToHalfGuard(base, internal));
             appliedHalfGuards++;
         }
 
-        int totalCost = 1 << appliedHalfGuards; // 2^halfGuards
+        int totalCost = 1 << appliedHalfGuards;
 
         return new ModelSelectionResult(
                 "RuleBasedModel",
@@ -92,32 +108,22 @@ public class RuleBasedModel implements GameModel {
         );
     }
 
-    /**
-     * Coverage allocation ranking:
-     * - Higher uncertainty means higher priority to add coverage.
-     *
-     * uncertainty = 1 - max_o p_i(o)
-     *
-     * For now p_i == market probabilities.
-     * Later p_i will be adjusted probabilities from many factors with weights.
-     */
-    protected List<Match> rankMatchesForCoverage(GameRound gameRound, ModelInput modelInput) {
-        List<Match> matches = new ArrayList<>(gameRound.getMatches());
+    private List<Integer> rankByUncertainty(Map<Integer, ProbabilityTriple> internalProbs) {
 
-        matches.sort((a, b) -> {
-            double ua = uncertainty(a.getMatchNumber(), modelInput);
-            double ub = uncertainty(b.getMatchNumber(), modelInput);
-            int cmp = Double.compare(ub, ua); // descending uncertainty
+        List<Integer> matchNumbers = new ArrayList<>(internalProbs.keySet());
+
+        matchNumbers.sort((a, b) -> {
+            double ua = uncertainty(internalProbs.get(a));
+            double ub = uncertainty(internalProbs.get(b));
+            int cmp = Double.compare(ub, ua);
             if (cmp != 0) return cmp;
-            return Integer.compare(a.getMatchNumber(), b.getMatchNumber()); // deterministic tie-break
+            return Integer.compare(a, b);
         });
 
-        return matches;
+        return matchNumbers;
     }
 
-    protected double uncertainty(int matchNumber, ModelInput modelInput) {
-        MatchContext ctx = modelInput.getMatchContext(matchNumber);
-        ProbabilityTriple internal = getInternalProbabilities(ctx);
+    private double uncertainty(ProbabilityTriple internal) {
 
         double max = Math.max(internal.get(Outcome.HOME_WIN),
                 Math.max(internal.get(Outcome.DRAW), internal.get(Outcome.AWAY_WIN)));
@@ -125,30 +131,26 @@ public class RuleBasedModel implements GameModel {
         return 1.0 - max;
     }
 
-    /**
-     * Step C.2: Choose the second outcome for a half-guard based on internal probabilities.
-     *
-     * For now: internal == market.
-     * Later: internal will include adjustments and may prefer a different "second best".
-     */
-    protected Set<Outcome> expandToHalfGuard(Outcome baseOutcome, MatchContext ctx) {
-        ProbabilityTriple internal = getInternalProbabilities(ctx);
+    private Set<Outcome> expandToHalfGuard(Outcome base,
+                                           ProbabilityTriple internal) {
 
-        Outcome bestAlt = bestAlternativeOutcome(baseOutcome, internal);
+        Outcome bestAlt = bestAlternative(base, internal);
 
-        // Use LinkedHashSet to keep deterministic iteration order (base first).
         LinkedHashSet<Outcome> set = new LinkedHashSet<>();
-        set.add(baseOutcome);
+        set.add(base);
         set.add(bestAlt);
+
         return Collections.unmodifiableSet(set);
     }
 
-    protected Outcome bestAlternativeOutcome(Outcome baseOutcome, ProbabilityTriple internal) {
+    private Outcome bestAlternative(Outcome base,
+                                    ProbabilityTriple internal) {
+
         Outcome best = null;
         double bestP = Double.NEGATIVE_INFINITY;
 
-        for (Outcome o : List.of(Outcome.HOME_WIN, Outcome.DRAW, Outcome.AWAY_WIN)) {
-            if (o == baseOutcome) continue;
+        for (Outcome o : Outcome.values()) {
+            if (o == base) continue;
             double p = internal.get(o);
             if (p > bestP) {
                 bestP = p;
@@ -156,18 +158,7 @@ public class RuleBasedModel implements GameModel {
             }
         }
 
-        // Should never be null because there are 3 outcomes.
         return Objects.requireNonNull(best);
-    }
-
-    /**
-     * Internal probability source.
-     *
-     * Step C.2 baseline: return market probabilities.
-     * Future: return adjusted probabilities (market + form/injuries/weather/etc using weights).
-     */
-    protected ProbabilityTriple getInternalProbabilities(MatchContext ctx) {
-        return ctx.getMarketProbabilities();
     }
 
     private int computeHalfGuards(int numberOfMatches, int budget) {
