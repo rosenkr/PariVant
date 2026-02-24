@@ -15,26 +15,33 @@ import java.util.stream.Collectors;
  *   - InternalProbabilityCalculator (weighted signals -> internal probabilities)
  *
  * DecisionEngine:
- *   - BaseOutcomeSelector (value logic using internal probs + public distribution)
+ *   - BaseOutcomeSelector (value logic using internal probs + public distribution + decision parameters)
  *
  * CoverageEngine:
  *   - Uncertainty-based ranking (using internal probabilities)
- *   - Expansion using internal probabilities
+ *   - Half guards (single -> 2 outcomes)
+ *   - Full guards (upgrade half -> 3 outcomes) ONLY when budget slack allows, capped per game type
  */
 public class RuleBasedModel implements GameModel {
 
     private final BaseOutcomeSelector baseOutcomeSelector;
     private final InternalProbabilityCalculator probabilityCalculator;
     private final AdjustmentWeights weights;
+    private final DecisionParameters decisionParameters;
 
-    public RuleBasedModel(AdjustmentWeights weights) {
+    public RuleBasedModel(AdjustmentWeights weights, DecisionParameters decisionParameters) {
         this.baseOutcomeSelector = new BaseOutcomeSelector();
         this.probabilityCalculator = new InternalProbabilityCalculator();
         this.weights = Objects.requireNonNull(weights);
+        this.decisionParameters = Objects.requireNonNull(decisionParameters);
+    }
+
+    public RuleBasedModel(AdjustmentWeights weights) {
+        this(weights, DecisionParameters.defaults());
     }
 
     public RuleBasedModel() {
-        this(AdjustmentWeights.none());
+        this(AdjustmentWeights.none(), DecisionParameters.defaults());
     }
 
     @Override
@@ -67,7 +74,8 @@ public class RuleBasedModel implements GameModel {
                     baseOutcomeSelector.chooseBaseOutcome(
                             gameRound.getGameType(),
                             internal,
-                            ctx.getPublicProbabilities()
+                            ctx.getPublicProbabilities(),
+                            decisionParameters
                     );
 
             basePicks.put(matchNumber, base);
@@ -76,15 +84,16 @@ public class RuleBasedModel implements GameModel {
         Map<Integer, Set<Outcome>> selections = basePicks.entrySet().stream()
                 .collect(Collectors.toMap(
                         Map.Entry::getKey,
-                        e -> Set.of(e.getValue())
+                        e -> new LinkedHashSet<>(Set.of(e.getValue()))
                 ));
 
+        // ---- Layer 2: allocate half guards ----
         int halfGuardsToUse = computeHalfGuards(gameRound.getMatches().size(), maxBudgetInSek);
-
-        // ---- Layer 2: coverage allocation ----
         List<Integer> rankedMatches = rankByUncertainty(internalProbs);
 
         int appliedHalfGuards = 0;
+        List<Integer> halfGuardedMatches = new ArrayList<>();
+
         for (Integer matchNumber : rankedMatches) {
 
             if (appliedHalfGuards >= halfGuardsToUse) break;
@@ -93,23 +102,106 @@ public class RuleBasedModel implements GameModel {
             ProbabilityTriple internal = internalProbs.get(matchNumber);
 
             selections.put(matchNumber, expandToHalfGuard(base, internal));
+            halfGuardedMatches.add(matchNumber);
             appliedHalfGuards++;
         }
 
-        int totalCost = 1 << appliedHalfGuards;
+        // ---- C4: upgrade half -> full guards using slack, capped ----
+        int maxFullGuards = decisionParameters.maxFullGuards(gameRound.getGameType());
+        int fullGuardsApplied = 0;
+
+        // Rank the half-guarded matches by uncertainty (most uncertain first)
+        halfGuardedMatches.sort((a, b) -> {
+            double ua = uncertainty(internalProbs.get(a));
+            double ub = uncertainty(internalProbs.get(b));
+            int cmp = Double.compare(ub, ua);
+            if (cmp != 0) return cmp;
+            return Integer.compare(a, b);
+        });
+
+        boolean upgraded;
+        do {
+            upgraded = false;
+
+            if (fullGuardsApplied >= maxFullGuards) break;
+
+            int currentCost = computeTotalCost(selections);
+
+            for (Integer matchNumber : halfGuardedMatches) {
+
+                if (fullGuardsApplied >= maxFullGuards) break;
+
+                Set<Outcome> currentSel = selections.get(matchNumber);
+
+                // Only upgrade half-guards (size 2) to full-guards (size 3)
+                if (currentSel.size() != 2) {
+                    continue;
+                }
+
+                ProbabilityTriple internal = internalProbs.get(matchNumber);
+                Set<Outcome> full = expandToFullGuard(currentSel, internal);
+
+                // compute new cost if we apply this upgrade
+                selections.put(matchNumber, full);
+                int newCost = computeTotalCost(selections);
+
+                if (newCost <= maxBudgetInSek) {
+                    fullGuardsApplied++;
+                    upgraded = true;
+                    break; // recompute slack fresh
+                } else {
+                    // revert
+                    selections.put(matchNumber, currentSel);
+                }
+            }
+
+        } while (upgraded);
+
+        int totalCost = computeTotalCost(selections);
 
         return new ModelSelectionResult(
                 "RuleBasedModel",
                 LocalDateTime.now(),
-                selections,
+                freezeSelections(selections),
                 totalCost,
-                appliedHalfGuards,
-                0
+                countHalfGuards(selections),
+                countFullGuards(selections)
         );
     }
 
-    private List<Integer> rankByUncertainty(Map<Integer, ProbabilityTriple> internalProbs) {
+    private Map<Integer, Set<Outcome>> freezeSelections(Map<Integer, Set<Outcome>> selections) {
+        Map<Integer, Set<Outcome>> frozen = new HashMap<>();
+        for (Map.Entry<Integer, Set<Outcome>> e : selections.entrySet()) {
+            frozen.put(e.getKey(), Collections.unmodifiableSet(new LinkedHashSet<>(e.getValue())));
+        }
+        return Collections.unmodifiableMap(frozen);
+    }
 
+    private int countHalfGuards(Map<Integer, Set<Outcome>> selections) {
+        int c = 0;
+        for (Set<Outcome> s : selections.values()) {
+            if (s.size() == 2) c++;
+        }
+        return c;
+    }
+
+    private int countFullGuards(Map<Integer, Set<Outcome>> selections) {
+        int c = 0;
+        for (Set<Outcome> s : selections.values()) {
+            if (s.size() == 3) c++;
+        }
+        return c;
+    }
+
+    private int computeTotalCost(Map<Integer, Set<Outcome>> selections) {
+        int cost = 1;
+        for (Set<Outcome> s : selections.values()) {
+            cost *= s.size();
+        }
+        return cost;
+    }
+
+    private List<Integer> rankByUncertainty(Map<Integer, ProbabilityTriple> internalProbs) {
         List<Integer> matchNumbers = new ArrayList<>(internalProbs.keySet());
 
         matchNumbers.sort((a, b) -> {
@@ -124,28 +216,34 @@ public class RuleBasedModel implements GameModel {
     }
 
     private double uncertainty(ProbabilityTriple internal) {
-
         double max = Math.max(internal.get(Outcome.HOME_WIN),
                 Math.max(internal.get(Outcome.DRAW), internal.get(Outcome.AWAY_WIN)));
-
         return 1.0 - max;
     }
 
-    private Set<Outcome> expandToHalfGuard(Outcome base,
-                                           ProbabilityTriple internal) {
-
+    private Set<Outcome> expandToHalfGuard(Outcome base, ProbabilityTriple internal) {
         Outcome bestAlt = bestAlternative(base, internal);
 
         LinkedHashSet<Outcome> set = new LinkedHashSet<>();
         set.add(base);
         set.add(bestAlt);
 
-        return Collections.unmodifiableSet(set);
+        return set;
     }
 
-    private Outcome bestAlternative(Outcome base,
-                                    ProbabilityTriple internal) {
+    private Set<Outcome> expandToFullGuard(Set<Outcome> currentHalfGuard, ProbabilityTriple internal) {
+        // currentHalfGuard has size 2; add the missing outcome
+        LinkedHashSet<Outcome> set = new LinkedHashSet<>(currentHalfGuard);
+        for (Outcome o : Outcome.values()) {
+            if (!set.contains(o)) {
+                set.add(o);
+                break;
+            }
+        }
+        return set;
+    }
 
+    private Outcome bestAlternative(Outcome base, ProbabilityTriple internal) {
         Outcome best = null;
         double bestP = Double.NEGATIVE_INFINITY;
 
@@ -157,11 +255,11 @@ public class RuleBasedModel implements GameModel {
                 best = o;
             }
         }
-
         return Objects.requireNonNull(best);
     }
 
     private int computeHalfGuards(int numberOfMatches, int budget) {
+        // Keep Step B behavior: choose largest power of 2 <= budget (as half-guards count)
         int half = 0;
         int cost = 1;
 

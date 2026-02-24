@@ -124,7 +124,7 @@ class RuleBasedModelTest {
     }
 
     @Test
-    void shouldOnlyProduceSinglesOrHalfGuardsInStepC3() {
+    void shouldOnlyProduceSinglesOrHalfGuardsOrFullGuards() {
         GameRound round = createTopptipsetRound8Matches();
         ModelInput input = createNeutralModelInputForRound(round);
         GameModel model = new RuleBasedModel();
@@ -132,11 +132,8 @@ class RuleBasedModelTest {
         ModelSelectionResult result = model.generateSelection(round, input, 100);
 
         for (Set<Outcome> sel : result.getSelections().values()) {
-            assertTrue(sel.size() == 1 || sel.size() == 2,
-                    "Selection size must be 1 or 2 in Step C3");
+            assertTrue(sel.size() == 1 || sel.size() == 2 || sel.size() == 3);
         }
-
-        assertEquals(0, result.getFullGuardsCount());
     }
 
     @Test
@@ -203,8 +200,8 @@ class RuleBasedModelTest {
         GameModel model = new RuleBasedModel();
         ModelSelectionResult result = model.generateSelection(round, input, 2);
 
-        long halfGuardCount = result.getSelections().entrySet().stream()
-                .filter(e -> e.getValue().size() == 2)
+        long halfGuardCount = result.getSelections().values().stream()
+                .filter(s -> s.size() == 2)
                 .count();
         assertEquals(1, halfGuardCount);
 
@@ -259,12 +256,10 @@ class RuleBasedModelTest {
             ));
         }
 
-        // Market slightly favors HOME, public equals market -> value neutral.
-        // With weight=0, base pick should remain HOME.
         ctx.put(1, new MatchContext(
                 new ProbabilityTriple(0.40, 0.30, 0.30),
                 new ProbabilityTriple(0.40, 0.30, 0.30),
-                0, 10  // away much better form, but weight=0 -> ignored
+                0, 10
         ));
 
         ModelInput input = new ModelInput(ctx);
@@ -288,9 +283,6 @@ class RuleBasedModelTest {
             ));
         }
 
-        // Market slightly favors HOME, public equals market -> value neutral.
-        // Away has dramatically better recent form, and weight>0 should shift internal probs enough
-        // to flip base pick to AWAY.
         ctx.put(1, new MatchContext(
                 new ProbabilityTriple(0.40, 0.30, 0.30),
                 new ProbabilityTriple(0.40, 0.30, 0.30),
@@ -303,5 +295,37 @@ class RuleBasedModelTest {
         ModelSelectionResult result = model.generateSelection(round, input, 1);
 
         assertEquals(Set.of(Outcome.AWAY_WIN), result.getSelections().get(1));
+    }
+
+    @Test
+    void slackBudgetShouldAllowUpgradingHalfGuardToFullGuard() {
+        GameRound round = createTopptipsetRound8Matches();
+        ModelInput input = createNeutralModelInputForRound(round);
+
+        // budget=3 -> model will create 1 half guard (cost 2) and should upgrade to a full guard (cost 3)
+        GameModel model = new RuleBasedModel();
+        ModelSelectionResult result = model.generateSelection(round, input, 3);
+
+        assertEquals(3, result.getTotalCostInSek());
+        assertEquals(1, result.getFullGuardsCount());
+
+        long size3Count = result.getSelections().values().stream().filter(s -> s.size() == 3).count();
+        assertEquals(1, size3Count);
+    }
+
+    @Test
+    void fullGuardCapShouldBeEnforcedForTopptipset() {
+        GameRound round = createTopptipsetRound8Matches();
+        ModelInput input = createNeutralModelInputForRound(round);
+
+        // Large budget could in theory upgrade multiple half-guards to full-guards,
+        // but Topptipset default cap is 1.
+        GameModel model = new RuleBasedModel();
+        ModelSelectionResult result = model.generateSelection(round, input, 1000);
+
+        assertTrue(result.getFullGuardsCount() <= 1);
+
+        long size3Count = result.getSelections().values().stream().filter(s -> s.size() == 3).count();
+        assertTrue(size3Count <= 1);
     }
 }

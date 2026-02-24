@@ -11,33 +11,33 @@ import java.util.Objects;
  * DecisionEngine: chooses a single base outcome for a match.
  *
  * Inputs:
- * - internal probabilities p_i(o): what the model believes is true probability (after truth adjustments)
- * - public probabilities p_p(o): how the crowd picks (Svenska folket)
+ * - internal probabilities p_i(o): model belief (after truth adjustments)
+ * - public probabilities p_p(o): crowd picks (Svenska folket)
  *
  * Value:
  * - v(o) = p_i(o) - p_p(o)
  *
  * Hybrid rule:
  * - baseline = argmax p_i(o)
- * - candidates are outcomes with p_i(o) >= probabilityFloor
+ * - candidates are outcomes with p_i(o) >= probabilityFloor(gameType)
  * - bestValue = argmax v(o) among candidates
- * - if (v(bestValue) - v(baseline)) >= valueThreshold -> choose bestValue
+ * - if (v(bestValue) - v(baseline)) >= valueThreshold(gameType) -> choose bestValue
  *   else choose baseline
- *
- * Note: public distribution is not a truth-signal; it belongs here in the decision layer.
  */
 public class BaseOutcomeSelector {
 
     public Outcome chooseBaseOutcome(GameType gameType,
                                      ProbabilityTriple internalProbabilities,
-                                     ProbabilityTriple publicProbabilities) {
+                                     ProbabilityTriple publicProbabilities,
+                                     DecisionParameters params) {
 
         Objects.requireNonNull(gameType, "gameType cannot be null");
         Objects.requireNonNull(internalProbabilities, "internalProbabilities cannot be null");
         Objects.requireNonNull(publicProbabilities, "publicProbabilities cannot be null");
+        Objects.requireNonNull(params, "params cannot be null");
 
-        double floor = probabilityFloor(gameType);
-        double tau = valueThreshold(gameType);
+        double floor = params.probabilityFloor(gameType);
+        double tau = params.valueThreshold(gameType);
 
         Outcome baseline = internalProbabilities.argMax();
 
@@ -65,21 +65,5 @@ public class BaseOutcomeSelector {
 
     private double value(ProbabilityTriple internal, ProbabilityTriple pub, Outcome outcome) {
         return internal.get(outcome) - pub.get(outcome);
-    }
-
-    private double probabilityFloor(GameType gameType) {
-        // Defaults (tunable)
-        if (gameType == GameType.TOPPTIPSET) {
-            return 0.12;
-        }
-        return 0.18;
-    }
-
-    private double valueThreshold(GameType gameType) {
-        // Defaults (tunable)
-        if (gameType == GameType.TOPPTIPSET) {
-            return 0.02;
-        }
-        return 0.04;
     }
 }
