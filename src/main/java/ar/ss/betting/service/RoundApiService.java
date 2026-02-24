@@ -119,7 +119,6 @@ public class RoundApiService {
     }
 
     public List<ModelRunView> getModelRuns(long roundId) {
-        // Validate round exists (better error message than empty list)
         if (!gameRoundRepository.existsById(roundId)) {
             throw new IllegalArgumentException("Round not found: " + roundId);
         }
@@ -136,9 +135,9 @@ public class RoundApiService {
                     r.getTotalCostInSek(),
                     r.getHalfGuardsCount(),
                     r.getFullGuardsCount(),
-                    r.getSelectionsJson(),
-                    r.getWeightsJson(),
-                    r.getDecisionParametersJson()
+                    JsonUtil.parseJsonToObject(r.getSelectionsJson()),
+                    JsonUtil.parseJsonToObject(r.getWeightsJson()),
+                    JsonUtil.parseJsonToObject(r.getDecisionParametersJson())
             ));
         }
         return views;
@@ -211,7 +210,7 @@ public class RoundApiService {
                                int totalCostInSek,
                                int halfGuardsCount,
                                int fullGuardsCount,
-                               String selectionsJson,
-                               String weightsJson,
-                               String decisionParametersJson) { }
+                               Object selections,
+                               Object weights,
+                               Object decisionParameters) { }
 }
