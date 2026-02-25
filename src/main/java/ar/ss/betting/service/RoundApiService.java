@@ -19,6 +19,8 @@ import java.util.*;
 @Service
 public class RoundApiService {
 
+    private static final Set<Integer> PUBLIC_PRESET_BUDGETS = Set.of(32, 64, 128, 256);
+
     private final GameRoundRepository gameRoundRepository;
     private final MatchRepository matchRepository;
     private final ModelRunRepository modelRunRepository;
@@ -34,7 +36,7 @@ public class RoundApiService {
         this.roundPersistenceService = Objects.requireNonNull(roundPersistenceService);
     }
 
-    // --- Write paths (C4) ---
+    // --- Write paths (internal) ---
 
     public long createRound(GameType gameType,
                             LocalDateTime roundStart,
@@ -92,7 +94,7 @@ public class RoundApiService {
         return roundPersistenceService.saveModelRun(roundId, budgetInSek, result, weights, params).id();
     }
 
-    // --- Read paths (C5) ---
+    // --- Read paths (public/internal) ---
 
     public RoundView getRound(long roundId) {
         GameRoundEntity roundEntity = gameRoundRepository.findById(roundId)
@@ -118,16 +120,28 @@ public class RoundApiService {
         );
     }
 
-    public List<ModelRunView> getModelRuns(long roundId) {
+    /**
+     * Returns model runs for the round, but only the latest run per public preset budget (32/64/128/256).
+     * Intended for the public main page dropdown.
+     */
+    public List<ModelRunView> getLatestPresetModelRuns(long roundId) {
         if (!gameRoundRepository.existsById(roundId)) {
             throw new IllegalArgumentException("Round not found: " + roundId);
         }
 
         List<ModelRunEntity> runs = modelRunRepository.findByGameRoundIdOrderByGeneratedAtDesc(roundId);
 
-        List<ModelRunView> views = new ArrayList<>(runs.size());
+        Map<Integer, ModelRunView> latestByBudget = new HashMap<>();
         for (ModelRunEntity r : runs) {
-            views.add(new ModelRunView(
+            int budget = r.getBudgetInSek();
+            if (!PUBLIC_PRESET_BUDGETS.contains(budget)) {
+                continue;
+            }
+            if (latestByBudget.containsKey(budget)) {
+                continue; // we already have the newest one (runs are DESC)
+            }
+
+            latestByBudget.put(budget, new ModelRunView(
                     r.getId(),
                     r.getModelName(),
                     r.getGeneratedAt(),
@@ -139,8 +153,20 @@ public class RoundApiService {
                     JsonUtil.parseJsonToObject(r.getWeightsJson()),
                     JsonUtil.parseJsonToObject(r.getDecisionParametersJson())
             ));
+
+            if (latestByBudget.size() == PUBLIC_PRESET_BUDGETS.size()) {
+                break; // found all budgets
+            }
         }
-        return views;
+
+        List<Integer> budgetsSorted = new ArrayList<>(latestByBudget.keySet());
+        budgetsSorted.sort(Integer::compareTo);
+
+        List<ModelRunView> result = new ArrayList<>(budgetsSorted.size());
+        for (Integer b : budgetsSorted) {
+            result.add(latestByBudget.get(b));
+        }
+        return result;
     }
 
     // --- Internal helpers ---
@@ -197,7 +223,7 @@ public class RoundApiService {
         return (v == null) ? def : v;
     }
 
-    // --- View records returned to controller ---
+    // --- View records returned to controllers ---
 
     public record RoundView(long id, GameType gameType, LocalDateTime startDate, List<MatchView> matches) {
         public record MatchView(int matchNumber, LocalDateTime startDate, String homeTeamName, String awayTeamName) { }

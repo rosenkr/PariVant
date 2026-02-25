@@ -17,15 +17,10 @@ import java.time.LocalDateTime;
 import java.util.*;
 import java.util.stream.Collectors;
 
-/**
- * Persistence service for saving betting rounds and model runs.
- *
- * C4.1 scope:
- * - saveRound: store GameRound + its matches
- * - saveModelRun: store a model run snapshot (JSONB for selections/weights/params)
- */
 @Service
 public class RoundPersistenceService {
+
+    private static final int DEFAULT_ROUND_DURATION_HOURS = 2;
 
     private final GameRoundRepository gameRoundRepository;
     private final ModelRunRepository modelRunRepository;
@@ -40,7 +35,13 @@ public class RoundPersistenceService {
     public SavedRound saveRound(GameRound round) {
         Objects.requireNonNull(round, "round cannot be null");
 
-        GameRoundEntity entity = new GameRoundEntity(round.getGameType(), round.getStartDate());
+        LocalDateTime endDate = round.getStartDate().plusHours(DEFAULT_ROUND_DURATION_HOURS);
+
+        GameRoundEntity entity = new GameRoundEntity(
+                round.getGameType(),
+                round.getStartDate(),
+                endDate
+        );
 
         for (Match m : round.getMatches()) {
             MatchEntity matchEntity = new MatchEntity(
@@ -95,12 +96,6 @@ public class RoundPersistenceService {
         return new SavedModelRun(saved.getId(), saved.getGeneratedAt());
     }
 
-    /**
-     * Store selections in a stable JSON structure:
-     * { "1": ["HOME_WIN","DRAW"], "2": ["AWAY_WIN"], ... }
-     *
-     * Keys are strings to be idiomatic JSON object keys.
-     */
     private Map<String, List<String>> toSelectionsDtoShape(ModelSelectionResult result) {
         return result.getSelections().entrySet().stream()
                 .collect(Collectors.toMap(

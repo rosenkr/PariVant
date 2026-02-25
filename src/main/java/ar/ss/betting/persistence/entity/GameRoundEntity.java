@@ -23,8 +23,8 @@ public class GameRoundEntity {
     @Column(name = "start_date", nullable = false)
     private LocalDateTime startDate;
 
-    @Column(name = "created_at", nullable = false)
-    private LocalDateTime createdAt;
+    @Column(name = "end_date", nullable = false)
+    private LocalDateTime endDate;
 
     @OneToMany(mappedBy = "gameRound", cascade = CascadeType.ALL, orphanRemoval = true)
     @OrderBy("matchNumber ASC")
@@ -34,21 +34,24 @@ public class GameRoundEntity {
         // JPA
     }
 
-    public GameRoundEntity(GameType gameType, LocalDateTime startDate) {
+    public GameRoundEntity(GameType gameType, LocalDateTime startDate, LocalDateTime endDate) {
         this.gameType = Objects.requireNonNull(gameType, "gameType cannot be null");
         this.startDate = Objects.requireNonNull(startDate, "startDate cannot be null");
-        this.createdAt = LocalDateTime.now();
+        this.endDate = Objects.requireNonNull(endDate, "endDate cannot be null");
+
+        if (!endDate.isAfter(startDate)) {
+            throw new IllegalArgumentException("endDate must be after startDate");
+        }
     }
 
     public void addMatch(MatchEntity match) {
-        Objects.requireNonNull(match, "match cannot be null");
+        Objects.requireNonNull(match);
+        matches.add(match);
         match.setGameRound(this);
-        this.matches.add(match);
     }
 
     public void removeMatch(MatchEntity match) {
-        Objects.requireNonNull(match, "match cannot be null");
-        this.matches.remove(match);
+        matches.remove(match);
         match.setGameRound(null);
     }
 
@@ -64,8 +67,8 @@ public class GameRoundEntity {
         return startDate;
     }
 
-    public LocalDateTime getCreatedAt() {
-        return createdAt;
+    public LocalDateTime getEndDate() {
+        return endDate;
     }
 
     public List<MatchEntity> getMatches() {

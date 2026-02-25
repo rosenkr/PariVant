@@ -1,4 +1,4 @@
-package ar.ss.betting.api;
+package ar.ss.betting.api.internal;
 
 import ar.ss.betting.api.dto.ModelSelectionRequestDto;
 import ar.ss.betting.domain.GameType;
@@ -12,7 +12,7 @@ import java.util.Map;
 import java.util.Objects;
 
 @RestController
-@RequestMapping("/rounds")
+@RequestMapping("/internal/rounds")
 public class RoundController {
 
     private final RoundApiService roundApiService;
@@ -20,8 +20,6 @@ public class RoundController {
     public RoundController(RoundApiService roundApiService) {
         this.roundApiService = Objects.requireNonNull(roundApiService);
     }
-
-    // --- C4 write endpoints ---
 
     @PostMapping
     public ResponseEntity<CreateRoundResponse> createRound(@RequestBody CreateRoundRequest request) {
@@ -48,19 +46,7 @@ public class RoundController {
         return ResponseEntity.ok(new CreateModelRunResponse(modelRunId));
     }
 
-    // --- C5 read endpoints ---
-
-    @GetMapping("/{roundId}")
-    public ResponseEntity<RoundApiService.RoundView> getRound(@PathVariable long roundId) {
-        return ResponseEntity.ok(roundApiService.getRound(roundId));
-    }
-
-    @GetMapping("/{roundId}/model-runs")
-    public ResponseEntity<List<RoundApiService.ModelRunView>> getModelRuns(@PathVariable long roundId) {
-        return ResponseEntity.ok(roundApiService.getModelRuns(roundId));
-    }
-
-    // --- Request/Response records (keeps file count low) ---
+    // --- Request/Response records ---
 
     public record CreateRoundRequest(
             String gameType,
