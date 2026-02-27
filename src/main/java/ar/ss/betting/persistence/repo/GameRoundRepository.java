@@ -14,6 +14,8 @@ public interface GameRoundRepository extends CrudRepository<GameRoundEntity, Lon
 
     boolean existsById(long id);
 
+    boolean existsByGameTypeAndStartDate(GameType gameType, LocalDateTime startDate);
+
     @Query("""
             SELECT gr
             FROM GameRoundEntity gr
@@ -37,17 +39,14 @@ public interface GameRoundRepository extends CrudRepository<GameRoundEntity, Lon
                                                      @Param("now") LocalDateTime now,
                                                      Pageable pageable);
 
-    /**
-     * Scheduler use: upcoming rounds within a horizon.
-     * IMPORTANT: excludes started rounds (startDate must be > now).
-     */
+    // Used by ModelRunScheduler: fetch upcoming rounds within a horizon window.
     @Query("""
             SELECT gr
             FROM GameRoundEntity gr
-            WHERE gr.startDate > :from
-              AND gr.startDate <= :to
+            WHERE gr.startDate > :now
+              AND gr.startDate <= :horizon
             ORDER BY gr.startDate ASC
             """)
-    List<GameRoundEntity> findUpcomingRounds(@Param("from") LocalDateTime from,
-                                             @Param("to") LocalDateTime to);
+    List<GameRoundEntity> findUpcomingRounds(@Param("now") LocalDateTime now,
+                                             @Param("horizon") LocalDateTime horizon);
 }

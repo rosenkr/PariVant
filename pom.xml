@@ -31,6 +31,18 @@
       <artifactId>spring-boot-starter-web</artifactId>
     </dependency>
 
+    <!-- JSON (explicit): ensures ObjectMapper bean is available -->
+    <dependency>
+      <groupId>com.fasterxml.jackson.core</groupId>
+      <artifactId>jackson-databind</artifactId>
+    </dependency>
+
+    <!-- Java time (LocalDateTime) JSON support -->
+    <dependency>
+      <groupId>com.fasterxml.jackson.datatype</groupId>
+      <artifactId>jackson-datatype-jsr310</artifactId>
+    </dependency>
+
     <!-- JPA / Hibernate -->
     <dependency>
       <groupId>org.springframework.boot</groupId>
