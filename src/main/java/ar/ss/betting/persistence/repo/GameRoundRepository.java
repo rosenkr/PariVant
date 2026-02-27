@@ -9,13 +9,14 @@ import org.springframework.data.repository.query.Param;
 
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Optional;
 
 public interface GameRoundRepository extends CrudRepository<GameRoundEntity, Long> {
 
     boolean existsById(long id);
 
     boolean existsByGameTypeAndStartDate(GameType gameType, LocalDateTime startDate);
-
+    Optional<GameRoundEntity> findByGameTypeAndStartDate(GameType gameType, LocalDateTime startDate);
     @Query("""
             SELECT gr
             FROM GameRoundEntity gr
