@@ -8,4 +8,6 @@ import java.util.List;
 public interface ModelRunRepository extends JpaRepository<ModelRunEntity, Long> {
 
     List<ModelRunEntity> findByGameRoundIdOrderByGeneratedAtDesc(Long gameRoundId);
+
+    boolean existsByGameRoundIdAndBudgetInSekAndTrigger(Long gameRoundId, int budgetInSek, String trigger);
 }

@@ -36,4 +36,18 @@ public interface GameRoundRepository extends CrudRepository<GameRoundEntity, Lon
     List<GameRoundEntity> findNextUpcomingByGameType(@Param("gameType") GameType gameType,
                                                      @Param("now") LocalDateTime now,
                                                      Pageable pageable);
+
+    /**
+     * Scheduler use: upcoming rounds within a horizon.
+     * IMPORTANT: excludes started rounds (startDate must be > now).
+     */
+    @Query("""
+            SELECT gr
+            FROM GameRoundEntity gr
+            WHERE gr.startDate > :from
+              AND gr.startDate <= :to
+            ORDER BY gr.startDate ASC
+            """)
+    List<GameRoundEntity> findUpcomingRounds(@Param("from") LocalDateTime from,
+                                             @Param("to") LocalDateTime to);
 }

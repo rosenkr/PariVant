@@ -20,6 +20,7 @@ import java.util.*;
 public class RoundApiService {
 
     private static final Set<Integer> PUBLIC_PRESET_BUDGETS = Set.of(32, 64, 128, 256);
+    private static final String TRIGGER_MANUAL = "MANUAL";
 
     private final GameRoundRepository gameRoundRepository;
     private final MatchRepository matchRepository;
@@ -91,7 +92,7 @@ public class RoundApiService {
         RuleBasedModel model = new RuleBasedModel(weights, params);
         ModelSelectionResult result = model.generateSelection(round, modelInput, budgetInSek);
 
-        return roundPersistenceService.saveModelRun(roundId, budgetInSek, result, weights, params).id();
+        return roundPersistenceService.saveModelRun(roundId, budgetInSek, TRIGGER_MANUAL, result, weights, params).id();
     }
 
     // --- Read paths (public/internal) ---
@@ -149,6 +150,7 @@ public class RoundApiService {
                     r.getTotalCostInSek(),
                     r.getHalfGuardsCount(),
                     r.getFullGuardsCount(),
+                    r.getTrigger(),
                     JsonUtil.parseJsonToObject(r.getSelectionsJson()),
                     JsonUtil.parseJsonToObject(r.getWeightsJson()),
                     JsonUtil.parseJsonToObject(r.getDecisionParametersJson())
@@ -236,6 +238,7 @@ public class RoundApiService {
                                int totalCostInSek,
                                int halfGuardsCount,
                                int fullGuardsCount,
+                               String trigger,
                                Object selections,
                                Object weights,
                                Object decisionParameters) { }

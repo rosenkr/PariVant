@@ -53,6 +53,9 @@ public class ModelRunEntity {
     @Column(name = "decision_parameters_json", nullable = false, columnDefinition = "jsonb")
     private String decisionParametersJson;
 
+    @Column(name = "trigger", nullable = false, length = 32)
+    private String trigger;
+
     protected ModelRunEntity() {
         // JPA
     }
@@ -66,7 +69,8 @@ public class ModelRunEntity {
                           int fullGuardsCount,
                           String selectionsJson,
                           String weightsJson,
-                          String decisionParametersJson) {
+                          String decisionParametersJson,
+                          String trigger) {
 
         this.gameRound = Objects.requireNonNull(gameRound, "gameRound cannot be null");
         this.modelName = requireNonBlank(modelName, "modelName");
@@ -85,6 +89,7 @@ public class ModelRunEntity {
         this.selectionsJson = requireNonBlank(selectionsJson, "selectionsJson");
         this.weightsJson = requireNonBlank(weightsJson, "weightsJson");
         this.decisionParametersJson = requireNonBlank(decisionParametersJson, "decisionParametersJson");
+        this.trigger = requireNonBlank(trigger, "trigger");
     }
 
     private String requireNonBlank(String s, String name) {
@@ -137,5 +142,9 @@ public class ModelRunEntity {
 
     public String getDecisionParametersJson() {
         return decisionParametersJson;
+    }
+
+    public String getTrigger() {
+        return trigger;
     }
 }

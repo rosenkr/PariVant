@@ -60,14 +60,19 @@ public class RoundPersistenceService {
     @Transactional
     public SavedModelRun saveModelRun(long gameRoundId,
                                       int budgetInSek,
+                                      String trigger,
                                       ModelSelectionResult result,
                                       AdjustmentWeights weights,
                                       DecisionParameters decisionParameters) {
 
+        Objects.requireNonNull(trigger, "trigger cannot be null");
         Objects.requireNonNull(result, "result cannot be null");
         Objects.requireNonNull(weights, "weights cannot be null");
         Objects.requireNonNull(decisionParameters, "decisionParameters cannot be null");
 
+        if (trigger.isBlank()) {
+            throw new IllegalArgumentException("trigger cannot be blank");
+        }
         if (budgetInSek <= 0) {
             throw new IllegalArgumentException("budgetInSek must be positive");
         }
@@ -89,7 +94,8 @@ public class RoundPersistenceService {
                 result.getFullGuardsCount(),
                 selectionsJson,
                 weightsJson,
-                paramsJson
+                paramsJson,
+                trigger
         );
 
         ModelRunEntity saved = modelRunRepository.save(runEntity);
