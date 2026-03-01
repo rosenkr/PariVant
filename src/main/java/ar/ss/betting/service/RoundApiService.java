@@ -204,8 +204,13 @@ public class RoundApiService {
                 throw new IllegalArgumentException("context is null for match " + matchNumber);
             }
 
-            ProbabilityTriple market = new ProbabilityTriple(dto.market().homeWin(), dto.market().draw(), dto.market().awayWin());
-            ProbabilityTriple pub = new ProbabilityTriple(dto.publicPick().homeWin(), dto.publicPick().draw(), dto.publicPick().awayWin());
+            ProbabilityTriple market = ProbabilityTriple.fromProbabilities(
+                    dto.market().homeWin(), dto.market().draw(), dto.market().awayWin()
+            );
+
+            ProbabilityTriple pub = ProbabilityTriple.fromProbabilities(
+                    dto.publicPick().homeWin(), dto.publicPick().draw(), dto.publicPick().awayWin()
+            );
 
             ctx.put(matchNumber, new MatchContext(
                     market,

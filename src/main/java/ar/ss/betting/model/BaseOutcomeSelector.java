@@ -8,7 +8,7 @@ import java.util.List;
 import java.util.Objects;
 
 /**
- * DecisionEngine: chooses a single base outcome for a match.
+ * Decision engine: chooses a single base outcome for a match.
  *
  * Inputs:
  * - internal probabilities p_i(o): model belief (after truth adjustments)

@@ -35,8 +35,8 @@ class RuleBasedModelTest {
         Map<Integer, MatchContext> ctx = new HashMap<>();
 
         for (Match match : round.getMatches()) {
-            ProbabilityTriple market = new ProbabilityTriple(0.50, 0.25, 0.25);
-            ProbabilityTriple pub = new ProbabilityTriple(0.50, 0.25, 0.25);
+            ProbabilityTriple market = ProbabilityTriple.fromProbabilities(0.50, 0.25, 0.25);
+            ProbabilityTriple pub = ProbabilityTriple.fromProbabilities(0.50, 0.25, 0.25);
             ctx.put(match.getMatchNumber(), new MatchContext(market, pub, 5, 5));
         }
 
@@ -157,14 +157,14 @@ class RuleBasedModelTest {
 
         Map<Integer, MatchContext> ctx = new HashMap<>();
         for (Match match : round.getMatches()) {
-            ProbabilityTriple market = new ProbabilityTriple(0.50, 0.25, 0.25);
-            ProbabilityTriple pub = new ProbabilityTriple(0.50, 0.25, 0.25);
+            ProbabilityTriple market = ProbabilityTriple.fromProbabilities(0.50, 0.25, 0.25);
+            ProbabilityTriple pub = ProbabilityTriple.fromProbabilities(0.50, 0.25, 0.25);
             ctx.put(match.getMatchNumber(), new MatchContext(market, pub, 5, 5));
         }
 
         ctx.put(1, new MatchContext(
-                new ProbabilityTriple(0.55, 0.25, 0.20),
-                new ProbabilityTriple(0.80, 0.10, 0.10),
+                ProbabilityTriple.fromProbabilities(0.55, 0.25, 0.20),
+                ProbabilityTriple.fromProbabilities(0.80, 0.10, 0.10),
                 5, 5
         ));
 
@@ -183,15 +183,15 @@ class RuleBasedModelTest {
         Map<Integer, MatchContext> ctx = new HashMap<>();
         for (Match match : round.getMatches()) {
             ctx.put(match.getMatchNumber(), new MatchContext(
-                    new ProbabilityTriple(0.70, 0.20, 0.10),
-                    new ProbabilityTriple(0.70, 0.20, 0.10),
+                    ProbabilityTriple.fromProbabilities(0.70, 0.20, 0.10),
+                    ProbabilityTriple.fromProbabilities(0.70, 0.20, 0.10),
                     5, 5
             ));
         }
 
         ctx.put(7, new MatchContext(
-                new ProbabilityTriple(0.34, 0.30, 0.36),
-                new ProbabilityTriple(0.34, 0.30, 0.36),
+                ProbabilityTriple.fromProbabilities(0.34, 0.30, 0.36),
+                ProbabilityTriple.fromProbabilities(0.34, 0.30, 0.36),
                 5, 5
         ));
 
@@ -215,22 +215,22 @@ class RuleBasedModelTest {
         Map<Integer, MatchContext> ctx = new HashMap<>();
         for (Match match : round.getMatches()) {
             ctx.put(match.getMatchNumber(), new MatchContext(
-                    new ProbabilityTriple(0.50, 0.25, 0.25),
-                    new ProbabilityTriple(0.50, 0.25, 0.25),
+                    ProbabilityTriple.fromProbabilities(0.50, 0.25, 0.25),
+                    ProbabilityTriple.fromProbabilities(0.50, 0.25, 0.25),
                     5, 5
             ));
         }
 
         ctx.put(1, new MatchContext(
-                new ProbabilityTriple(0.60, 0.10, 0.30),
-                new ProbabilityTriple(0.60, 0.10, 0.30),
+                ProbabilityTriple.fromProbabilities(0.60, 0.10, 0.30),
+                ProbabilityTriple.fromProbabilities(0.60, 0.10, 0.30),
                 5, 5
         ));
 
         for (int i = 2; i <= 8; i++) {
             ctx.put(i, new MatchContext(
-                    new ProbabilityTriple(0.90, 0.05, 0.05),
-                    new ProbabilityTriple(0.90, 0.05, 0.05),
+                    ProbabilityTriple.fromProbabilities(0.90, 0.05, 0.05),
+                    ProbabilityTriple.fromProbabilities(0.90, 0.05, 0.05),
                     5, 5
             ));
         }
@@ -250,15 +250,15 @@ class RuleBasedModelTest {
         Map<Integer, MatchContext> ctx = new HashMap<>();
         for (Match match : round.getMatches()) {
             ctx.put(match.getMatchNumber(), new MatchContext(
-                    new ProbabilityTriple(0.50, 0.25, 0.25),
-                    new ProbabilityTriple(0.50, 0.25, 0.25),
+                    ProbabilityTriple.fromProbabilities(0.50, 0.25, 0.25),
+                    ProbabilityTriple.fromProbabilities(0.50, 0.25, 0.25),
                     5, 5
             ));
         }
 
         ctx.put(1, new MatchContext(
-                new ProbabilityTriple(0.40, 0.30, 0.30),
-                new ProbabilityTriple(0.40, 0.30, 0.30),
+                ProbabilityTriple.fromProbabilities(0.40, 0.30, 0.30),
+                ProbabilityTriple.fromProbabilities(0.40, 0.30, 0.30),
                 0, 10
         ));
 
@@ -277,15 +277,15 @@ class RuleBasedModelTest {
         Map<Integer, MatchContext> ctx = new HashMap<>();
         for (Match match : round.getMatches()) {
             ctx.put(match.getMatchNumber(), new MatchContext(
-                    new ProbabilityTriple(0.50, 0.25, 0.25),
-                    new ProbabilityTriple(0.50, 0.25, 0.25),
+                    ProbabilityTriple.fromProbabilities(0.50, 0.25, 0.25),
+                    ProbabilityTriple.fromProbabilities(0.50, 0.25, 0.25),
                     5, 5
             ));
         }
 
         ctx.put(1, new MatchContext(
-                new ProbabilityTriple(0.40, 0.30, 0.30),
-                new ProbabilityTriple(0.40, 0.30, 0.30),
+                ProbabilityTriple.fromProbabilities(0.40, 0.30, 0.30),
+                ProbabilityTriple.fromProbabilities(0.40, 0.30, 0.30),
                 0, 10
         ));
 

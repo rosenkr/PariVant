@@ -71,6 +71,6 @@ public class InternalProbabilityCalculator {
         draw /= sum;
         away /= sum;
 
-        return new ProbabilityTriple(home, draw, away);
+        return ProbabilityTriple.fromProbabilities(home, draw, away);
     }
 }

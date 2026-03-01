@@ -139,7 +139,7 @@ public class ModelDtoMapper {
         if (dto.homeWin() == null || dto.draw() == null || dto.awayWin() == null) {
             throw new IllegalArgumentException("ProbabilityTriple must include homeWin, draw, awayWin");
         }
-        return new ProbabilityTriple(dto.homeWin(), dto.draw(), dto.awayWin());
+        return ProbabilityTriple.fromProbabilities(dto.homeWin(), dto.draw(), dto.awayWin());
     }
 
     private double defaultIfNull(Double value, double defaultValue) {

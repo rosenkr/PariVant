@@ -25,11 +25,10 @@ public class ModelRunScheduler {
 
     private static final int T_MINUS_15_MINUTES = 15;
     private static final int LOOKAHEAD_HOURS = 72;
-
     // Placeholder until we have real provider ingestion:
     private static final int DEFAULT_FORM_SCORE = 5;
-    private static final ProbabilityTriple DEFAULT_MARKET = new ProbabilityTriple(0.50, 0.25, 0.25);
-    private static final ProbabilityTriple DEFAULT_PUBLIC = new ProbabilityTriple(0.50, 0.25, 0.25);
+    private static final ProbabilityTriple DEFAULT_MARKET = ProbabilityTriple.fromProbabilities(0.5, 0.25, 0.25);
+    private static final ProbabilityTriple DEFAULT_PUBLIC = ProbabilityTriple.fromProbabilities(0.5, 0.25, 0.25);
 
     private final GameRoundRepository gameRoundRepository;
     private final MatchRepository matchRepository;

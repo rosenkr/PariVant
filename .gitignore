@@ -12,3 +12,6 @@ out/
 # OS
 .DS_Store
 effective-pom.xml
+
+# local zips
+*.zip
