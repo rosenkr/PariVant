@@ -5,8 +5,10 @@ import ar.ss.betting.domain.Match;
 import ar.ss.betting.domain.Team;
 import ar.ss.betting.model.*;
 import ar.ss.betting.persistence.entity.GameRoundEntity;
+import ar.ss.betting.persistence.entity.MatchContextEntity;
 import ar.ss.betting.persistence.entity.MatchEntity;
 import ar.ss.betting.persistence.repo.GameRoundRepository;
+import ar.ss.betting.persistence.repo.MatchContextRepository;
 import ar.ss.betting.persistence.repo.MatchRepository;
 import ar.ss.betting.persistence.repo.ModelRunRepository;
 import org.springframework.scheduling.annotation.Scheduled;
@@ -25,32 +27,29 @@ public class ModelRunScheduler {
 
     private static final int T_MINUS_15_MINUTES = 15;
     private static final int LOOKAHEAD_HOURS = 72;
-    // Placeholder until we have real provider ingestion:
+
     private static final int DEFAULT_FORM_SCORE = 5;
     private static final ProbabilityTriple DEFAULT_MARKET = ProbabilityTriple.fromProbabilities(0.5, 0.25, 0.25);
     private static final ProbabilityTriple DEFAULT_PUBLIC = ProbabilityTriple.fromProbabilities(0.5, 0.25, 0.25);
 
     private final GameRoundRepository gameRoundRepository;
     private final MatchRepository matchRepository;
+    private final MatchContextRepository matchContextRepository;
     private final ModelRunRepository modelRunRepository;
     private final RoundPersistenceService roundPersistenceService;
 
     public ModelRunScheduler(GameRoundRepository gameRoundRepository,
                              MatchRepository matchRepository,
+                             MatchContextRepository matchContextRepository,
                              ModelRunRepository modelRunRepository,
                              RoundPersistenceService roundPersistenceService) {
         this.gameRoundRepository = Objects.requireNonNull(gameRoundRepository);
         this.matchRepository = Objects.requireNonNull(matchRepository);
+        this.matchContextRepository = Objects.requireNonNull(matchContextRepository);
         this.modelRunRepository = Objects.requireNonNull(modelRunRepository);
         this.roundPersistenceService = Objects.requireNonNull(roundPersistenceService);
     }
 
-    /**
-     * Scheduler job:
-     * - Only considers UPCOMING rounds (startDate > now). Once a round starts, betting is closed → no more runs.
-     * - Ensures OPENED runs exist for preset budgets.
-     * - Ensures T_MINUS_15 runs exist for preset budgets in [start-15min, start).
-     */
     @Scheduled(fixedDelay = 60_000)
     public void tick() {
         LocalDateTime now = LocalDateTime.now();
@@ -65,8 +64,7 @@ public class ModelRunScheduler {
     }
 
     private void ensureOpenedRuns(GameRoundEntity round) {
-        Long roundId = round.getId();
-
+        long roundId = round.getId();
         for (int budget : PRESET_BUDGETS) {
             if (!modelRunRepository.existsByGameRoundIdAndBudgetInSekAndTrigger(roundId, budget, TRIGGER_OPENED)) {
                 createRun(roundId, budget, TRIGGER_OPENED);
@@ -76,14 +74,10 @@ public class ModelRunScheduler {
 
     private void ensureTMinus15Runs(GameRoundEntity round, LocalDateTime now) {
         LocalDateTime start = round.getStartDate();
-
         boolean inWindow = now.isAfter(start.minusMinutes(T_MINUS_15_MINUTES)) && now.isBefore(start);
-        if (!inWindow) {
-            return;
-        }
+        if (!inWindow) return;
 
-        Long roundId = round.getId();
-
+        long roundId = round.getId();
         for (int budget : PRESET_BUDGETS) {
             if (!modelRunRepository.existsByGameRoundIdAndBudgetInSekAndTrigger(roundId, budget, TRIGGER_T_MINUS_15)) {
                 createRun(roundId, budget, TRIGGER_T_MINUS_15);
@@ -91,9 +85,9 @@ public class ModelRunScheduler {
         }
     }
 
-    private void createRun(Long roundId, int budget, String trigger) {
+    private void createRun(long roundId, int budget, String trigger) {
         GameRound round = loadRoundDomain(roundId);
-        ModelInput input = defaultInput(round);
+        ModelInput input = loadInputFromDbOrDefault(roundId, round);
 
         AdjustmentWeights weights = AdjustmentWeights.none();
         DecisionParameters params = DecisionParameters.defaults();
@@ -104,7 +98,7 @@ public class ModelRunScheduler {
         roundPersistenceService.saveModelRun(roundId, budget, trigger, result, weights, params);
     }
 
-    private GameRound loadRoundDomain(Long roundId) {
+    private GameRound loadRoundDomain(long roundId) {
         GameRoundEntity roundEntity = gameRoundRepository.findById(roundId)
                 .orElseThrow(() -> new IllegalArgumentException("Round not found: " + roundId));
 
@@ -123,16 +117,38 @@ public class ModelRunScheduler {
         return new GameRound(roundEntity.getStartDate(), roundEntity.getGameType(), matches);
     }
 
-    private ModelInput defaultInput(GameRound round) {
+    private ModelInput loadInputFromDbOrDefault(long roundId, GameRound round) {
+        List<MatchContextEntity> ctxRows = matchContextRepository.findByGameRoundIdOrderByMatchNumberAsc(roundId);
+        Map<Integer, MatchContextEntity> byMatch = new HashMap<>();
+        for (MatchContextEntity c : ctxRows) {
+            byMatch.put(c.getMatchNumber(), c);
+        }
+
         Map<Integer, MatchContext> ctx = new HashMap<>();
         for (Match m : round.getMatches()) {
+            MatchContextEntity row = byMatch.get(m.getMatchNumber());
+            if (row == null) {
+                ctx.put(m.getMatchNumber(), new MatchContext(
+                        DEFAULT_MARKET, DEFAULT_PUBLIC, DEFAULT_FORM_SCORE, DEFAULT_FORM_SCORE
+                ));
+                continue;
+            }
+
+            ProbabilityTriple market = ProbabilityTriple.fromProbabilities(
+                    row.getMarketHome(), row.getMarketDraw(), row.getMarketAway()
+            );
+            ProbabilityTriple pub = ProbabilityTriple.fromProbabilities(
+                    row.getPublicHome(), row.getPublicDraw(), row.getPublicAway()
+            );
+
             ctx.put(m.getMatchNumber(), new MatchContext(
-                    DEFAULT_MARKET,
-                    DEFAULT_PUBLIC,
-                    DEFAULT_FORM_SCORE,
-                    DEFAULT_FORM_SCORE
+                    market,
+                    pub,
+                    row.getHomeRecentFormScore(),
+                    row.getAwayRecentFormScore()
             ));
         }
+
         return new ModelInput(ctx);
     }
 }

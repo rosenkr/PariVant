@@ -13,12 +13,18 @@ export type ModelRunView = {
   fullGuardsCount: number;
   trigger: ModelRunTrigger;
 
-  // Backend returns keys as strings in JSON ("1", "2", ...)
-  selections: Record<string, Outcome[]>;
+  /**
+   * Backward/forward compatible:
+   * - older backend: parsed objects (selections/weights/decisionParameters)
+   * - current backend: JSON strings (selectionsJson/weightsJson/decisionParametersJson)
+   */
+  selections?: Record<string, Outcome[]>;
+  selectionsJson?: string;
 
   weights?: {
     recentFormWeight?: number;
   };
+  weightsJson?: string;
 
   decisionParameters?: {
     maxFullGuardsTopptipset?: number;
@@ -28,6 +34,7 @@ export type ModelRunView = {
     probabilityFloorTopptipset?: number;
     probabilityFloorStryktipset?: number;
   };
+  decisionParametersJson?: string;
 };
 
 export type GetModelRunsResult =
