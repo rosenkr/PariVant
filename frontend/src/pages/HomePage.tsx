@@ -1,4 +1,4 @@
-import { Box, Paper, Stack, Typography } from "@mui/material";
+import { Box, Button, Dialog, DialogActions, DialogContent, DialogTitle, Paper, Stack, Typography } from "@mui/material";
 import { useEffect, useMemo, useState } from "react";
 import { Page } from "../components/layout/Page";
 import { RoundHeader } from "../components/RoundHeader";
@@ -29,6 +29,7 @@ function parseSelections(run: ModelRunView): Record<string, Outcome[]> {
 export default function HomePage() {
   const [gameType, setGameType] = useState<GameType>("STRYKTIPSET");
   const [budget, setBudget] = useState<(typeof PRESET_BUDGETS)[number]>(64);
+  const [loginDialogOpen, setLoginDialogOpen] = useState(false);
 
   const currentQuery = useCurrentRound(gameType);
   const current = currentQuery.data;
@@ -61,6 +62,8 @@ export default function HomePage() {
     };
   }, [current]);
 
+  const onBoxClick = () => setLoginDialogOpen(true);
+
   return (
     <Page maxWidth="lg">
       <Stack spacing={2}>
@@ -75,7 +78,6 @@ export default function HomePage() {
           end={headerInfo.end}
         />
 
-        {/* Top card: lighter surface on dark background */}
         <Paper
           sx={{
             overflow: "hidden",
@@ -105,13 +107,12 @@ export default function HomePage() {
             </Box>
           )}
 
-          {/* Match list */}
           {current && current.kind === "ok" && selectedRun && (
             <Box>
               <Box
                 sx={{
                   px: 2,
-                  py: 1.2,
+                  py: 1.0,
                   display: "flex",
                   justifyContent: "space-between",
                   alignItems: "center",
@@ -135,10 +136,7 @@ export default function HomePage() {
                   <Box
                     key={m.matchNumber}
                     sx={{
-                      backgroundColor:
-                        idx % 2 === 0 ? "rgba(255,255,255,0.02)" : "rgba(0,0,0,0.10)",
-                      borderLeft: idx === 0 ? "4px solid" : "4px solid transparent",
-                      borderLeftColor: idx === 0 ? "secondary.main" : "transparent",
+                      backgroundColor: idx % 2 === 0 ? "rgba(255,255,255,0.02)" : "rgba(0,0,0,0.10)",
                     }}
                   >
                     <MatchRow
@@ -147,7 +145,9 @@ export default function HomePage() {
                       away={m.awayTeamName}
                       kickoff={m.startDate}
                       selected={sel}
-                      // publicPct can be wired when we add endpoint for match_context
+                      market={m.market}
+                      publicPick={m.publicPick}
+                      onSelectionClick={onBoxClick}
                     />
                   </Box>
                 );
@@ -155,7 +155,6 @@ export default function HomePage() {
             </Box>
           )}
 
-          {/* If round exists but runs haven’t loaded */}
           {current && current.kind === "ok" && !selectedRun && (
             <Box sx={{ p: 2 }}>
               <Typography color="text.secondary">
@@ -164,6 +163,18 @@ export default function HomePage() {
             </Box>
           )}
         </Paper>
+
+        <Dialog open={loginDialogOpen} onClose={() => setLoginDialogOpen(false)}>
+          <DialogTitle>Log in required</DialogTitle>
+          <DialogContent>
+            <Typography>
+              Log in to make and save your own selections.
+            </Typography>
+          </DialogContent>
+          <DialogActions>
+            <Button onClick={() => setLoginDialogOpen(false)}>Close</Button>
+          </DialogActions>
+        </Dialog>
       </Stack>
     </Page>
   );
