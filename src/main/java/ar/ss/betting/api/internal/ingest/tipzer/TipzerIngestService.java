@@ -10,6 +10,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
+import java.time.OffsetDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
@@ -68,7 +69,9 @@ public class TipzerIngestService {
         GameType gameType = GameType.TOPPTIPSET;
 
         LocalDateTime roundStart = snapshot.roundStart().toLocalDateTime();
-        LocalDateTime roundEnd = roundStart.plusHours(DEFAULT_ROUND_DURATION_HOURS);
+
+        // ✅ FIX (Issue B): endDate = latest kickoff + 2h (not roundStart + 2h)
+        LocalDateTime roundEnd = computeRoundEndFromTopptipsetMatches(snapshot.matches());
 
         boolean exists = gameRoundRepository.existsByGameTypeAndStartDate(gameType, roundStart);
         if (exists) {
@@ -126,7 +129,9 @@ public class TipzerIngestService {
         Objects.requireNonNull(snapshot, "snapshot");
 
         LocalDateTime roundStart = snapshot.roundStart().toLocalDateTime();
-        LocalDateTime roundEnd = roundStart.plusHours(DEFAULT_ROUND_DURATION_HOURS);
+
+        // ✅ FIX (Issue B): endDate = latest kickoff + 2h (not roundStart + 2h)
+        LocalDateTime roundEnd = computeRoundEndFromTipzerMatches(snapshot.matches());
 
         boolean exists = gameRoundRepository.existsByGameTypeAndStartDate(gameType, roundStart);
         if (exists) {
@@ -156,7 +161,6 @@ public class TipzerIngestService {
             TipzerParser.TipzerTriple svf = snapshot.svf().get(i);
             TipzerParser.TipzerTriple odds = snapshot.odds().get(i);
 
-            // TipzerParser already normalized % strings to probabilities 0..1
             double publicHome = svf.home();
             double publicDraw = svf.draw();
             double publicAway = svf.away();
@@ -185,6 +189,32 @@ public class TipzerIngestService {
         matchContextRepository.saveAll(contexts);
 
         return IngestResult.created(gameType, roundStart, roundId);
+    }
+
+    private LocalDateTime computeRoundEndFromTipzerMatches(List<TipzerParser.TipzerMatch> matches) {
+        if (matches == null || matches.isEmpty()) {
+            throw new IllegalArgumentException("Cannot compute round end date: no matches");
+        }
+
+        OffsetDateTime latestKickoff = matches.stream()
+                .map(TipzerParser.TipzerMatch::kickoff)
+                .max(OffsetDateTime::compareTo)
+                .orElseThrow();
+
+        return latestKickoff.toLocalDateTime().plusHours(DEFAULT_ROUND_DURATION_HOURS);
+    }
+
+    private LocalDateTime computeRoundEndFromTopptipsetMatches(List<TipzerTopptipsetParser.TopptipsetMatch> matches) {
+        if (matches == null || matches.isEmpty()) {
+            throw new IllegalArgumentException("Cannot compute round end date: no matches");
+        }
+
+        OffsetDateTime latestKickoff = matches.stream()
+                .map(TipzerTopptipsetParser.TopptipsetMatch::kickoff)
+                .max(OffsetDateTime::compareTo)
+                .orElseThrow();
+
+        return latestKickoff.toLocalDateTime().plusHours(DEFAULT_ROUND_DURATION_HOURS);
     }
 
     public record IngestResult(

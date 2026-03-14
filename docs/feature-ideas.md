@@ -66,3 +66,6 @@ backgroun and scaffold, while  data containers from network calls could
 have a modern loading background (no, not a loading circle, but an indicator
 that is like a white haze over the whole container which animates opacity back
 and forth, which looks smooth)
+
+
+bug: if no stryktipset, should show eur, but instead showing "no current or upcoming roundsE
