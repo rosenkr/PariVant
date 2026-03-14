@@ -40,4 +40,9 @@ public class TipzerIngestController {
     public ResponseEntity<TipzerIngestService.IngestResult> ingestNextEuropatipset() {
         return ResponseEntity.ok(tipzerIngestService.ingestNextEuropatipsetRound());
     }
+
+    @PostMapping("/topptipset/next")
+    public ResponseEntity<TipzerIngestService.IngestResult> ingestNextTopptipset() {
+        return ResponseEntity.ok(tipzerIngestService.ingestNextTopptipsetRound());
+    }
 }

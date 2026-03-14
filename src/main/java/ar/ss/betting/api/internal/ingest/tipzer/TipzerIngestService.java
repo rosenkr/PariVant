@@ -21,6 +21,7 @@ public class TipzerIngestService {
 
     private final TipzerClient tipzerClient;
     private final TipzerParser tipzerParser;
+    private final TipzerTopptipsetParser tipzerTopptipsetParser;
 
     private final GameRoundRepository gameRoundRepository;
     private final MatchContextRepository matchContextRepository;
@@ -28,11 +29,13 @@ public class TipzerIngestService {
     public TipzerIngestService(
             TipzerClient tipzerClient,
             TipzerParser tipzerParser,
+            TipzerTopptipsetParser tipzerTopptipsetParser,
             GameRoundRepository gameRoundRepository,
             MatchContextRepository matchContextRepository
     ) {
         this.tipzerClient = Objects.requireNonNull(tipzerClient);
         this.tipzerParser = Objects.requireNonNull(tipzerParser);
+        this.tipzerTopptipsetParser = Objects.requireNonNull(tipzerTopptipsetParser);
         this.gameRoundRepository = Objects.requireNonNull(gameRoundRepository);
         this.matchContextRepository = Objects.requireNonNull(matchContextRepository);
     }
@@ -57,11 +60,13 @@ public class TipzerIngestService {
         return ingestFromSnapshot(GameType.EUROPATIPSET, snapshot);
     }
 
-    private IngestResult ingestFromSnapshot(GameType gameType, TipzerParser.TipzerSnapshot snapshot) {
-        Objects.requireNonNull(gameType, "gameType");
-        Objects.requireNonNull(snapshot, "snapshot");
+    @Transactional
+    public IngestResult ingestNextTopptipsetRound() {
+        String html = tipzerClient.getTopptipsetPageRaw();
+        TipzerTopptipsetParser.TopptipsetSnapshot snapshot = tipzerTopptipsetParser.parseFromPageHtml(html);
 
-        // Tipzer gives OffsetDateTime; our DB/entities use LocalDateTime
+        GameType gameType = GameType.TOPPTIPSET;
+
         LocalDateTime roundStart = snapshot.roundStart().toLocalDateTime();
         LocalDateTime roundEnd = roundStart.plusHours(DEFAULT_ROUND_DURATION_HOURS);
 
@@ -70,7 +75,64 @@ public class TipzerIngestService {
             return IngestResult.duplicate(gameType, roundStart);
         }
 
-        // Persist round + matches (matches are cascaded from GameRoundEntity)
+        GameRoundEntity roundEntity = new GameRoundEntity(gameType, roundStart, roundEnd);
+
+        for (TipzerTopptipsetParser.TopptipsetMatch m : snapshot.matches()) {
+            MatchEntity matchEntity = new MatchEntity(
+                    m.matchNumber(),
+                    m.kickoff().toLocalDateTime(),
+                    m.home(),
+                    m.away()
+            );
+            roundEntity.addMatch(matchEntity);
+        }
+
+        GameRoundEntity savedRound = gameRoundRepository.save(roundEntity);
+        long roundId = savedRound.getId();
+
+        List<MatchContextEntity> contexts = new ArrayList<>(snapshot.matches().size());
+
+        for (int i = 0; i < snapshot.matches().size(); i++) {
+            int matchNumber = i + 1;
+
+            TipzerTopptipsetParser.Triple pub = snapshot.publicPick().get(i);
+            TipzerTopptipsetParser.Triple market = snapshot.marketPick().get(i);
+
+            // No recent-form provider yet
+            int homeForm = 5;
+            int awayForm = 5;
+
+            contexts.add(new MatchContextEntity(
+                    roundId,
+                    matchNumber,
+                    market.home(),
+                    market.draw(),
+                    market.away(),
+                    pub.home(),
+                    pub.draw(),
+                    pub.away(),
+                    homeForm,
+                    awayForm
+            ));
+        }
+
+        matchContextRepository.saveAll(contexts);
+
+        return IngestResult.created(gameType, roundStart, roundId);
+    }
+
+    private IngestResult ingestFromSnapshot(GameType gameType, TipzerParser.TipzerSnapshot snapshot) {
+        Objects.requireNonNull(gameType, "gameType");
+        Objects.requireNonNull(snapshot, "snapshot");
+
+        LocalDateTime roundStart = snapshot.roundStart().toLocalDateTime();
+        LocalDateTime roundEnd = roundStart.plusHours(DEFAULT_ROUND_DURATION_HOURS);
+
+        boolean exists = gameRoundRepository.existsByGameTypeAndStartDate(gameType, roundStart);
+        if (exists) {
+            return IngestResult.duplicate(gameType, roundStart);
+        }
+
         GameRoundEntity roundEntity = new GameRoundEntity(gameType, roundStart, roundEnd);
 
         for (TipzerParser.TipzerMatch m : snapshot.matches()) {
@@ -86,7 +148,6 @@ public class TipzerIngestService {
         GameRoundEntity savedRound = gameRoundRepository.save(roundEntity);
         long roundId = savedRound.getId();
 
-        // Persist match contexts (one per match number)
         List<MatchContextEntity> contexts = new ArrayList<>(snapshot.matches().size());
 
         for (int i = 0; i < snapshot.matches().size(); i++) {
@@ -104,7 +165,6 @@ public class TipzerIngestService {
             double marketDraw = odds.draw();
             double marketAway = odds.away();
 
-            // No recent-form provider yet => neutral defaults
             int homeForm = 5;
             int awayForm = 5;
 

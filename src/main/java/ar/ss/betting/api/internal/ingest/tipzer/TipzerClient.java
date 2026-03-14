@@ -20,6 +20,9 @@ public class TipzerClient {
     private static final String EURO_SVF_PATH = "/esvf.json";
     private static final String EURO_ODDS_PATH = "/eodds.json";
 
+    // Topptipset (special: embedded JS in HTML)
+    private static final String TOPP_PAGE_PATH = "/topptipset.php";
+
     private final RestClient restClient;
 
     public TipzerClient() {
@@ -50,6 +53,10 @@ public class TipzerClient {
 
     public String getEuropatipsetOddsRaw() {
         return getRaw(EURO_ODDS_PATH);
+    }
+
+    public String getTopptipsetPageRaw() {
+        return getRaw(TOPP_PAGE_PATH);
     }
 
     private String getRaw(String path) {
