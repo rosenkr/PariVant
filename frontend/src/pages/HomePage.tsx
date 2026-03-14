@@ -13,6 +13,7 @@ import { useMemo, useState } from "react";
 import { Page } from "../components/layout/Page";
 import { RoundHeader } from "../components/RoundHeader";
 import { MatchRow } from "../components/MatchRow";
+import { RoundPanelSkeleton } from "../components/RoundPanelSkeleton";
 
 import { useCurrentRound } from "../hooks/useCurrentRound";
 import { useModelRuns } from "../hooks/useModelRuns";
@@ -74,6 +75,16 @@ export default function HomePage() {
 
   const onBoxClick = () => setLoginDialogOpen(true);
 
+  // Show shimmer while:
+  // 1) current round is loading
+  // 2) OR we have a round but model runs are loading/fetching
+  const showShimmer =
+    currentQuery.isLoading ||
+    (current?.kind === "ok" && (modelRunsQuery.isLoading || modelRunsQuery.isFetching));
+
+  const shimmerRows =
+    current && current.kind === "ok" ? current.data.round.matches.length : 13;
+
   return (
     <Page maxWidth="lg">
       <Stack spacing={2}>
@@ -96,13 +107,9 @@ export default function HomePage() {
             borderColor: "rgba(255,45,142,0.25)",
           }}
         >
-          {currentQuery.isLoading && (
-            <Box sx={{ p: 2 }}>
-              <Typography>Loading current round…</Typography>
-            </Box>
-          )}
+          {showShimmer && <RoundPanelSkeleton rows={shimmerRows} />}
 
-          {!currentQuery.isLoading && current?.kind === "no-round" && (
+          {!showShimmer && current?.kind === "no-round" && (
             <Box sx={{ p: 2 }}>
               <Typography color="text.secondary">
                 No current or upcoming rounds available.
@@ -110,7 +117,7 @@ export default function HomePage() {
             </Box>
           )}
 
-          {!currentQuery.isLoading &&
+          {!showShimmer &&
             (current?.kind === "server-error" || current?.kind === "network-error") && (
               <Box sx={{ p: 2 }}>
                 <Typography color="error">
@@ -121,7 +128,7 @@ export default function HomePage() {
               </Box>
             )}
 
-          {current && current.kind === "ok" && selectedRun && (
+          {!showShimmer && current && current.kind === "ok" && selectedRun && (
             <Box>
               <Box
                 sx={{
@@ -171,7 +178,7 @@ export default function HomePage() {
             </Box>
           )}
 
-          {current && current.kind === "ok" && !selectedRun && (
+          {!showShimmer && current && current.kind === "ok" && !selectedRun && (
             <Box sx={{ p: 2 }}>
               <Typography color="text.secondary">
                 No model run found for budget {budget} SEK yet.

@@ -61,14 +61,5 @@ Use hybrid tweaks: blend model output with manual adjustments for match-specific
 Backtest rigorously against historical lines to find real edge, nt just accuracy.
 Focus on value (your prob > no-vig implied prob after vig) over win rate."
 
-frontend: why showing white for 1 sec before rendering? Should render atleast black
-backgroun and scaffold, while  data containers from network calls could
-have a modern loading background (no, not a loading circle, but an indicator
-that is like a white haze over the whole container which animates opacity back
-and forth, which looks smooth)
-
-
-bug: if no stryktipset, should show eur, but instead showing "no current or upcoming roundsE
-
 Bug: if current round ends, timed ingester might not ingest for quite a while even if we should see
 the next game. Solution; Ingest for that type, immeditely when a round ends
