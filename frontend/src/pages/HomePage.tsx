@@ -13,7 +13,6 @@ import { useMemo, useState } from "react";
 import { Page } from "../components/layout/Page";
 import { RoundHeader } from "../components/RoundHeader";
 import { MatchRow } from "../components/MatchRow";
-import { RoundPanelSkeleton } from "../components/RoundPanelSkeleton";
 
 import { useCurrentRound } from "../hooks/useCurrentRound";
 import { useModelRuns } from "../hooks/useModelRuns";
@@ -29,7 +28,8 @@ function parseSelections(run: ModelRunView): Record<string, Outcome[]> {
   if (run.selectionsJson) {
     try {
       const obj = JSON.parse(run.selectionsJson) as unknown;
-      if (obj && typeof obj === "object") return obj as Record<string, Outcome[]>;
+      if (obj && typeof obj === "object")
+        return obj as Record<string, Outcome[]>;
     } catch {
       // ignore
     }
@@ -47,9 +47,12 @@ export default function HomePage() {
   const current = currentQuery.data;
 
   const selectedGameTypeFromBackend: GameType | undefined =
-    current && current.kind === "ok" ? current.data.selectedGameType : undefined;
+    current && current.kind === "ok"
+      ? current.data.selectedGameType
+      : undefined;
 
-  const roundId = current && current.kind === "ok" ? current.data.round.id : null;
+  const roundId =
+    current && current.kind === "ok" ? current.data.round.id : null;
   const modelRunsQuery = useModelRuns(roundId);
 
   const selectedRun = useMemo(() => {
@@ -60,7 +63,7 @@ export default function HomePage() {
 
   const selectionsByMatch = useMemo(
     () => (selectedRun ? parseSelections(selectedRun) : {}),
-    [selectedRun]
+    [selectedRun],
   );
 
   const headerInfo = useMemo(() => {
@@ -75,15 +78,8 @@ export default function HomePage() {
 
   const onBoxClick = () => setLoginDialogOpen(true);
 
-  // Show shimmer while:
-  // 1) current round is loading
-  // 2) OR we have a round but model runs are loading/fetching
-  const showShimmer =
-    currentQuery.isLoading ||
-    (current?.kind === "ok" && (modelRunsQuery.isLoading || modelRunsQuery.isFetching));
-
-  const shimmerRows =
-    current && current.kind === "ok" ? current.data.round.matches.length : 13;
+  const isRunning =
+    current?.kind === "ok" && current.data.roundStatus === "RUNNING";
 
   return (
     <Page maxWidth="lg">
@@ -105,11 +101,40 @@ export default function HomePage() {
             overflow: "hidden",
             backgroundColor: "rgba(255,255,255,0.04)",
             borderColor: "rgba(255,45,142,0.25)",
+
+            // RUNNING glow
+            ...(isRunning
+              ? {
+                  borderColor: "rgba(255,45,142,0.65)",
+                  animation: "pinkPulse 7.5s ease-in-out infinite",
+                  "@keyframes pinkPulse": {
+                    // HALF glow (not zero)
+                    "0%": {
+                      boxShadow:
+                        "0 0 0 1px rgba(255,45,142,0.28), 0 0 24px rgba(255,45,142,0.18)",
+                    },
+                    // MAX glow
+                    "50%": {
+                      boxShadow:
+                        "0 0 0 1px rgba(255,45,142,0.42), 0 0 36px rgba(255,45,142,0.32)",
+                    },
+                    // HALF glow again
+                    "100%": {
+                      boxShadow:
+                        "0 0 0 1px rgba(255,45,142,0.28), 0 0 24px rgba(255,45,142,0.18)",
+                    },
+                  },
+                }
+              : null),
           }}
         >
-          {showShimmer && <RoundPanelSkeleton rows={shimmerRows} />}
+          {currentQuery.isLoading && (
+            <Box sx={{ p: 2 }}>
+              <Typography>Loading current round…</Typography>
+            </Box>
+          )}
 
-          {!showShimmer && current?.kind === "no-round" && (
+          {!currentQuery.isLoading && current?.kind === "no-round" && (
             <Box sx={{ p: 2 }}>
               <Typography color="text.secondary">
                 No current or upcoming rounds available.
@@ -117,8 +142,9 @@ export default function HomePage() {
             </Box>
           )}
 
-          {!showShimmer &&
-            (current?.kind === "server-error" || current?.kind === "network-error") && (
+          {!currentQuery.isLoading &&
+            (current?.kind === "server-error" ||
+              current?.kind === "network-error") && (
               <Box sx={{ p: 2 }}>
                 <Typography color="error">
                   {current.kind === "server-error"
@@ -128,7 +154,7 @@ export default function HomePage() {
               </Box>
             )}
 
-          {!showShimmer && current && current.kind === "ok" && selectedRun && (
+          {current && current.kind === "ok" && selectedRun && (
             <Box>
               <Box
                 sx={{
@@ -145,7 +171,8 @@ export default function HomePage() {
                 </Typography>
 
                 <Typography variant="body2" sx={{ opacity: 0.75 }}>
-                  cost {selectedRun.totalCostInSek} • half {selectedRun.halfGuardsCount} • full{" "}
+                  cost {selectedRun.totalCostInSek} • half{" "}
+                  {selectedRun.halfGuardsCount} • full{" "}
                   {selectedRun.fullGuardsCount}
                 </Typography>
               </Box>
@@ -159,7 +186,9 @@ export default function HomePage() {
                     key={m.matchNumber}
                     sx={{
                       backgroundColor:
-                        idx % 2 === 0 ? "rgba(255,255,255,0.02)" : "rgba(0,0,0,0.10)",
+                        idx % 2 === 0
+                          ? "rgba(255,255,255,0.02)"
+                          : "rgba(0,0,0,0.10)",
                     }}
                   >
                     <MatchRow
@@ -178,7 +207,7 @@ export default function HomePage() {
             </Box>
           )}
 
-          {!showShimmer && current && current.kind === "ok" && !selectedRun && (
+          {current && current.kind === "ok" && !selectedRun && (
             <Box sx={{ p: 2 }}>
               <Typography color="text.secondary">
                 No model run found for budget {budget} SEK yet.
@@ -187,10 +216,15 @@ export default function HomePage() {
           )}
         </Paper>
 
-        <Dialog open={loginDialogOpen} onClose={() => setLoginDialogOpen(false)}>
+        <Dialog
+          open={loginDialogOpen}
+          onClose={() => setLoginDialogOpen(false)}
+        >
           <DialogTitle>Log in required</DialogTitle>
           <DialogContent>
-            <Typography>Log in to make and save your own selections.</Typography>
+            <Typography>
+              Log in to make and save your own selections.
+            </Typography>
           </DialogContent>
           <DialogActions>
             <Button onClick={() => setLoginDialogOpen(false)}>Close</Button>

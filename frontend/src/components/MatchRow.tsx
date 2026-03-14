@@ -2,6 +2,7 @@ import { Box, Stack, Typography } from "@mui/material";
 import { SelectionBox } from "./SelectionBox";
 import type { Outcome } from "../types/modelRun";
 import type { TripleView } from "../types/round";
+import { formatTimeOnly } from "../utils/time";
 
 type Props = {
   index: number;
@@ -38,6 +39,8 @@ export function MatchRow({
   publicPick,
   onSelectionClick,
 }: Props) {
+  const kickoffText = formatTimeOnly(kickoff) ?? kickoff;
+
   return (
     <Box
       sx={{
@@ -56,7 +59,7 @@ export function MatchRow({
           {home} <span style={{ opacity: 0.8 }}>–</span> {away}
         </Typography>
         <Typography variant="caption" sx={{ opacity: 0.7 }}>
-          {kickoff}
+          {kickoffText}
         </Typography>
       </Box>
 

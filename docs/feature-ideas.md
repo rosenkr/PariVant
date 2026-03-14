@@ -63,3 +63,8 @@ Focus on value (your prob > no-vig implied prob after vig) over win rate."
 
 Bug: if current round ends, timed ingester might not ingest for quite a while even if we should see
 the next game. Solution; Ingest for that type, immeditely when a round ends
+
+Center navbar onto middle like hltv. 
+when hover buttons, highlight
+
+add robots.txt and other protections

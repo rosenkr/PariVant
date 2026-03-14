@@ -8,7 +8,9 @@ import {
   Stack,
   Typography,
 } from "@mui/material";
+import { useEffect, useMemo, useState } from "react";
 import type { GameType, RoundStatus } from "../types/round";
+import { formatCountdownTo, formatRoundDateTime } from "../utils/time";
 
 const PRESET_BUDGETS = [32, 64, 128, 256] as const;
 
@@ -25,8 +27,8 @@ type Props = {
 
   roundId?: number;
   roundStatus?: RoundStatus;
-  start?: string;
-  end?: string;
+  start?: string; // backend LocalDateTime string
+  end?: string;   // backend LocalDateTime string
 };
 
 export function RoundHeader({
@@ -41,6 +43,27 @@ export function RoundHeader({
   end,
 }: Props) {
   const shownGameType: GameType = gameType ?? selectedGameType ?? "STRYKTIPSET";
+
+  // update clock every 30s only when we need countdown
+  const [now, setNow] = useState(() => new Date());
+
+  useEffect(() => {
+    if (roundStatus !== "UPCOMING" || !start) return;
+
+    const id = window.setInterval(() => {
+      setNow(new Date());
+    }, 30_000);
+
+    return () => window.clearInterval(id);
+  }, [roundStatus, start]);
+
+  const countdown = useMemo(() => {
+    if (roundStatus !== "UPCOMING") return undefined;
+    return formatCountdownTo(start, now);
+  }, [roundStatus, start, now]);
+
+  const startText = useMemo(() => formatRoundDateTime(start), [start]);
+  const endText = useMemo(() => formatRoundDateTime(end), [end]);
 
   return (
     <Box
@@ -68,15 +91,25 @@ export function RoundHeader({
             />
           )}
 
-          {start && (
+          {countdown && (
+            <Chip
+              label={countdown}
+              size="small"
+              color="secondary"
+              variant="outlined"
+              sx={{ borderColor: "secondary.main" }}
+            />
+          )}
+
+          {startText && (
             <Typography variant="caption" sx={{ opacity: 0.75 }}>
-              Start: {start}
+              Start: {startText}
             </Typography>
           )}
 
-          {end && (
+          {endText && (
             <Typography variant="caption" sx={{ opacity: 0.75 }}>
-              End: {end}
+              End: {endText}
             </Typography>
           )}
         </Stack>
