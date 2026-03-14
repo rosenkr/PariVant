@@ -28,6 +28,12 @@ public class ModelRunScheduler {
     private static final int T_MINUS_15_MINUTES = 15;
     private static final int LOOKAHEAD_HOURS = 72;
 
+    /**
+     * If ingestion happens right before kickoff, the scheduler may tick slightly after start.
+     * We allow OPENED to still be generated within this small grace period.
+     */
+    private static final int OPENED_GRACE_MINUTES_AFTER_START = 2;
+
     private static final int DEFAULT_FORM_SCORE = 5;
     private static final ProbabilityTriple DEFAULT_MARKET = ProbabilityTriple.fromProbabilities(0.5, 0.25, 0.25);
     private static final ProbabilityTriple DEFAULT_PUBLIC = ProbabilityTriple.fromProbabilities(0.5, 0.25, 0.25);
@@ -55,15 +61,30 @@ public class ModelRunScheduler {
         LocalDateTime now = LocalDateTime.now();
         LocalDateTime horizon = now.plusHours(LOOKAHEAD_HOURS);
 
+        // IMPORTANT:
+        // We include not-yet-finished rounds so we can still create OPENED within a small grace window.
+        // Your repository query for "upcoming rounds" should already return rounds within [now, horizon].
+        // If it only returns strictly upcoming, we still handle grace by checking startDate in ensureOpenedRuns.
         List<GameRoundEntity> upcoming = gameRoundRepository.findUpcomingRounds(now, horizon);
 
         for (GameRoundEntity round : upcoming) {
-            ensureOpenedRuns(round);
+            ensureOpenedRuns(round, now);
             ensureTMinus15Runs(round, now);
         }
     }
 
-    private void ensureOpenedRuns(GameRoundEntity round) {
+    private void ensureOpenedRuns(GameRoundEntity round, LocalDateTime now) {
+        LocalDateTime start = round.getStartDate();
+
+        // Allow OPENED only if:
+        // - round hasn't started yet, OR
+        // - round started very recently (grace window)
+        boolean allowed =
+                now.isBefore(start) ||
+                        (!now.isBefore(start) && now.isBefore(start.plusMinutes(OPENED_GRACE_MINUTES_AFTER_START)));
+
+        if (!allowed) return;
+
         long roundId = round.getId();
         for (int budget : PRESET_BUDGETS) {
             if (!modelRunRepository.existsByGameRoundIdAndBudgetInSekAndTrigger(roundId, budget, TRIGGER_OPENED)) {
