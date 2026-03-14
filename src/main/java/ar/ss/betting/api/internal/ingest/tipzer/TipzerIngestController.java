@@ -1,5 +1,7 @@
 package ar.ss.betting.api.internal.ingest.tipzer;
 
+import ar.ss.betting.domain.GameType;
+import ar.ss.betting.service.ingest.IngestOrchestrator;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -9,40 +11,34 @@ import java.util.Objects;
 @RequestMapping("/internal/ingest/tipzer")
 public class TipzerIngestController {
 
-    private final TipzerIngestService tipzerIngestService;
+    private final IngestOrchestrator ingestOrchestrator;
 
-    public TipzerIngestController(TipzerIngestService tipzerIngestService) {
-        this.tipzerIngestService = Objects.requireNonNull(tipzerIngestService);
+    public TipzerIngestController(IngestOrchestrator ingestOrchestrator) {
+        this.ingestOrchestrator = Objects.requireNonNull(ingestOrchestrator);
     }
 
-    /**
-     * Ingest the next Stryktipset round from Tipzer JSON endpoints.
-     * This persists:
-     * - game_round + matches
-     * - match_context rows (market probs + svenska folket probs + default form)
-     *
-     * Model runs are NOT created here — the scheduler should create OPENED/T_MINUS_15 runs.
-     */
     @PostMapping("/stryktipset/next")
-    public ResponseEntity<TipzerIngestService.IngestResult> ingestNextStryktipset() {
-        return ResponseEntity.ok(tipzerIngestService.ingestNextStryktipsetRound());
+    public ResponseEntity<IngestOrchestrator.OrchestratorResult> ingestNextStryktipset() {
+        var r = ingestOrchestrator.ingestNext(GameType.STRYKTIPSET, "/internal/ingest/tipzer/stryktipset/next");
+        return toHttp(r);
     }
 
-    /**
-     * Ingest the next Europatipset round from Tipzer JSON endpoints (elagen/esvf/eodds).
-     * Persists the same data as Stryktipset:
-     * - game_round + matches
-     * - match_context rows
-     *
-     * Model runs are NOT created here — scheduler handles OPENED/T_MINUS_15 runs.
-     */
     @PostMapping("/europatipset/next")
-    public ResponseEntity<TipzerIngestService.IngestResult> ingestNextEuropatipset() {
-        return ResponseEntity.ok(tipzerIngestService.ingestNextEuropatipsetRound());
+    public ResponseEntity<IngestOrchestrator.OrchestratorResult> ingestNextEuropatipset() {
+        var r = ingestOrchestrator.ingestNext(GameType.EUROPATIPSET, "/internal/ingest/tipzer/europatipset/next");
+        return toHttp(r);
     }
 
     @PostMapping("/topptipset/next")
-    public ResponseEntity<TipzerIngestService.IngestResult> ingestNextTopptipset() {
-        return ResponseEntity.ok(tipzerIngestService.ingestNextTopptipsetRound());
+    public ResponseEntity<IngestOrchestrator.OrchestratorResult> ingestNextTopptipset() {
+        var r = ingestOrchestrator.ingestNext(GameType.TOPPTIPSET, "/internal/ingest/tipzer/topptipset/next");
+        return toHttp(r);
+    }
+
+    private static ResponseEntity<IngestOrchestrator.OrchestratorResult> toHttp(IngestOrchestrator.OrchestratorResult r) {
+        if ("FAILED".equals(r.status())) {
+            return ResponseEntity.status(502).body(r);
+        }
+        return ResponseEntity.ok(r);
     }
 }
