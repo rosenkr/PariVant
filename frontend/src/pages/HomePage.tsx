@@ -1,5 +1,15 @@
-import { Box, Button, Dialog, DialogActions, DialogContent, DialogTitle, Paper, Stack, Typography } from "@mui/material";
-import { useEffect, useMemo, useState } from "react";
+import {
+  Box,
+  Button,
+  Dialog,
+  DialogActions,
+  DialogContent,
+  DialogTitle,
+  Paper,
+  Stack,
+  Typography,
+} from "@mui/material";
+import { useMemo, useState } from "react";
 import { Page } from "../components/layout/Page";
 import { RoundHeader } from "../components/RoundHeader";
 import { MatchRow } from "../components/MatchRow";
@@ -27,19 +37,16 @@ function parseSelections(run: ModelRunView): Record<string, Outcome[]> {
 }
 
 export default function HomePage() {
-  const [gameType, setGameType] = useState<GameType>("STRYKTIPSET");
+  // undefined means: use backend fallback order (/public/current without ?gameType)
+  const [gameType, setGameType] = useState<GameType | undefined>(undefined);
   const [budget, setBudget] = useState<(typeof PRESET_BUDGETS)[number]>(64);
   const [loginDialogOpen, setLoginDialogOpen] = useState(false);
 
   const currentQuery = useCurrentRound(gameType);
   const current = currentQuery.data;
 
-  // If backend returns selectedGameType (auto fallback), sync dropdown once.
-  useEffect(() => {
-    if (!current || current.kind !== "ok") return;
-    if (current.data.selectedGameType !== gameType) setGameType(current.data.selectedGameType);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [current]);
+  const selectedGameTypeFromBackend: GameType | undefined =
+    current && current.kind === "ok" ? current.data.selectedGameType : undefined;
 
   const roundId = current && current.kind === "ok" ? current.data.round.id : null;
   const modelRunsQuery = useModelRuns(roundId);
@@ -50,7 +57,10 @@ export default function HomePage() {
     return runsRes.data.find((r) => r.budgetInSek === budget) ?? null;
   }, [modelRunsQuery.data, budget]);
 
-  const selectionsByMatch = useMemo(() => (selectedRun ? parseSelections(selectedRun) : {}), [selectedRun]);
+  const selectionsByMatch = useMemo(
+    () => (selectedRun ? parseSelections(selectedRun) : {}),
+    [selectedRun]
+  );
 
   const headerInfo = useMemo(() => {
     if (!current || current.kind !== "ok") return {};
@@ -70,6 +80,7 @@ export default function HomePage() {
         <RoundHeader
           gameType={gameType}
           setGameType={setGameType}
+          selectedGameType={selectedGameTypeFromBackend}
           budget={budget}
           setBudget={setBudget}
           roundId={headerInfo.roundId}
@@ -93,19 +104,22 @@ export default function HomePage() {
 
           {!currentQuery.isLoading && current?.kind === "no-round" && (
             <Box sx={{ p: 2 }}>
-              <Typography color="text.secondary">No current or upcoming rounds available.</Typography>
-            </Box>
-          )}
-
-          {!currentQuery.isLoading && (current?.kind === "server-error" || current?.kind === "network-error") && (
-            <Box sx={{ p: 2 }}>
-              <Typography color="error">
-                {current.kind === "server-error"
-                  ? `Server error ${current.status}: ${current.message}`
-                  : `Network error: ${current.message}`}
+              <Typography color="text.secondary">
+                No current or upcoming rounds available.
               </Typography>
             </Box>
           )}
+
+          {!currentQuery.isLoading &&
+            (current?.kind === "server-error" || current?.kind === "network-error") && (
+              <Box sx={{ p: 2 }}>
+                <Typography color="error">
+                  {current.kind === "server-error"
+                    ? `Server error ${current.status}: ${current.message}`
+                    : `Network error: ${current.message}`}
+                </Typography>
+              </Box>
+            )}
 
           {current && current.kind === "ok" && selectedRun && (
             <Box>
@@ -124,7 +138,8 @@ export default function HomePage() {
                 </Typography>
 
                 <Typography variant="body2" sx={{ opacity: 0.75 }}>
-                  cost {selectedRun.totalCostInSek} • half {selectedRun.halfGuardsCount} • full {selectedRun.fullGuardsCount}
+                  cost {selectedRun.totalCostInSek} • half {selectedRun.halfGuardsCount} • full{" "}
+                  {selectedRun.fullGuardsCount}
                 </Typography>
               </Box>
 
@@ -136,7 +151,8 @@ export default function HomePage() {
                   <Box
                     key={m.matchNumber}
                     sx={{
-                      backgroundColor: idx % 2 === 0 ? "rgba(255,255,255,0.02)" : "rgba(0,0,0,0.10)",
+                      backgroundColor:
+                        idx % 2 === 0 ? "rgba(255,255,255,0.02)" : "rgba(0,0,0,0.10)",
                     }}
                   >
                     <MatchRow
@@ -167,9 +183,7 @@ export default function HomePage() {
         <Dialog open={loginDialogOpen} onClose={() => setLoginDialogOpen(false)}>
           <DialogTitle>Log in required</DialogTitle>
           <DialogContent>
-            <Typography>
-              Log in to make and save your own selections.
-            </Typography>
+            <Typography>Log in to make and save your own selections.</Typography>
           </DialogContent>
           <DialogActions>
             <Button onClick={() => setLoginDialogOpen(false)}>Close</Button>

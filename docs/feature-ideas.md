@@ -8,7 +8,7 @@ The reason I want AI is because so many apps use it so surely there must be some
 8. Separate app into different views:
 - Public (Anyone who enters the site can view these pages or use simple features)
   -  The current model for preset budgets for the 3 round types (Eur, Topp, Stryk) falls in this category
-  - Past performance
+  - Past results
 - Authenticated users (Anyone who is browsing the site while registered and logged in)
   - Having auth users opens up for persisting various info for different users.
     - Examples of such data (will be expanded) is persons OWN selections for a round (limited to 1 to make it more meaningful as you only have " 1 shot ").
@@ -69,3 +69,6 @@ and forth, which looks smooth)
 
 
 bug: if no stryktipset, should show eur, but instead showing "no current or upcoming roundsE
+
+Bug: if current round ends, timed ingester might not ingest for quite a while even if we should see
+the next game. Solution; Ingest for that type, immeditely when a round ends
