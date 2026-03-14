@@ -27,4 +27,17 @@ public class TipzerIngestController {
     public ResponseEntity<TipzerIngestService.IngestResult> ingestNextStryktipset() {
         return ResponseEntity.ok(tipzerIngestService.ingestNextStryktipsetRound());
     }
+
+    /**
+     * Ingest the next Europatipset round from Tipzer JSON endpoints (elagen/esvf/eodds).
+     * Persists the same data as Stryktipset:
+     * - game_round + matches
+     * - match_context rows
+     *
+     * Model runs are NOT created here — scheduler handles OPENED/T_MINUS_15 runs.
+     */
+    @PostMapping("/europatipset/next")
+    public ResponseEntity<TipzerIngestService.IngestResult> ingestNextEuropatipset() {
+        return ResponseEntity.ok(tipzerIngestService.ingestNextEuropatipsetRound());
+    }
 }

@@ -39,14 +39,27 @@ public class TipzerIngestService {
 
     @Transactional
     public IngestResult ingestNextStryktipsetRound() {
-        String teamsRaw = tipzerClient.getTeamsRaw();
-        String svfRaw = tipzerClient.getSvenskaFolketRaw();
-        String oddsRaw = tipzerClient.getOddsRaw();
+        String teamsRaw = tipzerClient.getStryktipsetTeamsRaw();
+        String svfRaw = tipzerClient.getStryktipsetSvenskaFolketRaw();
+        String oddsRaw = tipzerClient.getStryktipsetOddsRaw();
 
         TipzerParser.TipzerSnapshot snapshot = tipzerParser.parse(teamsRaw, svfRaw, oddsRaw);
+        return ingestFromSnapshot(GameType.STRYKTIPSET, snapshot);
+    }
 
-        // Tipzer is Stryktipset-only (13 matches)
-        GameType gameType = GameType.STRYKTIPSET;
+    @Transactional
+    public IngestResult ingestNextEuropatipsetRound() {
+        String teamsRaw = tipzerClient.getEuropatipsetTeamsRaw();
+        String svfRaw = tipzerClient.getEuropatipsetSvenskaFolketRaw();
+        String oddsRaw = tipzerClient.getEuropatipsetOddsRaw();
+
+        TipzerParser.TipzerSnapshot snapshot = tipzerParser.parse(teamsRaw, svfRaw, oddsRaw);
+        return ingestFromSnapshot(GameType.EUROPATIPSET, snapshot);
+    }
+
+    private IngestResult ingestFromSnapshot(GameType gameType, TipzerParser.TipzerSnapshot snapshot) {
+        Objects.requireNonNull(gameType, "gameType");
+        Objects.requireNonNull(snapshot, "snapshot");
 
         // Tipzer gives OffsetDateTime; our DB/entities use LocalDateTime
         LocalDateTime roundStart = snapshot.roundStart().toLocalDateTime();
