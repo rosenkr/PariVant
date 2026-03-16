@@ -72,3 +72,5 @@ add robots.txt and other protections
 
 Redefined model: Gather results from online others work API, bzzoiro, 11 (see phone), and more. Take average of their % pred
 as "my model", then perform base value layer (abstract it out of my current rulebasedmodel)
+
+Check: if server upp and running while an upcoming round with opened model hits t-15 and generates new model run + seen in UI?
