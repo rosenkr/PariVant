@@ -16,7 +16,7 @@ Steps:
 2. Backend decides which round is “current” for that game type:
     - If a round is RUNNING → return that
     - Else if a round is UPCOMING → return the next upcoming
-    - Else → return the most recent FINISHED
+    - Else → return the most recent FINISHED (NOT current behavior, but might not be desired if have results page)
 3. UI renders:
     - Selected game type (e.g. Stryktipset default)
     - Round status: UPCOMING / RUNNING / FINISHED

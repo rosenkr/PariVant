@@ -68,3 +68,7 @@ Center navbar onto middle like hltv.
 when hover buttons, highlight
 
 add robots.txt and other protections
+
+
+Redefined model: Gather results from online others work API, bzzoiro, 11 (see phone), and more. Take average of their % pred
+as "my model", then perform base value layer (abstract it out of my current rulebasedmodel)
