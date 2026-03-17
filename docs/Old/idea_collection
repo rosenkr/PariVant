@@ -1,0 +1,9 @@
+website idea
+Attempts to calculate ROI for Svenskaspel Games. ( Must fetch those games from somewhere, along with odds possibly from elsewhere)
+Presents the selected game (similar to svenskaspel) along with an AI generated message explaining each pick and an estimated "ROI"
+The AI generated message attempts to explain the picks based on the data (injuries, key players, statistics such as home/away, 
+
+Feature: Allow user to select their own picks for a given game
+
+Games
+stryktipset/europatipset/etc

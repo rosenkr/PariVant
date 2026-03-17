@@ -1,0 +1,28 @@
+MVP Scope Control – Feature Phasing
+Phase 1 – Core MVP
+
+Game selection UI
+
+Display matches
+
+Rule-based model
+
+Budget-based adjustment
+
+Snapshot model storage
+
+Historical performance display
+
+Odds API integration
+
+No authentication
+
+No AI explanations
+
+No weather
+
+No injury data
+
+No public pick arbitrage logic (unless API access granted)
+
+Goal: Stable full-stack system with clean architecture.

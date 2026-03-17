@@ -1,0 +1,5 @@
+
+Im thinking of modelling things this way: each team has X players (can be 1). So Player is a new class. A player has a strength which is determined by modl. Strength could be a class which outputs an int 0-100
+or the model might just compute strength in a method and output it as a number immediately.. And a Team has a strength too (which model will decide, based on many facyors, perhaps tooo based on individual
+player strengths. But especially interesting to know if there are key players whose relative strength is high, because if they're not in the active lineup for the day, one player might influence the
+team strength by a lot.

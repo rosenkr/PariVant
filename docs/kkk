@@ -1,0 +1,23 @@
+quiktodo: DBeaver check db (postgres? must be running?)
+finish testing UI for live scores (topptipset 20:45)
+begin work on new page; scaffold model default runs result history completed games per gametype bar with presentation as horizontal carousel
+
+researcha hur en ensemble bör utgöra ett fundamentalt steg i min modell (utöver att bara presentera dessa) ->
+--> researcha öppna apier för prediktionsmodeller inom fotboll (bzzoiro, .. ,.. ,..) och bygg API för personligt bruk som fetchar dessa och sammanställer som kollektion av 
+
+Extrahera logik ur RuleBased till ett mer generellt sådant
+importera diskussion gpt mobil + notes mobil till docs/
+Samla strö docs till docs/, gå igenom och strukturera först manuellt, sen gör om alla till .md
+rese
+
+
+
+Make private lib + github push with readme for the prediction api but make the core logic accessible, i.e api is just one possible wrapper for delivery over network.
+OR top level repo with no cross imports, a well defined input.output with interface method. 
+
+use 11elo icons and navbar layout + about page + toggle dark/light mode + footer
+
+
+naming solver should be internal for multiple services to use (livescore but also prediction providers)
+for example Chelsea vs PSG not working perhaps becaise PSG vs Paris Saint Germain naming problem -
+only want one place to resolve/store the naming correlations
