@@ -1,3 +1,4 @@
+// src/pages/HomePage.tsx
 import {
   Box,
   Button,
@@ -16,9 +17,11 @@ import { MatchRow } from "../components/MatchRow";
 
 import { useCurrentRound } from "../hooks/useCurrentRound";
 import { useModelRuns } from "../hooks/useModelRuns";
+import { useLiveRound } from "../hooks/useLiveRound";
 
 import type { GameType } from "../types/round";
 import type { ModelRunView, Outcome } from "../types/modelRun";
+import type { LiveMatchUpdate } from "../types/live";
 
 const PRESET_BUDGETS = [32, 64, 128, 256] as const;
 
@@ -28,8 +31,7 @@ function parseSelections(run: ModelRunView): Record<string, Outcome[]> {
   if (run.selectionsJson) {
     try {
       const obj = JSON.parse(run.selectionsJson) as unknown;
-      if (obj && typeof obj === "object")
-        return obj as Record<string, Outcome[]>;
+      if (obj && typeof obj === "object") return obj as Record<string, Outcome[]>;
     } catch {
       // ignore
     }
@@ -47,12 +49,11 @@ export default function HomePage() {
   const current = currentQuery.data;
 
   const selectedGameTypeFromBackend: GameType | undefined =
-    current && current.kind === "ok"
-      ? current.data.selectedGameType
-      : undefined;
+    current && current.kind === "ok" ? current.data.selectedGameType : undefined;
 
-  const roundId =
-    current && current.kind === "ok" ? current.data.round.id : null;
+  const roundId = current && current.kind === "ok" ? current.data.round.id : null;
+  const roundStatus = current && current.kind === "ok" ? current.data.roundStatus : null;
+
   const modelRunsQuery = useModelRuns(roundId);
 
   const selectedRun = useMemo(() => {
@@ -63,7 +64,7 @@ export default function HomePage() {
 
   const selectionsByMatch = useMemo(
     () => (selectedRun ? parseSelections(selectedRun) : {}),
-    [selectedRun],
+    [selectedRun]
   );
 
   const headerInfo = useMemo(() => {
@@ -80,6 +81,19 @@ export default function HomePage() {
 
   const isRunning =
     current?.kind === "ok" && current.data.roundStatus === "RUNNING";
+
+  // LIVE SSE: only subscribe if RUNNING
+  const enableLive = roundId != null && roundStatus === "RUNNING";
+  const live = useLiveRound(roundId, enableLive);
+
+  const liveByMatchNumber = useMemo(() => {
+    const map = new Map<number, LiveMatchUpdate>();
+    if (!live.snapshot) return map;
+    for (const m of live.snapshot.matches) {
+      map.set(m.matchNumber, m);
+    }
+    return map;
+  }, [live.snapshot]);
 
   return (
     <Page maxWidth="lg">
@@ -143,8 +157,7 @@ export default function HomePage() {
           )}
 
           {!currentQuery.isLoading &&
-            (current?.kind === "server-error" ||
-              current?.kind === "network-error") && (
+            (current?.kind === "server-error" || current?.kind === "network-error") && (
               <Box sx={{ p: 2 }}>
                 <Typography color="error">
                   {current.kind === "server-error"
@@ -171,24 +184,31 @@ export default function HomePage() {
                 </Typography>
 
                 <Typography variant="body2" sx={{ opacity: 0.75 }}>
-                  cost {selectedRun.totalCostInSek} • half{" "}
-                  {selectedRun.halfGuardsCount} • full{" "}
+                  cost {selectedRun.totalCostInSek} • half {selectedRun.halfGuardsCount} • full{" "}
                   {selectedRun.fullGuardsCount}
+                  {enableLive && (
+                    <>
+                      {" "}
+                      •{" "}
+                      <span style={{ opacity: 0.9 }}>
+                        LIVE {live.state.status === "live" ? "connected" : "connecting"}
+                      </span>
+                    </>
+                  )}
                 </Typography>
               </Box>
 
               {current.data.round.matches.map((m, idx) => {
                 const key = String(m.matchNumber);
                 const sel = selectionsByMatch[key] ?? [];
+                const liveUpdate = liveByMatchNumber.get(m.matchNumber) ?? null;
 
                 return (
                   <Box
                     key={m.matchNumber}
                     sx={{
                       backgroundColor:
-                        idx % 2 === 0
-                          ? "rgba(255,255,255,0.02)"
-                          : "rgba(0,0,0,0.10)",
+                        idx % 2 === 0 ? "rgba(255,255,255,0.02)" : "rgba(0,0,0,0.10)",
                     }}
                   >
                     <MatchRow
@@ -199,6 +219,7 @@ export default function HomePage() {
                       selected={sel}
                       market={m.market}
                       publicPick={m.publicPick}
+                      live={liveUpdate}
                       onSelectionClick={onBoxClick}
                     />
                   </Box>
@@ -216,15 +237,10 @@ export default function HomePage() {
           )}
         </Paper>
 
-        <Dialog
-          open={loginDialogOpen}
-          onClose={() => setLoginDialogOpen(false)}
-        >
+        <Dialog open={loginDialogOpen} onClose={() => setLoginDialogOpen(false)}>
           <DialogTitle>Log in required</DialogTitle>
           <DialogContent>
-            <Typography>
-              Log in to make and save your own selections.
-            </Typography>
+            <Typography>Log in to make and save your own selections.</Typography>
           </DialogContent>
           <DialogActions>
             <Button onClick={() => setLoginDialogOpen(false)}>Close</Button>

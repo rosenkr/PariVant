@@ -1,7 +1,9 @@
+// src/components/MatchRow.tsx
 import { Box, Stack, Typography } from "@mui/material";
 import { SelectionBox } from "./SelectionBox";
 import type { Outcome } from "../types/modelRun";
 import type { TripleView } from "../types/round";
+import type { LiveMatchUpdate } from "../types/live";
 import { formatTimeOnly } from "../utils/time";
 
 type Props = {
@@ -17,6 +19,9 @@ type Props = {
   market: TripleView | null;
   publicPick: TripleView | null;
 
+  // NEW: live score/status (optional)
+  live?: LiveMatchUpdate | null;
+
   onSelectionClick?: () => void; // public page: opens login dialog
 };
 
@@ -29,6 +34,21 @@ function isSelected(sel: Outcome[], o: Outcome) {
   return sel.includes(o);
 }
 
+function liveStatusLabel(live: LiveMatchUpdate): string | null {
+  if (!live.status) return null;
+
+  // prefer minute for live halves
+  if (
+    live.minute != null &&
+    (live.status === "1H" || live.status === "2H" || live.status === "ET")
+  ) {
+    return `${live.minute}'`;
+  }
+
+  // HT/FT/etc
+  return live.status;
+}
+
 export function MatchRow({
   index,
   home,
@@ -37,9 +57,18 @@ export function MatchRow({
   selected,
   market,
   publicPick,
+  live,
   onSelectionClick,
 }: Props) {
   const kickoffText = formatTimeOnly(kickoff) ?? kickoff;
+
+  const hasLiveScore =
+    !!live &&
+    live.homeGoals != null &&
+    live.awayGoals != null &&
+    (live.status != null || live.minute != null);
+
+  const status = live ? liveStatusLabel(live) : null;
 
   return (
     <Box
@@ -63,7 +92,28 @@ export function MatchRow({
         </Typography>
       </Box>
 
-      <Stack direction="row" spacing={1} sx={{ justifyContent: "flex-end" }}>
+      <Stack direction="row" spacing={1} sx={{ justifyContent: "flex-end", alignItems: "center" }}>
+        {hasLiveScore && live && (
+          <Box
+            sx={{
+              px: 1,
+              py: 0.5,
+              borderRadius: 1,
+              backgroundColor: "rgba(0,0,0,0.35)",
+              minWidth: 56,
+              textAlign: "center",
+              lineHeight: 1.05,
+            }}
+          >
+            <Typography variant="caption" sx={{ fontWeight: 900 }}>
+              {live.homeGoals}–{live.awayGoals}
+            </Typography>
+            <Typography variant="caption" sx={{ opacity: 0.8, display: "block" }}>
+              {status ?? ""}
+            </Typography>
+          </Box>
+        )}
+
         <SelectionBox
           marketPct={pct(market?.homeWin ?? null)}
           publicPct={pct(publicPick?.homeWin ?? null)}
