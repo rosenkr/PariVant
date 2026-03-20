@@ -50,3 +50,8 @@ Manual inputs:
 Buffs = subjective direct probability override:
 selected_outcome += x, draw -= x/3, opponent -= 2x/3
 Tags = structured info, deterministic probability shifts
+
+
+value = internal prob - public prob
+penalty so model doest always pick low probability events due to typically larger % gap there:
+score = (prob - public) x exp(-k * (1-prob)) for k [1,5] where low k = aggressive, likes underdog value vs higher k prefers low value over dogs
