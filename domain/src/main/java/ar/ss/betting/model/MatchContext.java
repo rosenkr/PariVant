@@ -1,49 +1,36 @@
 package ar.ss.betting.model;
 
+import java.util.List;
 import java.util.Objects;
 
 /**
- * Model-side data for one match.
+ * Base model input for one match.
  *
- * Contains:
- * - Market implied probabilities
- * - Public pick distribution
- * - Recent form scores for home and away teams
+ * Contains only:
+ * - market probabilities
+ * - public probabilities
+ * - zero or more provider probability triples
  *
- * Recent form definition (v1):
- * - Last 5 matches
- * - Win = 2
- * - Draw = 1
- * - Loss = 0
- *
- * Raw form range: [0, 10]
+ * Recent-form-based inputs have been removed from the model.
  */
 public class MatchContext {
 
     private final ProbabilityTriple marketProbabilities;
     private final ProbabilityTriple publicProbabilities;
-
-    private final int homeRecentFormScore; // 0-10
-    private final int awayRecentFormScore; // 0-10
+    private final List<ProbabilityTriple> providerProbabilities;
 
     public MatchContext(ProbabilityTriple marketProbabilities,
                         ProbabilityTriple publicProbabilities,
-                        int homeRecentFormScore,
-                        int awayRecentFormScore) {
+                        List<ProbabilityTriple> providerProbabilities) {
 
-        this.marketProbabilities = Objects.requireNonNull(marketProbabilities);
-        this.publicProbabilities = Objects.requireNonNull(publicProbabilities);
+        this.marketProbabilities = Objects.requireNonNull(marketProbabilities, "marketProbabilities cannot be null");
+        this.publicProbabilities = Objects.requireNonNull(publicProbabilities, "publicProbabilities cannot be null");
+        this.providerProbabilities = List.copyOf(
+                Objects.requireNonNull(providerProbabilities, "providerProbabilities cannot be null")
+        );
 
-        validateForm(homeRecentFormScore);
-        validateForm(awayRecentFormScore);
-
-        this.homeRecentFormScore = homeRecentFormScore;
-        this.awayRecentFormScore = awayRecentFormScore;
-    }
-
-    private void validateForm(int score) {
-        if (score < 0 || score > 10) {
-            throw new IllegalArgumentException("Recent form score must be between 0 and 10");
+        for (ProbabilityTriple providerProbability : this.providerProbabilities) {
+            Objects.requireNonNull(providerProbability, "providerProbabilities cannot contain null entries");
         }
     }
 
@@ -55,11 +42,7 @@ public class MatchContext {
         return publicProbabilities;
     }
 
-    public int getHomeRecentFormScore() {
-        return homeRecentFormScore;
-    }
-
-    public int getAwayRecentFormScore() {
-        return awayRecentFormScore;
+    public List<ProbabilityTriple> getProviderProbabilities() {
+        return providerProbabilities;
     }
 }

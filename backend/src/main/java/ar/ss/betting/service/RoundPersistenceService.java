@@ -2,8 +2,6 @@ package ar.ss.betting.service;
 
 import ar.ss.betting.domain.GameRound;
 import ar.ss.betting.domain.Match;
-import ar.ss.betting.model.AdjustmentWeights;
-import ar.ss.betting.model.DecisionParameters;
 import ar.ss.betting.model.ModelSelectionResult;
 import ar.ss.betting.persistence.entity.GameRoundEntity;
 import ar.ss.betting.persistence.entity.MatchEntity;

@@ -1,69 +1,43 @@
 package ar.ss.betting.model;
 
-import ar.ss.betting.domain.GameType;
 import ar.ss.betting.domain.Outcome;
 
-import java.util.Comparator;
-import java.util.List;
 import java.util.Objects;
 
 /**
- * Decision engine: chooses a single base outcome for a match.
+ * Chooses the base outcome for a match.
  *
- * Inputs:
- * - internal probabilities p_i(o): model belief (after truth adjustments)
- * - public probabilities p_p(o): crowd picks (Svenska folket)
- *
- * Value:
- * - v(o) = p_i(o) - p_p(o)
- *
- * Hybrid rule:
- * - baseline = argmax p_i(o)
- * - candidates are outcomes with p_i(o) >= probabilityFloor(gameType)
- * - bestValue = argmax v(o) among candidates
- * - if (v(bestValue) - v(baseline)) >= valueThreshold(gameType) -> choose bestValue
- *   else choose baseline
+ * score(outcome) = (internal - public) * exp(-k * (1 - internal))
  */
 public class BaseOutcomeSelector {
 
-    public Outcome chooseBaseOutcome(GameType gameType,
-                                     ProbabilityTriple internalProbabilities,
-                                     ProbabilityTriple publicProbabilities,
-                                     DecisionParameters params) {
+    public Outcome chooseBaseOutcome(ProbabilityTriple internal,
+                                     ProbabilityTriple publicProbabilities) {
 
-        Objects.requireNonNull(gameType, "gameType cannot be null");
-        Objects.requireNonNull(internalProbabilities, "internalProbabilities cannot be null");
+        Objects.requireNonNull(internal, "internal cannot be null");
         Objects.requireNonNull(publicProbabilities, "publicProbabilities cannot be null");
-        Objects.requireNonNull(params, "params cannot be null");
 
-        double floor = params.probabilityFloor(gameType);
-        double tau = params.valueThreshold(gameType);
+        Outcome bestOutcome = null;
+        double bestScore = Double.NEGATIVE_INFINITY;
 
-        Outcome baseline = internalProbabilities.argMax();
+        for (Outcome outcome : Outcome.values()) {
+            double score = score(
+                    internal.get(outcome),
+                    publicProbabilities.get(outcome),
+                    ModelConstants.BASE_PICK_AGGRESSIVENESS_K
+            );
 
-        List<Outcome> candidates = List.of(Outcome.HOME_WIN, Outcome.DRAW, Outcome.AWAY_WIN).stream()
-                .filter(o -> internalProbabilities.get(o) >= floor)
-                .toList();
-
-        if (candidates.isEmpty()) {
-            return baseline;
+            if (score > bestScore) {
+                bestScore = score;
+                bestOutcome = outcome;
+            }
         }
 
-        Outcome bestValue = candidates.stream()
-                .max(Comparator.comparingDouble(o -> value(internalProbabilities, publicProbabilities, o)))
-                .orElse(baseline);
-
-        double vBaseline = value(internalProbabilities, publicProbabilities, baseline);
-        double vBest = value(internalProbabilities, publicProbabilities, bestValue);
-
-        if ((vBest - vBaseline) >= tau) {
-            return bestValue;
-        }
-
-        return baseline;
+        return Objects.requireNonNull(bestOutcome, "bestOutcome cannot be null");
     }
 
-    private double value(ProbabilityTriple internal, ProbabilityTriple pub, Outcome outcome) {
-        return internal.get(outcome) - pub.get(outcome);
+    static double score(double internalProbability, double publicProbability, double k) {
+        double value = internalProbability - publicProbability;
+        return value * Math.exp(-k * (1.0 - internalProbability));
     }
 }
