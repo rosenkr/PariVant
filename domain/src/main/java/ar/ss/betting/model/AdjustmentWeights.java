@@ -1,7 +1,5 @@
 package ar.ss.betting.model;
 
-import java.util.Objects;
-
 /**
  * Holds user-configurable weights for truth-estimating signals.
  *

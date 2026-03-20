@@ -1,4 +1,4 @@
-package ar.ss.betting.service.ingest.providers.tipzer;
+package ar.ss.betting.service.ingest.providers;
 
 import ar.ss.betting.api.internal.ingest.tipzer.TipzerIngestService;
 import ar.ss.betting.domain.GameType;

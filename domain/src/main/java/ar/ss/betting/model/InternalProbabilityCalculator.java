@@ -2,8 +2,6 @@ package ar.ss.betting.model;
 
 import ar.ss.betting.domain.Outcome;
 
-import java.util.EnumMap;
-
 /**
  * TruthEngine (v1).
  *
