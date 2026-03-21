@@ -1,8 +1,8 @@
 package ar.ss.betting.model;
 
-import ar.ss.betting.domain.GameRound;
 import ar.ss.betting.domain.Match;
 import ar.ss.betting.domain.Outcome;
+import ar.ss.betting.domain.Round;
 
 import java.time.LocalDateTime;
 import java.util.*;
@@ -16,6 +16,8 @@ import java.util.stream.Collectors;
  * 2. optional runtime overlays (tags and/or buff)
  * 3. score-based base pick selection
  * 4. uncertainty-based half-guard allocation
+ *
+ * Full guard logic is removed.
  */
 public class EnsembleModel implements GameModel {
 
@@ -28,23 +30,23 @@ public class EnsembleModel implements GameModel {
     }
 
     @Override
-    public ModelSelectionResult generateSelection(GameRound gameRound,
+    public ModelSelectionResult generateSelection(Round round,
                                                   ModelInput modelInput,
                                                   int maxBudgetInSek) {
 
-        Objects.requireNonNull(gameRound, "gameRound cannot be null");
+        Objects.requireNonNull(round, "round cannot be null");
         Objects.requireNonNull(modelInput, "modelInput cannot be null");
 
         if (maxBudgetInSek <= 0) {
             throw new IllegalArgumentException("Budget must be positive");
         }
 
-        validateBuffQuota(gameRound, modelInput);
+        validateBuffQuota(round, modelInput);
 
         Map<Integer, ProbabilityTriple> internalProbs = new HashMap<>();
         Map<Integer, Outcome> basePicks = new HashMap<>();
 
-        for (Match match : gameRound.getMatches()) {
+        for (Match match : round.getMatches()) {
             int matchNumber = match.getMatchNumber();
 
             MatchContext ctx = modelInput.getMatchContext(matchNumber);
@@ -67,7 +69,7 @@ public class EnsembleModel implements GameModel {
                         e -> new LinkedHashSet<>(Set.of(e.getValue()))
                 ));
 
-        int halfGuardsToUse = computeHalfGuards(gameRound.getMatches().size(), maxBudgetInSek);
+        int halfGuardsToUse = computeHalfGuards(round.getMatches().size(), maxBudgetInSek);
         List<Integer> rankedMatches = rankByUncertainty(internalProbs);
 
         int appliedHalfGuards = 0;
@@ -97,12 +99,12 @@ public class EnsembleModel implements GameModel {
         );
     }
 
-    private void validateBuffQuota(GameRound gameRound, ModelInput modelInput) {
+    private void validateBuffQuota(Round round, ModelInput modelInput) {
         int usedBuffPoints = modelInput.getMatchInterventions().values().stream()
                 .mapToInt(MatchInterventions::totalBuffPoints)
                 .sum();
 
-        int roundSize = gameRound.getMatches().size();
+        int roundSize = round.getMatches().size();
         int maxAllowed = roundSize * ModelConstants.BUFF_POINTS_PER_MATCH_IN_ROUND;
 
         if (usedBuffPoints > maxAllowed) {

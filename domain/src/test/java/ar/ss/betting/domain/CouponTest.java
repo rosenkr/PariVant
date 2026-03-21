@@ -9,7 +9,7 @@ import static org.junit.jupiter.api.Assertions.*;
 
 class CouponTest {
 
-    private GameRound createValidRound() {
+    private Round createValidRound() {
 
         List<Match> matches = List.of(
                 new Match(1, LocalDateTime.now(), new Team("A"), new Team("B")),
@@ -22,9 +22,9 @@ class CouponTest {
                 new Match(8, LocalDateTime.now(), new Team("O"), new Team("P"))
         );
 
-        return new GameRound(
+        return new Round(
                 LocalDateTime.now(),
-                GameType.TOPPTIPSET,
+                RoundType.TOPPTIPSET,
                 matches
         );
     }
@@ -32,7 +32,7 @@ class CouponTest {
     @Test
     void shouldCreateValidCoupon() {
 
-        GameRound round = createValidRound();
+        Round round = createValidRound();
 
         Map<Integer, Set<Outcome>> selections = new HashMap<>();
 
@@ -53,7 +53,7 @@ class CouponTest {
     @Test
     void shouldThrowIfBudgetIsNegative() {
 
-        GameRound round = createValidRound();
+        Round round = createValidRound();
 
         Map<Integer, Set<Outcome>> selections = new HashMap<>();
 
@@ -70,7 +70,7 @@ class CouponTest {
     @Test
     void shouldThrowIfSelectionsDoNotMatchGameRound() {
 
-        GameRound round = createValidRound();
+        Round round = createValidRound();
 
         Map<Integer, Set<Outcome>> selections = new HashMap<>();
         selections.put(99, Set.of(Outcome.HOME_WIN)); // invalid match number

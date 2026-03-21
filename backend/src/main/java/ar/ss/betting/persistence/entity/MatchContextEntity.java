@@ -2,67 +2,51 @@ package ar.ss.betting.persistence.entity;
 
 import jakarta.persistence.*;
 
-import java.time.LocalDateTime;
-
 @Entity
-@Table(
-        name = "match_context",
-        uniqueConstraints = @UniqueConstraint(name = "uq_match_context_round_match", columnNames = {"game_round_id", "match_number"})
-)
+@Table(name = "match_context")
 public class MatchContextEntity {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(name = "game_round_id", nullable = false)
-    private Long gameRoundId;
+    @Column(name = "round_id", nullable = false)
+    private Long roundId;
 
     @Column(name = "match_number", nullable = false)
-    private Integer matchNumber;
+    private int matchNumber;
 
     @Column(name = "market_home", nullable = false)
-    private Double marketHome;
+    private double marketHome;
 
     @Column(name = "market_draw", nullable = false)
-    private Double marketDraw;
+    private double marketDraw;
 
     @Column(name = "market_away", nullable = false)
-    private Double marketAway;
+    private double marketAway;
 
     @Column(name = "public_home", nullable = false)
-    private Double publicHome;
+    private double publicHome;
 
     @Column(name = "public_draw", nullable = false)
-    private Double publicDraw;
+    private double publicDraw;
 
     @Column(name = "public_away", nullable = false)
-    private Double publicAway;
+    private double publicAway;
 
-    @Column(name = "home_recent_form_score", nullable = false)
-    private Integer homeRecentFormScore;
+    protected MatchContextEntity() {
+        // JPA
+    }
 
-    @Column(name = "away_recent_form_score", nullable = false)
-    private Integer awayRecentFormScore;
-
-    @Column(name = "created_at", nullable = false)
-    private LocalDateTime createdAt;
-
-    protected MatchContextEntity() { }
-
-    public MatchContextEntity(
-            Long gameRoundId,
-            Integer matchNumber,
-            Double marketHome,
-            Double marketDraw,
-            Double marketAway,
-            Double publicHome,
-            Double publicDraw,
-            Double publicAway,
-            Integer homeRecentFormScore,
-            Integer awayRecentFormScore
-    ) {
-        this.gameRoundId = gameRoundId;
+    public MatchContextEntity(Long roundId,
+                              int matchNumber,
+                              double marketHome,
+                              double marketDraw,
+                              double marketAway,
+                              double publicHome,
+                              double publicDraw,
+                              double publicAway) {
+        this.roundId = roundId;
         this.matchNumber = matchNumber;
         this.marketHome = marketHome;
         this.marketDraw = marketDraw;
@@ -70,23 +54,41 @@ public class MatchContextEntity {
         this.publicHome = publicHome;
         this.publicDraw = publicDraw;
         this.publicAway = publicAway;
-        this.homeRecentFormScore = homeRecentFormScore;
-        this.awayRecentFormScore = awayRecentFormScore;
-        this.createdAt = LocalDateTime.now();
     }
 
-    public Long getId() { return id; }
-    public Long getGameRoundId() { return gameRoundId; }
-    public Integer getMatchNumber() { return matchNumber; }
+    public Long getId() {
+        return id;
+    }
 
-    public Double getMarketHome() { return marketHome; }
-    public Double getMarketDraw() { return marketDraw; }
-    public Double getMarketAway() { return marketAway; }
+    public Long getRoundId() {
+        return roundId;
+    }
 
-    public Double getPublicHome() { return publicHome; }
-    public Double getPublicDraw() { return publicDraw; }
-    public Double getPublicAway() { return publicAway; }
+    public int getMatchNumber() {
+        return matchNumber;
+    }
 
-    public Integer getHomeRecentFormScore() { return homeRecentFormScore; }
-    public Integer getAwayRecentFormScore() { return awayRecentFormScore; }
+    public double getMarketHome() {
+        return marketHome;
+    }
+
+    public double getMarketDraw() {
+        return marketDraw;
+    }
+
+    public double getMarketAway() {
+        return marketAway;
+    }
+
+    public double getPublicHome() {
+        return publicHome;
+    }
+
+    public double getPublicDraw() {
+        return publicDraw;
+    }
+
+    public double getPublicAway() {
+        return publicAway;
+    }
 }

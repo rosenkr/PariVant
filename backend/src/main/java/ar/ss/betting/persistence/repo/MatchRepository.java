@@ -7,5 +7,6 @@ import java.util.List;
 
 public interface MatchRepository extends JpaRepository<MatchEntity, Long> {
 
-    List<MatchEntity> findByGameRoundIdOrderByMatchNumberAsc(Long gameRoundId);
+    // get all the matches for a round
+    List<MatchEntity> findByRoundIdOrderByMatchNumberAsc(Long roundId);
 }

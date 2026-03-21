@@ -1,10 +1,6 @@
 package ar.ss.betting.model;
 
-import ar.ss.betting.domain.GameRound;
-import ar.ss.betting.domain.GameType;
-import ar.ss.betting.domain.Match;
-import ar.ss.betting.domain.Outcome;
-import ar.ss.betting.domain.Team;
+import ar.ss.betting.domain.*;
 import org.junit.jupiter.api.Test;
 
 import java.time.LocalDateTime;
@@ -19,10 +15,10 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 
 class EnsembleModelTest {
 
-    private GameRound createTopptipsetRound8Matches() {
-        return new GameRound(
+    private Round createTopptipsetRound8Matches() {
+        return new Round(
                 LocalDateTime.now(),
-                GameType.TOPPTIPSET,
+                RoundType.TOPPTIPSET,
                 List.of(
                         new Match(1, LocalDateTime.now(), new Team("A"), new Team("B")),
                         new Match(2, LocalDateTime.now(), new Team("C"), new Team("D")),
@@ -36,7 +32,7 @@ class EnsembleModelTest {
         );
     }
 
-    private ModelInput createNeutralModelInputForRound(GameRound round) {
+    private ModelInput createNeutralModelInputForRound(Round round) {
         Map<Integer, MatchContext> ctx = new HashMap<>();
 
         for (Match match : round.getMatches()) {
@@ -50,7 +46,7 @@ class EnsembleModelTest {
 
     @Test
     void shouldNotExceedBudget() {
-        GameRound round = createTopptipsetRound8Matches();
+        Round round = createTopptipsetRound8Matches();
         ModelInput input = createNeutralModelInputForRound(round);
         GameModel model = new EnsembleModel();
 
@@ -61,7 +57,7 @@ class EnsembleModelTest {
 
     @Test
     void shouldReturnInternalProbabilitiesForEveryMatchNumber() {
-        GameRound round = createTopptipsetRound8Matches();
+        Round round = createTopptipsetRound8Matches();
         ModelInput input = createNeutralModelInputForRound(round);
         GameModel model = new EnsembleModel();
 
@@ -78,7 +74,7 @@ class EnsembleModelTest {
 
     @Test
     void providerProbabilitiesShouldInfluenceInternalProbabilityAndBasePick() {
-        GameRound round = createTopptipsetRound8Matches();
+        Round round = createTopptipsetRound8Matches();
 
         Map<Integer, MatchContext> ctx = new HashMap<>();
         for (Match match : round.getMatches()) {
@@ -110,7 +106,7 @@ class EnsembleModelTest {
 
     @Test
     void tagsShouldAffectInternalProbabilitiesBeforeSelection() {
-        GameRound round = createTopptipsetRound8Matches();
+        Round round = createTopptipsetRound8Matches();
 
         Map<Integer, MatchContext> contexts = new HashMap<>();
         Map<Integer, MatchInterventions> interventions = new HashMap<>();
@@ -145,7 +141,7 @@ class EnsembleModelTest {
 
     @Test
     void buffsShouldAffectInternalProbabilitiesBeforeSelection() {
-        GameRound round = createTopptipsetRound8Matches();
+        Round round = createTopptipsetRound8Matches();
 
         Map<Integer, MatchContext> contexts = new HashMap<>();
         Map<Integer, MatchInterventions> interventions = new HashMap<>();
@@ -182,7 +178,7 @@ class EnsembleModelTest {
 
     @Test
     void shouldRejectRoundInputThatExceedsBuffQuota() {
-        GameRound round = createTopptipsetRound8Matches();
+        Round round = createTopptipsetRound8Matches();
 
         Map<Integer, MatchContext> contexts = new HashMap<>();
         Map<Integer, MatchInterventions> interventions = new HashMap<>();

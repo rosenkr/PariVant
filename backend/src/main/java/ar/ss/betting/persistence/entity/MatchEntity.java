@@ -1,5 +1,6 @@
 package ar.ss.betting.persistence.entity;
 
+import ar.ss.betting.domain.MatchStatus;
 import jakarta.persistence.*;
 
 import java.time.LocalDateTime;
@@ -10,7 +11,7 @@ import java.util.Objects;
         name = "match",
         uniqueConstraints = @UniqueConstraint(
                 name = "uk_match_round_matchnumber",
-                columnNames = {"game_round_id", "match_number"}
+                columnNames = {"round_id", "match_number"}
         )
 )
 public class MatchEntity {
@@ -19,9 +20,9 @@ public class MatchEntity {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @ManyToOne(optional = false, fetch = FetchType.LAZY)
-    @JoinColumn(name = "game_round_id", nullable = false)
-    private GameRoundEntity gameRound;
+    @JoinColumn(name = "round_id", nullable = false)
+    @ManyToOne(fetch = FetchType.LAZY, optional = false)
+    private RoundEntity round;
 
     @Column(name = "match_number", nullable = false)
     private int matchNumber;
@@ -35,6 +36,16 @@ public class MatchEntity {
     @Column(name = "away_team_name", nullable = false, length = 80)
     private String awayTeamName;
 
+    @Column(name = "home_score", nullable = false)
+    private int homeScore;
+
+    @Column(name = "away_score", nullable = false)
+    private int awayScore;
+
+    @Enumerated(EnumType.STRING)
+    @Column(name = "status", nullable = false, length = 32)
+    private MatchStatus status;
+
     protected MatchEntity() {
         // JPA
     }
@@ -43,35 +54,52 @@ public class MatchEntity {
                        LocalDateTime startDate,
                        String homeTeamName,
                        String awayTeamName) {
+        this(matchNumber, startDate, homeTeamName, awayTeamName, 0, 0, MatchStatus.UPCOMING);
+    }
 
+    public MatchEntity(int matchNumber,
+                       LocalDateTime startDate,
+                       String homeTeamName,
+                       String awayTeamName,
+                       int homeScore,
+                       int awayScore,
+                       MatchStatus status) {
         if (matchNumber <= 0) {
             throw new IllegalArgumentException("matchNumber must be positive");
+        }
+        if (homeScore < 0) {
+            throw new IllegalArgumentException("homeScore cannot be negative");
+        }
+        if (awayScore < 0) {
+            throw new IllegalArgumentException("awayScore cannot be negative");
         }
 
         this.matchNumber = matchNumber;
         this.startDate = Objects.requireNonNull(startDate, "startDate cannot be null");
         this.homeTeamName = requireNonBlank(homeTeamName, "homeTeamName");
         this.awayTeamName = requireNonBlank(awayTeamName, "awayTeamName");
+        this.homeScore = homeScore;
+        this.awayScore = awayScore;
+        this.status = Objects.requireNonNull(status, "status cannot be null");
     }
 
-    private String requireNonBlank(String s, String name) {
-        Objects.requireNonNull(s, name + " cannot be null");
-        if (s.isBlank()) {
-            throw new IllegalArgumentException(name + " cannot be blank");
+    private static String requireNonBlank(String value, String field) {
+        if (value == null || value.isBlank()) {
+            throw new IllegalArgumentException(field + " cannot be blank");
         }
-        return s;
+        return value;
     }
 
-    void setGameRound(GameRoundEntity gameRound) {
-        this.gameRound = gameRound;
+    void setRound(RoundEntity round) {
+        this.round = round;
     }
 
     public Long getId() {
         return id;
     }
 
-    public GameRoundEntity getGameRound() {
-        return gameRound;
+    public RoundEntity getRound() {
+        return round;
     }
 
     public int getMatchNumber() {
@@ -88,5 +116,17 @@ public class MatchEntity {
 
     public String getAwayTeamName() {
         return awayTeamName;
+    }
+
+    public int getHomeScore() {
+        return homeScore;
+    }
+
+    public int getAwayScore() {
+        return awayScore;
+    }
+
+    public MatchStatus getStatus() {
+        return status;
     }
 }

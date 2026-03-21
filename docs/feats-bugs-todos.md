@@ -1,5 +1,3 @@
-1. make tickets on github and set priority levels
-2. Start working on most important, in a new chatgpt context
 
 feats/bugs/todos:
 -calculate expected roi
@@ -23,10 +21,18 @@ feats/bugs/todos:
 -user feature: upload own internal probs and run model on that (key factor: ease)
 -add ingestion fallbacks for rounds
 -add github readme(with very general text, see chat on phone), make only README file public
--bzzoiro provider?
 -deploy on railway (separate frontend/backend servers?)
 -docker Compose, define  containers for frontend/backend/db in yaml -> easier deployment/development
 -break out into own module: Round ingestion
 -Rework main page backend logic to: UI load public/upcoming, backend shows upcoming for stryktipset if has, else for europatipset if has, else for topptippset if has, else stryktipset page
  So (api could be live/upcoming/ended) (sorted by time).
+-incorporate libs from public github
+-add bzzoiro, its back up
 
+-add lombok to reduce boilerplate in persistenc code
+-rework @Lob annotations in entities when persisting json, bad style
+
+- rework match&round end logic by using status instead of end-dte + 2 hr (see step2.md) 
+-modular monolith rework: split backend into application/infra/web. combine with libs on gh
+- add gradients/animations
+- FootballData has predictions? https://www.api-football.com/documentation-v3#section/Authentication

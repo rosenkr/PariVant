@@ -9,12 +9,12 @@ import java.util.stream.Collectors;
  */
 public class Coupon {
 
-    private final GameRound gameRound;
+    private final Round gameRound;
     private final LocalDateTime generatedAt;
     private final int budgetInSek;
     private final Map<Integer, Set<Outcome>> selections; // maps i:th match to a set of outcomes
 
-    public Coupon(GameRound gameRound,
+    public Coupon(Round gameRound,
                   LocalDateTime generatedAt,
                   int budgetInSek,
                   Map<Integer, Set<Outcome>> selections) {
@@ -47,7 +47,7 @@ public class Coupon {
         this.selections = Map.copyOf(selections);
     }
 
-    public GameRound getGameRound() {
+    public Round getGameRound() {
         return gameRound;
     }
 

@@ -16,7 +16,7 @@ Then it ranks matches by uncertainty, and adds one additional outcome for as man
 Model outputs internal probabilities per match and a selection of outcomes.
 
 
-Potential modelling issues: Double counting, not enough providers or unreliable provider data
+Potential modelling issues: Double counting, not enough providers or unreliable provider data, biased or not robust mathematical model
 
 
 
