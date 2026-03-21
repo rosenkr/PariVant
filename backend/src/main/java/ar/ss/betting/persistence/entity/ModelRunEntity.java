@@ -1,6 +1,8 @@
 package ar.ss.betting.persistence.entity;
 
 import jakarta.persistence.*;
+import org.hibernate.annotations.JdbcTypeCode;
+import org.hibernate.type.SqlTypes;
 
 import java.time.LocalDateTime;
 import java.util.Objects;
@@ -32,12 +34,12 @@ public class ModelRunEntity {
     @Column(name = "half_guards_count", nullable = false)
     private int halfGuardsCount;
 
-    @Lob
-    @Column(name = "selections_json", nullable = false, columnDefinition = "TEXT")
+    @JdbcTypeCode(SqlTypes.JSON)
+    @Column(name = "selections_json", nullable = false, columnDefinition = "jsonb")
     private String selectionsJson;
 
-    @Lob
-    @Column(name = "internal_probabilities_json", nullable = false, columnDefinition = "TEXT")
+    @JdbcTypeCode(SqlTypes.JSON)
+    @Column(name = "internal_probabilities_json", nullable = false, columnDefinition = "jsonb")
     private String internalProbabilitiesJson;
 
     @Column(name = "trigger", nullable = false, length = 64)

@@ -31,7 +31,7 @@ feats/bugs/todos:
 
 -add lombok to reduce boilerplate in persistenc code
 -rework @Lob annotations in entities when persisting json, bad style
-
+-if want to do ui work: just mock data? dont rely on server
 - rework match&round end logic by using status instead of end-dte + 2 hr (see step2.md) 
 -modular monolith rework: split backend into application/infra/web. combine with libs on gh
 - add gradients/animations
