@@ -57,6 +57,10 @@ public class RoundEntity {
         match.setRound(null);
     }
 
+    public void setStatus(RoundStatus status) {
+        this.status = Objects.requireNonNull(status, "status cannot be null");
+    }
+
     public Long getId() {
         return id;
     }

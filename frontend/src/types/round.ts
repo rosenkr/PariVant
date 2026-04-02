@@ -1,6 +1,6 @@
 /* Contains the necessary types to represent a round as fetched from the backend endpoint /public/current */
 
-export type GameType = "TOPPTIPSET" | "STRYKTIPSET" | "EUROPATIPSET";
+export type RoundType = "TOPPTIPSET" | "STRYKTIPSET" | "EUROPATIPSET";
 
 export type RoundStatus = "UPCOMING" | "RUNNING";
 
@@ -24,12 +24,11 @@ export type MatchView = {
 export type RoundView = {
   id: number;
   startDate: string;
-  endDate: string;
   matches: MatchView[];
 };
 
 export type CurrentRoundResponse = {
-  selectedGameType: GameType;
+  selectedRoundType: RoundType;
   roundStatus: RoundStatus;
   round: RoundView;
 };

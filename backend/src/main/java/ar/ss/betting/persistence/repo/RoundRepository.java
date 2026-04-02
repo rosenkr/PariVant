@@ -12,20 +12,19 @@ import java.util.Optional;
 
 public interface RoundRepository extends JpaRepository<RoundEntity, Long> {
 
-    // uniquely defining by PK
     boolean existsById(long id);
 
-    // uniquely defining by UC
     boolean existsByRoundTypeAndStartDate(RoundType roundType, LocalDateTime startDate);
+
     Optional<RoundEntity> findByRoundTypeAndStartDate(RoundType roundType, LocalDateTime startDate);
 
-    // find rounds with a particular status (for example different UI pages showing collections with differing status)
     List<RoundEntity> findByRoundTypeAndStatusOrderByStartDateAsc(RoundType roundType,
                                                                   RoundStatus status,
                                                                   Pageable pageable);
 
-    // ?
     List<RoundEntity> findByStatusInAndStartDateBetweenOrderByStartDateAsc(List<RoundStatus> statuses,
                                                                            LocalDateTime from,
                                                                            LocalDateTime to);
+
+    List<RoundEntity> findByStatusAndStartDateLessThanEqual(RoundStatus status, LocalDateTime time);
 }

@@ -1,0 +1,317 @@
+fixtureId | homeTeam | awayTeam | status | minute | key
+1380335 | Zalaegerszegi TE | Ujpest | 1H | 41 | zalaegerszegi te||ujpest
+1381114 | Fortuna Sittard | Twente | 1H | 40 | fortuna sittard||twente
+1385114 | Vojvodina | Napredak | 1H | 11 | vojvodina||napredak
+1387940 | Toulouse | Lorient | 1H | 12 | toulouse||lorient
+1391103 | Espanyol | Getafe | 1H | 45 | espanyol||getafe
+1394350 | Verl | FC Saarbrücken | 1H | 40 | verl||fc saarbrücken
+1396476 | Famalicao | Nacional | 1H | 41 | famalicao||nacional
+1396477 | Moreirense | Arouca | 1H | 41 | moreirense||arouca
+1396627 | Sturm Graz W | Kleinmünchen / BW Linz | 1H | 9 | sturm graz w||kleinmünchen / bw linz
+1398209 | Maritimo | Oliveirense | 1H | 40 | maritimo||oliveirense
+1398633 | Ümraniyespor | Pendikspor | 1H | 12 | ümraniyespor||pendikspor
+1405292 | Gretna 2008 | East Stirlingshire | 1H | 45 | gretna 2008||east stirlingshire
+1405294 | Linlithgow Rose | Berwick Rangers | 1H | 45 | linlithgow rose||berwick rangers
+1405297 | Celtic II | Bonnyrigg Rose Athletic | 1H | 45 | celtic ii||bonnyrigg rose athletic
+1412866 | Wolfenbuttel | Meppen II | 1H | 8 | wolfenbuttel||meppen ii
+1418052 | Wiener Viktoria | Favoritner AC | 1H | 11 | wiener viktoria||favoritner ac
+1418653 | Luzern II | Lugano II | 1H | 11 | luzern ii||lugano ii
+1428546 | Yate Town | Weymouth | 1H | 12 | yate town||weymouth
+1429644 | Kaizer Chiefs | Magesi | 1H | 12 | kaizer chiefs||magesi
+1431417 | Sabadell | Europa Fc | 1H | 45 | sabadell||europa fc
+1432132 | Atlético Astorga | Gimnástica Segoviana | 1H | 12 | atlético astorga||gimnástica segoviana
+1433050 | Recreativo Huelva | Real Jaén | 1H | 41 | recreativo huelva||real jaén
+1433363 | SS Reyes | Conquense | 1H | 11 | ss reyes||conquense
+1451599 | Levski Sofia | Cherno More Varna | 1H | 40 | levski sofia||cherno more varna
+1452749 | Andratx | Reddis | 1H | 7 | andratx||reddis
+1453213 | Utrecht W | Excelsior W | 1H | 40 | utrecht w||excelsior w
+1457042 | Correcaminos UAT II | FC Santiago | 1H | 7 | correcaminos uat ii||fc santiago
+1458747 | Bezana | Noja | 1H | 40 | bezana||noja
+1459053 | Aurrerá Vitoria | Leioa | 1H | 11 | aurrerá vitoria||leioa
+1460341 | Numancia II | Arandina | 1H | 10 | numancia ii||arandina
+1460344 | Atlético Mansillés | UD Santa Marta | 1H | 10 | atlético mansillés||ud santa marta
+1460346 | Atlético Tordesillas | Bembibre | 1H | 9 | atlético tordesillas||bembibre
+1460348 | Villaralbo | Palencia CF | 1H | 8 | villaralbo||palencia cf
+1461258 | Alcúdia | Santanyí | 1H | 17 | alcúdia||santanyí
+1461264 | Constància | Son Cladera | 1H | 10 | constància||son cladera
+1461867 | Santa Cruz | Mazarrón FC | 1H | 41 | santa cruz||mazarrón fc
+1462481 | Txantrea | Atlético Artajonés | 1H | 13 | txantrea||atlético artajonés
+1462485 | Izarra | San Juan | 1H | 39 | izarra||san juan
+1462789 | Comillas | Varea | 1H | 10 | comillas||varea
+1463084 | La Almunia | Almudévar | 1H | 10 | la almunia||almudévar
+1463392 | Tarancón | Pedroñeras | 1H | 11 | tarancón||pedroñeras
+1469476 | USFA | Salitas | 1H | 8 | usfa||salitas
+1469477 | Majestic | SONABEL | 1H | 10 | majestic||sonabel
+1469478 | Sporting Cascades | ASFB | 1H | 8 | sporting cascades||asfb
+1469922 | Etoile Filante | Vitesse | 1H | 11 | etoile filante||vitesse
+1469923 | RC Bobo-Dioulasso | AJEB | 1H | 9 | rc bobo-dioulasso||ajeb
+1490012 | Chomutov | Tempo Praha | 1H | 9 | chomutov||tempo praha
+1497766 | Petrocub | Milsami Orhei | 1H | 10 | petrocub||milsami orhei
+1506832 | Gil Vicente U19 | União Leiria U19 | 1H | 10 | gil vicente u19||união leiria u19
+1512550 | UCV Moquegua | Cusco | 1H | 10 | ucv moquegua||cusco
+1515787 | FS Jelgava | Grobiņa | 1H | 13 | fs jelgava||grobiņa
+1524413 | Pyramids FC | FAR Rabat | 1H | 12 | pyramids fc||far rabat
+1529151 | Ekranas | Jonava | 1H | 12 | ekranas||jonava
+1529487 | Riga FC II | Valmiera / BSS | 1H | 7 | riga fc ii||valmiera / bss
+1529782 | Jedinstvo Stara Pazova | FK Veternik | 1H | 32 | jedinstvo stara pazova||fk veternik
+1531260 | FC BW Linz | Ried | 1H | 11 | fc bw linz||ried
+1531261 | WSG Wattens | Grazer AK | 1H | 12 | wsg wattens||grazer ak
+1531262 | Wolfsberger AC | SCR Altach | 1H | 11 | wolfsberger ac||scr altach
+1531507 | Csikszereda | Farul Constanta | 1H | 41 | csikszereda||farul constanta
+1531921 | Atletico Torque | Central Espanol | 1H | 12 | atletico torque||central espanol
+1379273 | Fulham | Burnley | 2H | 52 | fulham||burnley
+1379917 | Inverurie Loco Works | Banks O' Dee | 2H | 54 | inverurie loco works||banks o' dee
+1379919 | Rothes | Lossiemouth | 2H | 90 | rothes||lossiemouth
+1379920 | Turriff United | Keith | 2H | 54 | turriff united||keith
+1382847 | Falkirk | ST Mirren | 2H | 54 | falkirk||st mirren
+1382848 | Heart Of Midlothian | Dundee | 2H | 51 | heart of midlothian||dundee
+1382849 | Kilmarnock | Livingston | 2H | 50 | kilmarnock||livingston
+1382850 | Motherwell | Hibernian | 2H | 53 | motherwell||hibernian
+1383009 | Arbroath | Queen's Park | 2H | 54 | arbroath||queen's park
+1383010 | Ayr Utd | Morton | 2H | 49 | ayr utd||morton
+1383012 | Raith Rovers | Airdrie United | 2H | 52 | raith rovers||airdrie united
+1383013 | Ross County | Dunfermline | 2H | 55 | ross county||dunfermline
+1383189 | Alloa Athletic | Inverness CT | 2H | 52 | alloa athletic||inverness ct
+1383190 | Cove Rangers | Hamilton Academical | 2H | 56 | cove rangers||hamilton academical
+1383191 | Peterhead | Montrose | 2H | 53 | peterhead||montrose
+1383192 | Queen of the South | East Fife | 2H | 55 | queen of the south||east fife
+1383193 | Stenhousemuir | Kelty Hearts | 2H | 55 | stenhousemuir||kelty hearts
+1383369 | Clyde | Stranraer | 2H | 54 | clyde||stranraer
+1383370 | Dumbarton | Annan Athletic | 2H | 55 | dumbarton||annan athletic
+1383371 | East Kilbride | Stirling Albion | 2H | 53 | east kilbride||stirling albion
+1383372 | Edinburgh City | Elgin City | 2H | 48 | edinburgh city||elgin city
+1383373 | Forfar Athletic | Spartans | 2H | 54 | forfar athletic||spartans
+1385107 | FK Crvena Zvezda | Radnicki NIS | 2H | 46 | fk crvena zvezda||radnicki nis
+1385325 | Dungannon Swifts | Bangor | 2H | 53 | dungannon swifts||bangor
+1385328 | Portadown | Crusaders FC | 2H | 50 | portadown||crusaders fc
+1385522 | Ards | Warrenpoint Town | 2H | 52 | ards||warrenpoint town
+1385523 | H&W Welders | Limavady United | 2H | 53 | h&w welders||limavady united
+1385525 | Newington Youth | Ballinamallard United | 2H | 53 | newington youth||ballinamallard united
+1385526 | Queen's University | Armagh City | 2H | 53 | queen's university||armagh city
+1386452 | Accrington ST | Chesterfield | 2H | 54 | accrington st||chesterfield
+1386453 | Bromley | Colchester | 2H | 47 | bromley||colchester
+1386455 | Fleetwood Town | Crawley Town | 2H | 53 | fleetwood town||crawley town
+1386456 | Gillingham | Bristol Rovers | 2H | 48 | gillingham||bristol rovers
+1386457 | Grimsby | Barrow | 2H | 52 | grimsby||barrow
+1386459 | Notts County | Cheltenham | 2H | 55 | notts county||cheltenham
+1386460 | Oldham | Harrogate Town | 2H | 54 | oldham||harrogate town
+1386461 | Shrewsbury | Crewe | 2H | 53 | shrewsbury||crewe
+1386462 | Tranmere | Swindon Town | 2H | 55 | tranmere||swindon town
+1386463 | Walsall | Newport County | 2H | 56 | walsall||newport county
+1387007 | Charlton | Norwich | 2H | 51 | charlton||norwich
+1387009 | Southampton | Oxford United | 2H | 55 | southampton||oxford united
+1387011 | Watford | Leicester | 2H | 47 | watford||leicester
+1387013 | Hull City | Sheffield Wednesday | 2H | 49 | hull city||sheffield wednesday
+1387015 | QPR | Portsmouth | 2H | 52 | qpr||portsmouth
+1387016 | Sheffield Utd | Wrexham | 2H | 55 | sheffield utd||wrexham
+1387018 | Bristol City | West Brom | 2H | 56 | bristol city||west brom
+1387559 | AFC Wimbledon | Peterborough | 2H | 49 | afc wimbledon||peterborough
+1387560 | Barnsley | Doncaster | 2H | 52 | barnsley||doncaster
+1387561 | Burton Albion | Bradford | 2H | 53 | burton albion||bradford
+1387562 | Leyton Orient | Wycombe | 2H | 49 | leyton orient||wycombe
+1387563 | Lincoln | Rotherham | 2H | 55 | lincoln||rotherham
+1387565 | Mansfield Town | Northampton | 2H | 54 | mansfield town||northampton
+1387566 | Plymouth | Huddersfield | 2H | 50 | plymouth||huddersfield
+1387567 | Port Vale | Bolton | 2H | 53 | port vale||bolton
+1387568 | Stevenage | Reading | 2H | 51 | stevenage||reading
+1387569 | Wigan | Exeter City | 2H | 53 | wigan||exeter city
+1388220 | Dravinja | Bilje | 2H | 86 | dravinja||bilje
+1388222 | Krško | Bistrica | 2H | 88 | krško||bistrica
+1388543 | Bayern München | Union Berlin | 2H | 83 | bayern münchen||union berlin
+1388545 | 1. FC Köln | Borussia Mönchengladbach | 2H | 82 | 1. fc köln||borussia mönchengladbach
+1388546 | 1. FC Heidenheim | Bayer Leverkusen | 2H | 84 | 1. fc heidenheim||bayer leverkusen
+1388550 | VfL Wolfsburg | Werder Bremen | 2H | 83 | vfl wolfsburg||werder bremen
+1389063 | Sloga Doboj | Posušje | 2H | 56 | sloga doboj||posušje
+1389549 | Knockbreda | Dergview | 2H | 54 | knockbreda||dergview
+1389553 | Oxford Sunnyside | Newry City AFC | 2H | 53 | oxford sunnyside||newry city afc
+1389554 | Lisburn Distillery | Strabane Athletic | 2H | 53 | lisburn distillery||strabane athletic
+1392789 | KAA Gent II | Club Brugge II | 2H | 52 | kaa gent ii||club brugge ii
+1392793 | Francs Borains | Kortrijk | 2H | 54 | francs borains||kortrijk
+1399207 | Katwijk | Almere City II | 2H | 78 | katwijk||almere city ii
+1399854 | Altrincham | Southend | 2H | 53 | altrincham||southend
+1399855 | Boreham Wood | Gateshead | 2H | 52 | boreham wood||gateshead
+1399856 | Braintree | Scunthorpe | 2H | 51 | braintree||scunthorpe
+1399857 | Carlisle | Boston United | 2H | 52 | carlisle||boston united
+1399858 | Forest Green | Wealdstone | 2H | 52 | forest green||wealdstone
+1399859 | Hartlepool | Eastleigh | 2H | 54 | hartlepool||eastleigh
+1399860 | Rochdale | Tamworth | 2H | 46 | rochdale||tamworth
+1399862 | Sutton Utd | Truro City | 2H | 53 | sutton utd||truro city
+1399864 | Yeovil Town | Morecambe | 2H | 52 | yeovil town||morecambe
+1399865 | York | Brackley Town | 2H | 50 | york||brackley town
+1401959 | AFC Totton | Worthing | 2H | 48 | afc totton||worthing
+1401960 | Chelmsford City | Dover | 2H | 47 | chelmsford city||dover
+1401961 | Chesham United | Maidstone Utd | 2H | 54 | chesham united||maidstone utd
+1401962 | Chippenham Town | Eastbourne Borough | 2H | 54 | chippenham town||eastbourne borough
+1401963 | Dagenham & Redbridge | Torquay | 2H | 48 | dagenham & redbridge||torquay
+1401964 | Ebbsfleet United | Weston-super-Mare | 2H | 47 | ebbsfleet united||weston-super-mare
+1401965 | Farnborough | Slough Town | 2H | 53 | farnborough||slough town
+1401966 | Hampton & Richmond | Horsham | 2H | 52 | hampton & richmond||horsham
+1401967 | AFC Hornchurch | Hemel Hempstead Town | 2H | 49 | afc hornchurch||hemel hempstead town
+1401968 | Maidenhead | Dorking Wanderers | 2H | 50 | maidenhead||dorking wanderers
+1401969 | Salisbury | Enfield Town | 2H | 51 | salisbury||enfield town
+1401970 | Tonbridge Angels | Bath City | 2H | 50 | tonbridge angels||bath city
+1402511 | AFC Telford United | Marine | 2H | 51 | afc telford united||marine
+1402512 | Buxton | Bedford Town | 2H | 53 | buxton||bedford town
+1402513 | Chester | Southport | 2H | 55 | chester||southport
+1402514 | King's Lynn Town | Curzon Ashton | 2H | 56 | king's lynn town||curzon ashton
+1402515 | Leamington | Scarborough Athletic | 2H | 54 | leamington||scarborough athletic
+1402516 | Macclesfield | Hereford | 2H | 47 | macclesfield||hereford
+1402517 | Oxford City | Chorley | 2H | 51 | oxford city||chorley
+1402518 | Peterborough Sports | Darlington 1883 | 2H | 50 | peterborough sports||darlington 1883
+1402519 | Radcliffe | Kidderminster Harriers | 2H | 48 | radcliffe||kidderminster harriers
+1402520 | South Shields | Merthyr Town | 2H | 49 | south shields||merthyr town
+1402521 | Spennymoor Town | Alfreton Town | 2H | 50 | spennymoor town||alfreton town
+1402522 | Worksop Town | AFC Fylde | 2H | 53 | worksop town||afc fylde
+1405291 | Stirling University | Tranent Juniors | 2H | 54 | stirling university||tranent juniors
+1405293 | Bo'ness United | Cowdenbeath | 2H | 57 | bo'ness united||cowdenbeath
+1405295 | Caledonian Braves | Albion Rovers | 2H | 52 | caledonian braves||albion rovers
+1405987 | SF Baumberg | Hilden | 2H | 51 | sf baumberg||hilden
+1406556 | Diefflen | Kaiserslautern II | 2H | 81 | diefflen||kaiserslautern ii
+1406561 | Auersmacher | Wormatia Worms | 2H | 76 | auersmacher||wormatia worms
+1413932 | Vitória de Sernache | Samora Correir | 2H | 47 | vitória de sernache||samora correir
+1413937 | Benfica Castelo Branco | Oliveira Hospital | 2H | 49 | benfica castelo branco||oliveira hospital
+1418646 | Basel II | Young Boys II | 2H | 83 | basel ii||young boys ii
+1420063 | Young Boys W | Basel W | 2H | 52 | young boys w||basel w
+1424787 | Canvey Island | Hashtag United | 2H | 46 | canvey island||hashtag united
+1424788 | Dartford | Lewes | 2H | 48 | dartford||lewes
+1424789 | Dulwich Hamlet | Billericay Town | 2H | 52 | dulwich hamlet||billericay town
+1424790 | Aveley | Cheshunt | 2H | 50 | aveley||cheshunt
+1424791 | Cray Wanderers | Potters Bar Town | 2H | 49 | cray wanderers||potters bar town
+1424792 | St Albans City | Ramsgate | 2H | 54 | st albans city||ramsgate
+1424793 | Welling United | Whitehawk | 2H | 53 | welling united||whitehawk
+1424794 | Carshalton Athletic | Wingate & Finchley | 2H | 49 | carshalton athletic||wingate & finchley
+1424795 | Burgess Hill Town | Chatham Town | 2H | 48 | burgess hill town||chatham town
+1424796 | Cray Valley PM | Chichester City | 2H | 50 | cray valley pm||chichester city
+1424797 | Brentwood Town | Folkestone Invicta | 2H | 51 | brentwood town||folkestone invicta
+1425569 | Chantilly | Haguenau | 2H | 52 | chantilly||haguenau
+1427037 | Aubervilliers | Linas-Montlhery | 2H | 50 | aubervilliers||linas-montlhery
+1428080 | Alvechurch | Harborough Town | 2H | 53 | alvechurch||harborough town
+1428081 | Kettering Town | Quorn | 2H | 50 | kettering town||quorn
+1428082 | Redditch United | Needham Market | 2H | 52 | redditch united||needham market
+1428083 | Banbury United | Bishop's Stortford | 2H | 53 | banbury united||bishop's stortford
+1428084 | Stourbridge | Stratford Town | 2H | 50 | stourbridge||stratford town
+1428085 | Barwell | AFC Sudbury | 2H | 53 | barwell||afc sudbury
+1428086 | Royston Town | Bromsgrove Sporting | 2H | 49 | royston town||bromsgrove sporting
+1428087 | Leiston | Worcester City | 2H | 53 | leiston||worcester city
+1428088 | St Ives Town | Spalding United | 2H | 53 | st ives town||spalding united
+1428089 | Real Bedford | Stamford | 2H | 53 | real bedford||stamford
+1428090 | Halesowen Town | Bury Town | 2H | 53 | halesowen town||bury town
+1428542 | Tiverton Town | Walton & Hersham | 2H | 49 | tiverton town||walton & hersham
+1428543 | Gosport Borough | Poole Town | 2H | 52 | gosport borough||poole town
+1428544 | Dorchester Town | Bracknell Town | 2H | 53 | dorchester town||bracknell town
+1428545 | Taunton Town | Hanwell Town | 2H | 48 | taunton town||hanwell town
+1428547 | Hungerford Town | Sholing | 2H | 49 | hungerford town||sholing
+1428548 | Havant & Wville | Berkhamsted | 2H | 52 | havant & wville||berkhamsted
+1428549 | Gloucester City | Uxbridge | 2H | 49 | gloucester city||uxbridge
+1428550 | Farnham Town | Basingstoke Town | 2H | 53 | farnham town||basingstoke town
+1428551 | Chertsey Town | Wimborne Town | 2H | 53 | chertsey town||wimborne town
+1428552 | Evesham United | Plymouth Parkway | 2H | 52 | evesham united||plymouth parkway
+1428969 | Rylands | United of Manchester | 2H | 50 | rylands||united of manchester
+1428970 | Stockton Town | Warrington Town | 2H | 55 | stockton town||warrington town
+1428971 | Guiseley AFC | Whitby Town | 2H | 52 | guiseley afc||whitby town
+1428972 | Rushall Olympic | Gainsborough Trinity | 2H | 52 | rushall olympic||gainsborough trinity
+1428973 | Ashton United | Ilkeston Town | 2H | 51 | ashton united||ilkeston town
+1428974 | Bamber Bridge | Morpeth Town | 2H | 54 | bamber bridge||morpeth town
+1428975 | Hyde United | Workington | 2H | 54 | hyde united||workington
+1428976 | Lancaster City | Cleethorpes Town | 2H | 52 | lancaster city||cleethorpes town
+1428977 | Hebburn Town | Prescot Cables | 2H | 47 | hebburn town||prescot cables
+1428978 | Stocksbridge Park Steels | Hednesford Town | 2H | 53 | stocksbridge park steels||hednesford town
+1430126 | Solothurn | Concordia Basel | 2H | 52 | solothurn||concordia basel
+1435089 | Northwood | Barton Rovers | 2H | 51 | northwood||barton rovers
+1435090 | Hitchin Town | Aylesbury United | 2H | 52 | hitchin town||aylesbury united
+1435092 | Biggleswade | AFC Dunstable | 2H | 56 | biggleswade||afc dunstable
+1443899 | Mickleover Sports | Racing Club Warwick | 2H | 51 | mickleover sports||racing club warwick
+1443900 | Lichfield City | Basford United | 2H | 51 | lichfield city||basford united
+1443901 | Corby Town | Bedworth United | 2H | 51 | corby town||bedworth united
+1443902 | Belper Town | Sutton Coldfield Town | 2H | 51 | belper town||sutton coldfield town
+1443903 | Wellingborough Town | Long Eaton United | 2H | 51 | wellingborough town||long eaton united
+1443904 | Loughborough University | AFC Rushden & Diamonds | 2H | 51 | loughborough university||afc rushden & diamonds
+1443905 | Coleshill Town | Carlton Town | 2H | 51 | coleshill town||carlton town
+1443906 | Anstey Nomads | Rugby Borough | 2H | 51 | anstey nomads||rugby borough
+1443907 | Coventry Sphinx | Shepshed Dynamo | 2H | 52 | coventry sphinx||shepshed dynamo
+1443908 | Boldmere St. Michaels | St Neots Town | 2H | 51 | boldmere st. michaels||st neots town
+1460342 | Mirandés II | La Virgen del Camino | 2H | 56 | mirandés ii||la virgen del camino
+1460343 | Colegios Diocesanos | Almazán | 2H | 56 | colegios diocesanos||almazán
+1461256 | Manacor | Mercadal | 2H | 55 | manacor||mercadal
+1461260 | Mallorca II | Collerense | 2H | 51 | mallorca ii||collerense
+1462483 | Oberena | Beti Onak | 2H | 54 | oberena||beti onak
+1462484 | Valle Egüés | Beti Kozkor | 2H | 84 | valle egüés||beti kozkor
+1463390 | Guadalajara II | Illescas | 2H | 49 | guadalajara ii||illescas
+1468839 | Lecco U19 | Reggiana U19 | 2H | 49 | lecco u19||reggiana u19
+1471708 | Interclube | CD Lunda-Sul | 2H | 46 | interclube||cd lunda-sul
+1473328 | Bury | Bootle | 2H | 53 | bury||bootle
+1473329 | Mossley | Newcastle Town | 2H | 49 | mossley||newcastle town
+1473330 | Trafford | Stafford Rangers | 2H | 52 | trafford||stafford rangers
+1473331 | Chasetown | Avro | 2H | 52 | chasetown||avro
+1473332 | Atherton Collieries | Kidsgrove Athletic | 2H | 52 | atherton collieries||kidsgrove athletic
+1473333 | Nantwich Town | Darlaston Town | 2H | 52 | nantwich town||darlaston town
+1473334 | Sporting Khalsa | Vauxhall Motors | 2H | 52 | sporting khalsa||vauxhall motors
+1473335 | Congleton Town | Clitheroe | 2H | 53 | congleton town||clitheroe
+1473336 | Stalybridge Celtic | Lower Breck | 2H | 52 | stalybridge celtic||lower breck
+1473337 | Witton Albion | Shifnal Town FC | 2H | 52 | witton albion||shifnal town fc
+1473338 | Runcorn Linnets | Wythenshawe Town | 2H | 53 | runcorn linnets||wythenshawe town
+1475508 | GOŠK Dubrovnik | Sibenik | 2H | 90 | gošk dubrovnik||sibenik
+1475509 | HNK Zadar | Kamen Ivanbegovina | 2H | 54 | hnk zadar||kamen ivanbegovina
+1476336 | Bradford (Park Avenue) | Redcar Athletic | 2H | 54 | bradford (park avenue)||redcar athletic
+1476337 | Heaton Stannington | Matlock Town | 2H | 53 | heaton stannington||matlock town
+1476338 | Bishop Auckland | Hallam | 2H | 53 | bishop auckland||hallam
+1476339 | North Ferriby | Consett | 2H | 56 | north ferriby||consett
+1476340 | Ossett United | Silsden | 2H | 53 | ossett united||silsden
+1476341 | Bridlington Town | AFC Emley | 2H | 54 | bridlington town||afc emley
+1476342 | Blyth Town | Grimsby Borough | 2H | 54 | blyth town||grimsby borough
+1476343 | Lincoln United | Newton Aycliffe | 2H | 53 | lincoln united||newton aycliffe
+1476344 | Brighouse Town | Blyth Spartans | 2H | 54 | brighouse town||blyth spartans
+1476345 | Dunston UTS | Garforth Town | 2H | 54 | dunston uts||garforth town
+1476346 | Ashington AFC | Pontefract Collieries | 2H | 53 | ashington afc||pontefract collieries
+1476475 | Rugby Town | Bourne Town | 2H | 50 | rugby town||bourne town
+1477368 | Opava | Vysočina Jihlava | 2H | 53 | opava||vysočina jihlava
+1478310 | Valadares Gaia W | Racing Power W | 2H | 49 | valadares gaia w||racing power w
+1494604 | Start | Aalesund | 2H | 52 | start||aalesund
+1497988 | Sporting CP U23 | Famalicão U23 | 2H | 49 | sporting cp u23||famalicão u23
+1498208 | Atl. San Luis U21 | Club Leon U21 | 2H | 50 | atl. san luis u21||club leon u21
+1500335 | Flambeau du Centre | Garage Express | 2H | 90 | flambeau du centre||garage express
+1506569 | B36 II | B71 | 2H | 54 | b36 ii||b71
+1506758 | Academico Viseu U19 | Belenenses U19 | 2H | 51 | academico viseu u19||belenenses u19
+1506760 | Mafra U19 | Torreense U19 | 2H | 52 | mafra u19||torreense u19
+1508977 | Barry Town | Caernarfon Town | 2H | 80 | barry town||caernarfon town
+1508978 | GAP Connah S Quay FC | Penybont | 2H | 83 | gap connah s quay fc||penybont
+1509008 | Briton Ferry | Flint Town United | 2H | 83 | briton ferry||flint town united
+1515095 | SC Braga B | São João Ver | 2H | 50 | sc braga b||são joão ver
+1519500 | Al-Jazira | Shabab Al Ahli Dubai | 2H | 51 | al-jazira||shabab al ahli dubai
+1519514 | Tartu Welco | Maardu | 2H | 54 | tartu welco||maardu
+1521559 | Tallinna Kalev II | Tulevik | 2H | 52 | tallinna kalev ii||tulevik
+1521560 | Tartu Kalev | JK Tabasalu | 2H | 55 | tartu kalev||jk tabasalu
+1522769 | Banga | Panevėžys | 2H | 84 | banga||panevėžys
+1525814 | Torpedo Zhodino | ML Vitebsk | 2H | 56 | torpedo zhodino||ml vitebsk
+1528480 | AS Trencin | Ružomberok | 2H | 84 | as trencin||ružomberok
+1528510 | Zemplín Michalovce | Spartak Trnava | 2H | 86 | zemplín michalovce||spartak trnava
+1528511 | Žilina | Dunajska Streda | 2H | 86 | žilina||dunajska streda
+1528858 | Gandzasar | Ararat | 2H | 52 | gandzasar||ararat
+1533327 | EIF | Turku PS | 2H | 51 | eif||turku ps
+1533328 | Norrby IF | IFK Norrkoping | 2H | 55 | norrby if||ifk norrkoping
+1533573 | El Mokawloon | Petrojet | 2H | 49 | el mokawloon||petrojet
+1533882 | Inter Turku | AC Oulu | 2H | 50 | inter turku||ac oulu
+1533889 | HNK Cibalia | Opatija | 2H | 86 | hnk cibalia||opatija
+1533890 | Dubrava Zagreb | Croatia Zmijavci | 2H | 86 | dubrava zagreb||croatia zmijavci
+1534224 | Anorthosis | Akritas | 2H | 48 | anorthosis||akritas
+1534225 | Aris | Omonia Nicosia | 2H | 51 | aris||omonia nicosia
+1535563 | Huachipato | Concepción | 2H | 47 | huachipato||concepción
+1535591 | Buducnost Dobanovci | Radnički Obrenovac | 2H | 83 | buducnost dobanovci||radnički obrenovac
+1535674 | Grei W | Åsane W | 2H | 54 | grei w||åsane w
+1385327 | Glentoran | Coleraine FC | HT | 45 | glentoran||coleraine fc
+1385521 | Annagh United | Dundela | HT | 45 | annagh united||dundela
+1389552 | Ballymacash Rangers | Banbridge Town | HT | 45 | ballymacash rangers||banbridge town
+1392103 | Racing Santander | Albacete | HT | 45 | racing santander||albacete
+1396979 | FC Andorra | Eibar | HT | 45 | fc andorra||eibar
+1400203 | FC Krasnodar | Nizhny Novgorod | HT | 45 | fc krasnodar||nizhny novgorod
+1412931 | Lüneburger SK Hansa | Bersenbrück | HT | 45 | lüneburger sk hansa||bersenbrück
+1418647 | Brühl | FC Schaffhausen | HT | 45 | brühl||fc schaffhausen
+1431794 | Pontevedra | Ourense CF | HT | 45 | pontevedra||ourense cf
+1435461 | Larkhall Athletic | Brixham | HT | 45 | larkhall athletic||brixham
+1442943 | Bognor Regis Town | Metropolitan Police | HT | 45 | bognor regis town||metropolitan police
+1462479 | Pamplona | Cirbonero | HT | 45 | pamplona||cirbonero
+1479750 | Inter Milano W | Napoli W | HT | 45 | inter milano w||napoli w
+1498207 | Atlas U21 | Queretaro U21 | HT | 45 | atlas u21||queretaro u21
+1498210 | UNAM Pumas U21 | Club America U21 | HT | 45 | unam pumas u21||club america u21
+1515093 | AD Marco 09 | Sanjoanense | HT | 45 | ad marco 09||sanjoanense
+1529152 | FA Šiauliai II | Atmosfera | HT | 45 | fa šiauliai ii||atmosfera

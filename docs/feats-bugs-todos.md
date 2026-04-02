@@ -1,10 +1,15 @@
 
 feats/bugs/todos:
--calculate expected roi
+1. separate pages for upcoming/running/ended games
+2. add login authentication
+
+
+
+
+
 -explanatory ai generated message for each pick
 -allow User to select their own picks for a given game and save
 -allow User to view their saved picks
--separate pages for upcoming/running/completed games
 -ability to display, per match, the %'s from provider module
 -UI: use 11elo icons and navbar layout + about page + toggle dark/light mode + footer
 -auth -> different views -> 
@@ -13,13 +18,9 @@ feats/bugs/todos:
 -Add highlighter to navbar on-hover like systemvetardagen.se
 -add robots.txt
 -integrate live-odds module to live page
--perform model re-work, see model-rework.md
--refactor GameRound -> Round. GameType` → `RoundType`.
--remove manual ingest folder/classes
 -website background animated bright/dark depending on time of day in sweden
 -employ docker compose workflow
 -user feature: upload own internal probs and run model on that (key factor: ease)
--add ingestion fallbacks for rounds
 -add github readme(with very general text, see chat on phone), make only README file public
 -deploy on railway (separate frontend/backend servers?)
 -docker Compose, define  containers for frontend/backend/db in yaml -> easier deployment/development
@@ -36,3 +37,11 @@ feats/bugs/todos:
 -modular monolith rework: split backend into application/infra/web. combine with libs on gh
 - add gradients/animations
 - FootballData has predictions? https://www.api-football.com/documentation-v3#section/Authentication
+
+-round start -> running should be hardcoded, but match upcoming -> live is when livefixture is fetched for it,
+But if not fetched, how to handle state/ui both upcoming couple hours and then later on? 
+As, going from round running -> ended depends on all matches state
+
+
+- add KL divergenece for value calculation (or renyi with R = risk aversion = alpha param in Renyi = 1 for neutral risk) 
+- -calculate expected roi

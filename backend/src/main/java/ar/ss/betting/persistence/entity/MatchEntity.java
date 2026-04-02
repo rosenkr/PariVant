@@ -94,6 +94,24 @@ public class MatchEntity {
         this.round = round;
     }
 
+    public void setStatus(MatchStatus status) {
+        this.status = Objects.requireNonNull(status, "status cannot be null");
+    }
+
+    public void setHomeScore(int homeScore) {
+        if (homeScore < 0) {
+            throw new IllegalArgumentException("homeScore cannot be negative");
+        }
+        this.homeScore = homeScore;
+    }
+
+    public void setAwayScore(int awayScore) {
+        if (awayScore < 0) {
+            throw new IllegalArgumentException("awayScore cannot be negative");
+        }
+        this.awayScore = awayScore;
+    }
+
     public Long getId() {
         return id;
     }

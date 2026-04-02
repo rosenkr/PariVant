@@ -3,7 +3,7 @@
 // "Current" means: RUNNING if exists, else UPCOMING if exists, else 404.
 
 import { API_BASE_URL } from "../http";
-import type { CurrentRoundResponse, GameType } from "../../types/round";
+import type { CurrentRoundResponse, RoundType } from "../../types/round";
 
 export type GetCurrentRoundResult =
   | { kind: "ok"; data: CurrentRoundResponse }
@@ -14,9 +14,9 @@ export type GetCurrentRoundResult =
 // /public/current returns (in this order): STRYKTIPSET running, else STRYKTIPSET upcoming,
 // else EUROPATIPSET running, else EUROPATIPSET upcoming, else TOPPTIPSET running,
 // else TOPPTIPSET upcoming, else 404.
-export async function getCurrentRound(gameType?: GameType): Promise<GetCurrentRoundResult> {
-  const url = gameType
-    ? `${API_BASE_URL}/public/current?gameType=${encodeURIComponent(gameType)}`
+export async function getCurrentRound(roundType?: RoundType): Promise<GetCurrentRoundResult> {
+  const url = roundType
+    ? `${API_BASE_URL}/public/current?roundType=${encodeURIComponent(roundType)}`
     : `${API_BASE_URL}/public/current`;
 
   try {

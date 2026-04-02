@@ -19,7 +19,7 @@ import { useCurrentRound } from "../hooks/useCurrentRound";
 import { useModelRuns } from "../hooks/useModelRuns";
 import { useLiveRound } from "../hooks/useLiveRound";
 
-import type { GameType } from "../types/round";
+import type { RoundType } from "../types/round";
 import type { ModelRunView, Outcome } from "../types/modelRun";
 import type { LiveMatchUpdate } from "../types/live";
 
@@ -40,16 +40,16 @@ function parseSelections(run: ModelRunView): Record<string, Outcome[]> {
 }
 
 export default function HomePage() {
-  // undefined means: use backend fallback order (/public/current without ?gameType)
-  const [gameType, setGameType] = useState<GameType | undefined>(undefined);
+  // undefined means: use backend fallback order (/public/current without ?roundType)
+  const [roundType, setRoundType] = useState<RoundType | undefined>(undefined);
   const [budget, setBudget] = useState<(typeof PRESET_BUDGETS)[number]>(64);
   const [loginDialogOpen, setLoginDialogOpen] = useState(false);
 
-  const currentQuery = useCurrentRound(gameType);
+  const currentQuery = useCurrentRound(roundType);
   const current = currentQuery.data;
 
-  const selectedGameTypeFromBackend: GameType | undefined =
-    current && current.kind === "ok" ? current.data.selectedGameType : undefined;
+  const selectedRoundTypeFromBackend: RoundType | undefined =
+    current && current.kind === "ok" ? current.data.selectedRoundType : undefined;
 
   const roundId = current && current.kind === "ok" ? current.data.round.id : null;
   const roundStatus = current && current.kind === "ok" ? current.data.roundStatus : null;
@@ -73,7 +73,6 @@ export default function HomePage() {
       roundId: current.data.round.id,
       roundStatus: current.data.roundStatus,
       start: current.data.round.startDate,
-      end: current.data.round.endDate,
     };
   }, [current]);
 
@@ -99,15 +98,14 @@ export default function HomePage() {
     <Page maxWidth="lg">
       <Stack spacing={2}>
         <RoundHeader
-          gameType={gameType}
-          setGameType={setGameType}
-          selectedGameType={selectedGameTypeFromBackend}
+          roundType={roundType}
+          setRoundType={setRoundType}
+          selectedRoundType={selectedRoundTypeFromBackend}
           budget={budget}
           setBudget={setBudget}
           roundId={headerInfo.roundId}
           roundStatus={headerInfo.roundStatus}
           start={headerInfo.start}
-          end={headerInfo.end}
         />
 
         <Paper

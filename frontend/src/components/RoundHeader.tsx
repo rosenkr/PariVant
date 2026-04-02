@@ -9,18 +9,18 @@ import {
   Typography,
 } from "@mui/material";
 import { useEffect, useMemo, useState } from "react";
-import type { GameType, RoundStatus } from "../types/round";
+import type { RoundType, RoundStatus } from "../types/round";
 import { formatCountdownTo, formatRoundDateTime } from "../utils/time";
 
 const PRESET_BUDGETS = [32, 64, 128, 256] as const;
 
 type Props = {
-  // undefined means: use backend fallback (/public/current with no gameType param)
-  gameType: GameType | undefined;
-  setGameType: (t: GameType) => void;
+  // undefined means: use backend fallback (/public/current with no roundType param)
+  roundType: RoundType | undefined;
+  setRoundType: (t: RoundType) => void;
 
-  // when gameType is undefined, backend picks a type; we show it in the dropdown
-  selectedGameType?: GameType;
+  // when roundType is undefined, backend picks a type; we show it in the dropdown
+  selectedRoundType?: RoundType;
 
   budget: (typeof PRESET_BUDGETS)[number];
   setBudget: (b: (typeof PRESET_BUDGETS)[number]) => void;
@@ -28,21 +28,19 @@ type Props = {
   roundId?: number;
   roundStatus?: RoundStatus;
   start?: string; // backend LocalDateTime string
-  end?: string;   // backend LocalDateTime string
 };
 
 export function RoundHeader({
-  gameType,
-  setGameType,
-  selectedGameType,
+  roundType,
+  setRoundType,
+  selectedRoundType,
   budget,
   setBudget,
   roundId,
   roundStatus,
   start,
-  end,
 }: Props) {
-  const shownGameType: GameType = gameType ?? selectedGameType ?? "STRYKTIPSET";
+  const shownRoundType: RoundType = roundType ?? selectedRoundType ?? "STRYKTIPSET";
 
   // update clock every 30s only when we need countdown
   const [now, setNow] = useState(() => new Date());
@@ -63,7 +61,6 @@ export function RoundHeader({
   }, [roundStatus, start, now]);
 
   const startText = useMemo(() => formatRoundDateTime(start), [start]);
-  const endText = useMemo(() => formatRoundDateTime(end), [end]);
 
   return (
     <Box
@@ -107,21 +104,17 @@ export function RoundHeader({
             </Typography>
           )}
 
-          {endText && (
-            <Typography variant="caption" sx={{ opacity: 0.75 }}>
-              End: {endText}
-            </Typography>
-          )}
+
         </Stack>
       </Stack>
 
       <Stack direction="row" spacing={2} alignItems="center">
         <FormControl size="small" sx={{ minWidth: 180 }}>
-          <InputLabel>Game</InputLabel>
+          <InputLabel>Round</InputLabel>
           <Select
-            label="Game"
-            value={shownGameType}
-            onChange={(e) => setGameType(e.target.value as GameType)}
+            label="Round"
+            value={shownRoundType}
+            onChange={(e) => setRoundType(e.target.value as RoundType)}
           >
             <MenuItem value="STRYKTIPSET">STRYKTIPSET</MenuItem>
             <MenuItem value="EUROPATIPSET">EUROPATIPSET</MenuItem>

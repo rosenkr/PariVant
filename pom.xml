@@ -21,6 +21,7 @@
   <modules>
     <module>domain</module>
     <module>backend</module>
+    <module>core-libs</module>
   </modules>
 
   <properties>
