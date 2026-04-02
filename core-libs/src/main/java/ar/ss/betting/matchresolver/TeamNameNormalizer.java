@@ -1,4 +1,5 @@
 package ar.ss.betting.matchresolver;
+
 import org.springframework.stereotype.Component;
 
 import java.text.Normalizer;
@@ -29,7 +30,6 @@ public class TeamNameNormalizer {
         aliases.put("oxford united", "oxford");
         aliases.put("sheffield utd", "sheffield u");
         aliases.put("qpr", "queens park rangers");
-
     }
 
     public String normalize(String teamName) {
@@ -43,6 +43,10 @@ public class TeamNameNormalizer {
                 .replaceAll("[^a-z0-9 ]", " ")
                 .replaceAll("\\s+", " ")
                 .trim();
+
+        if (normalized.endsWith(" ii")) {
+            normalized = normalized.substring(0, normalized.length() - 3) + " b";
+        }
 
         return aliases.getOrDefault(normalized, normalized);
     }
