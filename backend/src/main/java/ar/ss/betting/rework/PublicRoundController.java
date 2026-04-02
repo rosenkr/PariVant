@@ -8,7 +8,6 @@ import ar.ss.betting.persistence.entity.RoundEntity;
 import ar.ss.betting.persistence.repo.MatchContextRepository;
 import ar.ss.betting.persistence.repo.MatchRepository;
 import ar.ss.betting.persistence.repo.RoundRepository;
-import org.springframework.data.domain.PageRequest;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -18,9 +17,6 @@ import java.util.*;
 @RestController
 @RequestMapping("/public")
 public class PublicRoundController {
-
-    private static final List<RoundType> DEFAULT_FALLBACK_ORDER =
-            List.of(RoundType.STRYKTIPSET, RoundType.EUROPATIPSET, RoundType.TOPPTIPSET);
 
     private final RoundRepository roundRepository;
     private final MatchRepository matchRepository;
@@ -34,56 +30,25 @@ public class PublicRoundController {
         this.matchContextRepository = Objects.requireNonNull(matchContextRepository);
     }
 
-    @GetMapping("/current")
-    public ResponseEntity<CurrentRoundResponse> getCurrent(
-            @RequestParam(name = "roundType", required = false) String roundTypeParam
+    @GetMapping("/rounds")
+    public ResponseEntity<List<RoundView>> getRounds(
+            @RequestParam("roundType") String roundTypeParam,
+            @RequestParam("status") String statusParam
     ) {
-        if (roundTypeParam != null && !roundTypeParam.isBlank()) {
-            RoundType requested = RoundType.valueOf(roundTypeParam);
-            SelectedRound selected = selectForType(requested);
-            if (selected == null) {
-                return ResponseEntity.notFound().build();
-            }
-            return ResponseEntity.ok(toResponse(requested, selected));
-        }
+        RoundType roundType = RoundType.valueOf(roundTypeParam);
+        RoundStatus status = RoundStatus.valueOf(statusParam);
 
-        for (RoundType type : DEFAULT_FALLBACK_ORDER) {
-            SelectedRound selected = selectForType(type);
-            if (selected != null) {
-                return ResponseEntity.ok(toResponse(type, selected));
-            }
-        }
+        List<RoundEntity> rounds =
+                roundRepository.findByRoundTypeAndStatusOrderByStartDateAsc(roundType, status);
 
-        return ResponseEntity.notFound().build();
+        List<RoundView> response = rounds.stream()
+                .map(this::toRoundView)
+                .toList();
+
+        return ResponseEntity.ok(response);
     }
 
-    private SelectedRound selectForType(RoundType type) {
-        List<RoundEntity> running =
-                roundRepository.findByRoundTypeAndStatusOrderByStartDateAsc(
-                        type,
-                        RoundStatus.RUNNING,
-                        PageRequest.of(0, 1)
-                );
-        if (!running.isEmpty()) {
-            return new SelectedRound(running.get(0), RoundStatus.RUNNING);
-        }
-
-        List<RoundEntity> upcoming =
-                roundRepository.findByRoundTypeAndStatusOrderByStartDateAsc(
-                        type,
-                        RoundStatus.UPCOMING,
-                        PageRequest.of(0, 1)
-                );
-        if (!upcoming.isEmpty()) {
-            return new SelectedRound(upcoming.get(0), RoundStatus.UPCOMING);
-        }
-
-        return null;
-    }
-
-    private CurrentRoundResponse toResponse(RoundType selectedRoundType, SelectedRound selected) {
-        RoundEntity round = selected.round();
-
+    private RoundView toRoundView(RoundEntity round) {
         List<MatchEntity> matchEntities =
                 matchRepository.findByRoundIdOrderByMatchNumberAsc(round.getId());
 
@@ -98,41 +63,42 @@ public class PublicRoundController {
         List<MatchView> matches = new ArrayList<>(matchEntities.size());
         for (MatchEntity m : matchEntities) {
             MatchContextEntity c = ctxByMatch.get(m.getMatchNumber());
-
-            TripleView market = null;
-            TripleView pub = null;
-
-            if (c != null) {
-                market = new TripleView(c.getMarketHome(), c.getMarketDraw(), c.getMarketAway());
-                pub = new TripleView(c.getPublicHome(), c.getPublicDraw(), c.getPublicAway());
-            }
-
-            matches.add(new MatchView(
-                    m.getMatchNumber(),
-                    m.getStartDate(),
-                    m.getHomeTeamName(),
-                    m.getAwayTeamName(),
-                    market,
-                    pub
-            ));
+            matches.add(toMatchView(m, c));
         }
 
-        RoundView roundView = new RoundView(
+        return new RoundView(
                 round.getId(),
                 round.getStartDate(),
                 matches
         );
-
-        return new CurrentRoundResponse(selectedRoundType, selected.status(), roundView);
     }
 
-    private record SelectedRound(RoundEntity round, RoundStatus status) { }
+    private MatchView toMatchView(MatchEntity match, MatchContextEntity context) {
+        TripleView market = null;
+        TripleView publicPick = null;
 
-    public record CurrentRoundResponse(
-            RoundType selectedRoundType,
-            RoundStatus roundStatus,
-            RoundView round
-    ) { }
+        if (context != null) {
+            market = new TripleView(
+                    context.getMarketHome(),
+                    context.getMarketDraw(),
+                    context.getMarketAway()
+            );
+            publicPick = new TripleView(
+                    context.getPublicHome(),
+                    context.getPublicDraw(),
+                    context.getPublicAway()
+            );
+        }
+
+        return new MatchView(
+                match.getMatchNumber(),
+                match.getStartDate(),
+                match.getHomeTeamName(),
+                match.getAwayTeamName(),
+                market,
+                publicPick
+        );
+    }
 
     public record RoundView(
             long id,

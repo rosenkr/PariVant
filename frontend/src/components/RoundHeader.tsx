@@ -9,40 +9,38 @@ import {
   Typography,
 } from "@mui/material";
 import { useEffect, useMemo, useState } from "react";
-import type { RoundType, RoundStatus } from "../types/round";
+import type { RoundStatus, RoundType } from "../types/round";
 import { formatCountdownTo, formatRoundDateTime } from "../utils/time";
 
 const PRESET_BUDGETS = [32, 64, 128, 256] as const;
 
 type Props = {
-  // undefined means: use backend fallback (/public/current with no roundType param)
-  roundType: RoundType | undefined;
+  roundType: RoundType;
   setRoundType: (t: RoundType) => void;
-
-  // when roundType is undefined, backend picks a type; we show it in the dropdown
-  selectedRoundType?: RoundType;
 
   budget: (typeof PRESET_BUDGETS)[number];
   setBudget: (b: (typeof PRESET_BUDGETS)[number]) => void;
 
   roundId?: number;
   roundStatus?: RoundStatus;
-  start?: string; // backend LocalDateTime string
+  start?: string;
 };
+
+function roundStatusLabel(roundStatus?: RoundStatus): string | undefined {
+  if (!roundStatus) return undefined;
+  if (roundStatus === "RUNNING") return "LIVE";
+  return roundStatus;
+}
 
 export function RoundHeader({
   roundType,
   setRoundType,
-  selectedRoundType,
   budget,
   setBudget,
   roundId,
   roundStatus,
   start,
 }: Props) {
-  const shownRoundType: RoundType = roundType ?? selectedRoundType ?? "STRYKTIPSET";
-
-  // update clock every 30s only when we need countdown
   const [now, setNow] = useState(() => new Date());
 
   useEffect(() => {
@@ -61,6 +59,7 @@ export function RoundHeader({
   }, [roundStatus, start, now]);
 
   const startText = useMemo(() => formatRoundDateTime(start), [start]);
+  const shownStatus = roundStatusLabel(roundStatus);
 
   return (
     <Box
@@ -80,9 +79,9 @@ export function RoundHeader({
         <Stack direction="row" spacing={1} alignItems="center" sx={{ flexWrap: "wrap" }}>
           {typeof roundId === "number" && <Chip label={`Round #${roundId}`} size="small" />}
 
-          {roundStatus && (
+          {shownStatus && (
             <Chip
-              label={roundStatus}
+              label={shownStatus}
               size="small"
               color={roundStatus === "RUNNING" ? "warning" : "default"}
             />
@@ -103,8 +102,6 @@ export function RoundHeader({
               Start: {startText}
             </Typography>
           )}
-
-
         </Stack>
       </Stack>
 
@@ -113,7 +110,7 @@ export function RoundHeader({
           <InputLabel>Round</InputLabel>
           <Select
             label="Round"
-            value={shownRoundType}
+            value={roundType}
             onChange={(e) => setRoundType(e.target.value as RoundType)}
           >
             <MenuItem value="STRYKTIPSET">STRYKTIPSET</MenuItem>
