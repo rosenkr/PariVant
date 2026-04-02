@@ -21,13 +21,11 @@ public interface RoundRepository extends JpaRepository<RoundEntity, Long> {
     List<RoundEntity> findByRoundTypeAndStatusOrderByStartDateAsc(RoundType roundType,
                                                                   RoundStatus status);
 
-    List<RoundEntity> findByRoundTypeAndStatusOrderByStartDateAsc(RoundType roundType,
-                                                                  RoundStatus status,
-                                                                  Pageable pageable);
-
     List<RoundEntity> findByStatusInAndStartDateBetweenOrderByStartDateAsc(List<RoundStatus> statuses,
                                                                            LocalDateTime from,
                                                                            LocalDateTime to);
 
     List<RoundEntity> findByStatusAndStartDateLessThanEqual(RoundStatus status, LocalDateTime time);
+
+    List<RoundEntity> findByStatus(RoundStatus status);
 }

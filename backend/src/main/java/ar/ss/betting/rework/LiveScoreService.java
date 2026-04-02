@@ -1,5 +1,5 @@
 package ar.ss.betting.rework;
-
+import java.util.Objects;
 import ar.ss.betting.domain.MatchStatus;
 import ar.ss.betting.domain.RoundStatus;
 import ar.ss.betting.persistence.entity.MatchEntity;
@@ -27,7 +27,7 @@ import java.util.concurrent.CopyOnWriteArrayList;
 public class LiveScoreService {
 
     private static final long EMITTER_TIMEOUT_MS = 5 * 60 * 1000L; // 5 minutes
-
+    private static final long ROUND_FINISH_FALLBACK_MINUTES = 150;
     private final MatchRepository matchRepository;
     private final RoundRepository roundRepository;
     private final MatchResolver matchResolver;
@@ -72,6 +72,8 @@ public class LiveScoreService {
         for (MatchEntity match : matchesToStart) {
             match.setStatus(MatchStatus.RUNNING);
         }
+
+        finalizeRunningRounds(now);
     }
 
     public void updateFixtures(List<ApiFootballClient.LiveFixture> fixtures) {
@@ -120,6 +122,7 @@ public class LiveScoreService {
                 }
             }
         }
+        finalizeRunningRounds(LocalDateTime.now());
     }
 
     public void broadcastAllSubscribedRounds() {
@@ -221,6 +224,50 @@ public class LiveScoreService {
             try {
                 emitter.complete();
             } catch (Exception ignore) {
+            }
+        }
+    }
+
+    private void finalizeRunningRounds(LocalDateTime now) {
+        List<RoundEntity> runningRounds = roundRepository.findByStatus(RoundStatus.RUNNING);
+
+        for (RoundEntity round : runningRounds) {
+            List<MatchEntity> matches = matchRepository.findByRoundIdOrderByMatchNumberAsc(round.getId());
+
+            if (matches.isEmpty()) {
+                continue;
+            }
+
+            boolean anyCancelled = matches.stream()
+                    .anyMatch(m -> m.getStatus() == MatchStatus.CANCELLED);
+            if (anyCancelled) {
+                round.setStatus(RoundStatus.UNSUPPORTED);
+                continue;
+            }
+
+            boolean anyPostponed = matches.stream()
+                    .anyMatch(m -> m.getStatus() == MatchStatus.POSTPONED);
+            if (anyPostponed) {
+                round.setStatus(RoundStatus.UNSUPPORTED);
+                continue;
+            }
+
+            boolean allFinished = matches.stream()
+                    .allMatch(m -> m.getStatus() == MatchStatus.FINISHED);
+            if (allFinished) {
+                round.setStatus(RoundStatus.ENDED);
+                continue;
+            }
+
+            LocalDateTime latestKickoff = matches.stream()
+                    .map(MatchEntity::getStartDate)
+                    .filter(Objects::nonNull)
+                    .max(LocalDateTime::compareTo)
+                    .orElse(null);
+
+            if (latestKickoff != null &&
+                    !now.isBefore(latestKickoff.plusMinutes(ROUND_FINISH_FALLBACK_MINUTES))) {
+                round.setStatus(RoundStatus.ENDED);
             }
         }
     }

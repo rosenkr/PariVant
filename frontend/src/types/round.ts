@@ -3,7 +3,6 @@
 export type RoundType = "TOPPTIPSET" | "STRYKTIPSET" | "EUROPATIPSET";
 
 export type RoundStatus = "UPCOMING" | "RUNNING" | "ENDED";
-
 export type TripleView = {
   homeWin: number;
   draw: number;
