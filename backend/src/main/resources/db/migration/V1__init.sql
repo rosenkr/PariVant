@@ -51,6 +51,41 @@ CREATE TABLE IF NOT EXISTS model_run (
     internal_probabilities_json JSONB NOT NULL
 );
 
+CREATE TABLE IF NOT EXISTS model_run_provider_prediction (
+    id BIGSERIAL PRIMARY KEY,
+    model_run_id BIGINT NOT NULL REFERENCES model_run(id) ON DELETE CASCADE,
+    match_number INT NOT NULL,
+    provider_name VARCHAR(64) NOT NULL,
+
+    status VARCHAR(32) NOT NULL,
+    message VARCHAR(255),
+
+    requested_home_team_name VARCHAR(80) NOT NULL,
+    requested_away_team_name VARCHAR(80) NOT NULL,
+
+    resolved_home_team_name VARCHAR(80),
+    resolved_away_team_name VARCHAR(80),
+
+    kickoff TIMESTAMP,
+    kickoff_raw VARCHAR(64),
+
+    probability_home DOUBLE PRECISION,
+    probability_draw DOUBLE PRECISION,
+    probability_away DOUBLE PRECISION,
+
+    fetched_at TIMESTAMP,
+    created_at TIMESTAMP NOT NULL DEFAULT now(),
+
+    CONSTRAINT uq_model_run_match_provider
+        UNIQUE (model_run_id, match_number, provider_name)
+);
+
+CREATE INDEX IF NOT EXISTS idx_mrpp_model_run_id
+    ON model_run_provider_prediction(model_run_id);
+
+CREATE INDEX IF NOT EXISTS idx_mrpp_model_run_match
+    ON model_run_provider_prediction(model_run_id, match_number);
+
 CREATE INDEX IF NOT EXISTS idx_model_run_round_id ON model_run(round_id);
 CREATE INDEX IF NOT EXISTS idx_model_run_generated_at ON model_run(generated_at);
 CREATE INDEX IF NOT EXISTS idx_match_round_id ON match(round_id);

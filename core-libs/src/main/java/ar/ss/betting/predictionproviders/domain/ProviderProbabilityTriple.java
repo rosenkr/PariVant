@@ -5,19 +5,19 @@ import lombok.ToString;
 
 @Getter
 @ToString
-public final class ProbabilityTriple {
+public final class ProviderProbabilityTriple {
 
     private final double homeWin;
     private final double draw;
     private final double awayWin;
 
-    private ProbabilityTriple(double homeWin, double draw, double awayWin) {
+    private ProviderProbabilityTriple(double homeWin, double draw, double awayWin) {
         this.homeWin = homeWin;
         this.draw = draw;
         this.awayWin = awayWin;
     }
 
-    public static ProbabilityTriple of(double homeWin, double draw, double awayWin) {
+    public static ProviderProbabilityTriple of(double homeWin, double draw, double awayWin) {
         validateNonNegative(homeWin, draw, awayWin);
 
         double sum = homeWin + draw + awayWin;
@@ -25,7 +25,7 @@ public final class ProbabilityTriple {
             throw new IllegalArgumentException("Probability triple sum must be > 0");
         }
 
-        return new ProbabilityTriple(
+        return new ProviderProbabilityTriple(
                 homeWin / sum,
                 draw / sum,
                 awayWin / sum

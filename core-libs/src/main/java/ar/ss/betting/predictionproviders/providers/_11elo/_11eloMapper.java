@@ -1,7 +1,7 @@
 package ar.ss.betting.predictionproviders.providers._11elo;
 
 import ar.ss.betting.predictionproviders.domain.MatchPrediction;
-import ar.ss.betting.predictionproviders.domain.ProbabilityTriple;
+import ar.ss.betting.predictionproviders.domain.ProviderProbabilityTriple;
 import org.springframework.stereotype.Component;
 
 import java.time.OffsetDateTime;
@@ -35,8 +35,8 @@ public class _11eloMapper {
                 && Objects.nonNull(prediction.getAwayWin());
     }
 
-    private ProbabilityTriple toProbabilityTriple(_11eloPrediction prediction) {
-        return ProbabilityTriple.of(
+    private ProviderProbabilityTriple toProbabilityTriple(_11eloPrediction prediction) {
+        return ProviderProbabilityTriple.of(
                 prediction.getHomeWin() / 100.0,
                 prediction.getDraw() / 100.0,
                 prediction.getAwayWin() / 100.0

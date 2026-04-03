@@ -15,6 +15,6 @@ public class MatchPrediction implements MatchIdentityCandidate {
     String awayTeam;
     OffsetDateTime kickoff;
     String kickoffRaw;
-    ProbabilityTriple probabilities;
+    ProviderProbabilityTriple probabilities;
     Instant fetchedAt;
 }

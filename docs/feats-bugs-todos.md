@@ -1,10 +1,12 @@
 
 feats/bugs/todos:
-0. integrate live-odds module to live page
+0. consider moving tipzer code to a package under core-libs, with interface etc as prediction providers. Both can be placed under a common network package
 1. Display, per match, the %'s from provider module 
 2. add bzzoiro prediction provider, FootballData has predictions? https://www.api-football.com/documentation-v3#section/Authentication
 
-5. add My Page page (authentication). User table? Security? Views? gmail?
+
+
+3. add My Page page (authentication). User table? Security? Views? gmail?
     -sliders&tags
     -run model
     -modify selection
@@ -24,5 +26,5 @@ feats/bugs/todos:
 15. add robots.txt
 25. website background animated bright/dark depending on time of day in sweden
 30. employ docker compose workflow, -docker Compose, define  containers for frontend/backend/db in yaml -> easier deployment/development
-35. add lombok to reduce boilerplate in persistenc code
+35. add lombok to reduce boilerplate in persistence code
 40. calculate expected roi

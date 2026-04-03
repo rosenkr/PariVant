@@ -1,7 +1,7 @@
 package ar.ss.betting.predictionproviders.providers.clubelo;
 
 import ar.ss.betting.predictionproviders.domain.MatchPrediction;
-import ar.ss.betting.predictionproviders.domain.ProbabilityTriple;
+import ar.ss.betting.predictionproviders.domain.ProviderProbabilityTriple;
 import org.springframework.stereotype.Component;
 
 
@@ -27,7 +27,7 @@ public class ClubEloMapper {
                 .toList();
     }
 
-    private ProbabilityTriple toProbabilityTriple(ClubEloFixtureRow row) {
+    private ProviderProbabilityTriple toProbabilityTriple(ClubEloFixtureRow row) {
         double homeWin =
                 row.getGd1() +
                         row.getGd2() +
@@ -46,7 +46,7 @@ public class ClubEloMapper {
                         row.getGdMinus5() +
                         row.getGdMinusMoreThan5();
 
-        return ProbabilityTriple.of(homeWin, draw, awayWin);
+        return ProviderProbabilityTriple.of(homeWin, draw, awayWin);
     }
 
     private OffsetDateTime parseKickoff(String rawDate) {
