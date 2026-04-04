@@ -1,0 +1,38 @@
+package ar.ss.betting.rework;
+
+import ar.ss.betting.predictionproviders.service.PredictionQueryService;
+import ar.ss.betting.predictionproviders.service.model.ProviderRawPredictionSnapshot;
+import org.springframework.scheduling.annotation.Scheduled;
+import org.springframework.stereotype.Service;
+
+import java.time.Instant;
+import java.util.List;
+import java.util.Objects;
+
+@Service
+public class PredictionSnapshotCacheService {
+
+    private final PredictionQueryService predictionQueryService;
+
+    private volatile CachedPredictionSnapshot latestSnapshot =
+            new CachedPredictionSnapshot(Instant.EPOCH, List.of());
+
+    public PredictionSnapshotCacheService(PredictionQueryService predictionQueryService) {
+        this.predictionQueryService = Objects.requireNonNull(predictionQueryService);
+    }
+
+    @Scheduled(fixedDelay = 600_000)
+    public void refresh() {
+        List<ProviderRawPredictionSnapshot> snapshots = predictionQueryService.fetchProviderSnapshots();
+        latestSnapshot = new CachedPredictionSnapshot(Instant.now(), List.copyOf(snapshots));
+    }
+
+    public CachedPredictionSnapshot getLatestSnapshot() {
+        return latestSnapshot;
+    }
+
+    public record CachedPredictionSnapshot(
+            Instant refreshedAt,
+            List<ProviderRawPredictionSnapshot> snapshots
+    ) { }
+}

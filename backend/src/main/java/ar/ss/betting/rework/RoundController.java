@@ -30,17 +30,17 @@ public class RoundController {
     }
 
     @PostMapping("/{roundId}/model-runs")
-    public ResponseEntity<CreateModelRunResponse> createModelRun(@PathVariable long roundId,
-                                                                 @RequestBody CreateModelRunRequest request) {
-
-        long modelRunId = roundApiService.runModelAndPersist(
+    public ResponseEntity<CreatePresetModelRunsResponse> createPresetModelRuns(
+            @PathVariable long roundId,
+            @RequestBody CreatePresetModelRunsRequest request
+    ) {
+        List<RoundApiService.CreatedModelRun> createdRuns = roundApiService.runPresetModelRuns(
                 roundId,
-                request.budgetInSek(),
                 request.contexts(),
                 request.interventions()
         );
 
-        return ResponseEntity.ok(new CreateModelRunResponse(modelRunId));
+        return ResponseEntity.ok(new CreatePresetModelRunsResponse(createdRuns));
     }
 
     @GetMapping("/{roundId}/model-runs/presets/latest")
@@ -56,11 +56,12 @@ public class RoundController {
 
     public record CreateRoundResponse(long roundId) { }
 
-    public record CreateModelRunRequest(
-            int budgetInSek,
+    public record CreatePresetModelRunsRequest(
             Map<Integer, ModelSelectionRequestDto.MatchContextDto> contexts,
             Map<Integer, ModelSelectionRequestDto.MatchInterventionsDto> interventions
     ) { }
 
-    public record CreateModelRunResponse(long modelRunId) { }
+    public record CreatePresetModelRunsResponse(
+            List<RoundApiService.CreatedModelRun> createdRuns
+    ) { }
 }

@@ -1,35 +1,44 @@
 package ar.ss.betting.rework;
 
-
 import ar.ss.betting.domain.Match;
 import ar.ss.betting.domain.Outcome;
 import ar.ss.betting.domain.Round;
 import ar.ss.betting.model.ModelSelectionResult;
 import ar.ss.betting.model.ProbabilityTriple;
-import ar.ss.betting.persistence.entity.RoundEntity;
 import ar.ss.betting.persistence.entity.MatchEntity;
 import ar.ss.betting.persistence.entity.ModelRunEntity;
+import ar.ss.betting.persistence.entity.ModelRunProviderPredictionEntity;
+import ar.ss.betting.persistence.entity.RoundEntity;
+import ar.ss.betting.persistence.repo.ModelRunProviderPredictionRepository;
 import ar.ss.betting.persistence.repo.ModelRunRepository;
 import ar.ss.betting.persistence.repo.RoundRepository;
+import ar.ss.betting.predictionproviders.domain.MatchPrediction;
+import ar.ss.betting.predictionproviders.domain.ProviderProbabilityTriple;
+import ar.ss.betting.predictionproviders.service.model.MatchPredictionResult;
+import ar.ss.betting.predictionproviders.service.model.ProviderPredictionResult;
 import jakarta.transaction.Transactional;
 import org.springframework.stereotype.Service;
 
+import java.time.Instant;
 import java.time.LocalDateTime;
+import java.time.OffsetDateTime;
+import java.time.ZoneOffset;
 import java.util.*;
 import java.util.stream.Collectors;
 
 @Service
 public class RoundPersistenceService {
 
-    private static final int DEFAULT_ROUND_DURATION_HOURS = 2;
-
     private final RoundRepository gameRoundRepository;
     private final ModelRunRepository modelRunRepository;
+    private final ModelRunProviderPredictionRepository modelRunProviderPredictionRepository;
 
     public RoundPersistenceService(RoundRepository gameRoundRepository,
-                                   ModelRunRepository modelRunRepository) {
+                                   ModelRunRepository modelRunRepository,
+                                   ModelRunProviderPredictionRepository modelRunProviderPredictionRepository) {
         this.gameRoundRepository = Objects.requireNonNull(gameRoundRepository);
         this.modelRunRepository = Objects.requireNonNull(modelRunRepository);
+        this.modelRunProviderPredictionRepository = Objects.requireNonNull(modelRunProviderPredictionRepository);
     }
 
     @Transactional
@@ -60,7 +69,8 @@ public class RoundPersistenceService {
     public SavedModelRun saveModelRun(long roundId,
                                       int budgetInSek,
                                       String trigger,
-                                      ModelSelectionResult result) {
+                                      ModelSelectionResult result,
+                                      List<MatchPredictionResult> predictionResults) {
 
         Objects.requireNonNull(trigger, "trigger cannot be null");
         Objects.requireNonNull(result, "result cannot be null");
@@ -91,6 +101,8 @@ public class RoundPersistenceService {
         );
 
         ModelRunEntity saved = modelRunRepository.save(runEntity);
+        saveProviderPredictions(saved, predictionResults);
+
         return new SavedModelRun(saved.getId(), saved.getGeneratedAt());
     }
 
@@ -120,6 +132,126 @@ public class RoundPersistenceService {
         }
 
         return out;
+    }
+
+    private void saveProviderPredictions(ModelRunEntity modelRunEntity,
+                                         List<MatchPredictionResult> predictionResults) {
+        if (predictionResults == null || predictionResults.isEmpty()) {
+            return;
+        }
+
+        List<ModelRunProviderPredictionEntity> rows = new ArrayList<>();
+        LocalDateTime createdAt = LocalDateTime.now();
+
+        for (MatchPredictionResult matchResult : predictionResults) {
+            int matchNumber = parseRequiredMatchNumber(matchResult.getClientMatchId());
+
+            if (matchResult.getProviders() == null) {
+                continue;
+            }
+
+            for (ProviderPredictionResult providerResult : matchResult.getProviders()) {
+                rows.add(toProviderPredictionEntity(
+                        modelRunEntity,
+                        matchNumber,
+                        matchResult,
+                        providerResult,
+                        createdAt
+                ));
+            }
+        }
+
+        if (!rows.isEmpty()) {
+            modelRunProviderPredictionRepository.saveAll(rows);
+        }
+    }
+
+    private ModelRunProviderPredictionEntity toProviderPredictionEntity(ModelRunEntity modelRunEntity,
+                                                                        int matchNumber,
+                                                                        MatchPredictionResult matchResult,
+                                                                        ProviderPredictionResult providerResult,
+                                                                        LocalDateTime createdAt) {
+        MatchPrediction prediction = providerResult.getPrediction();
+
+        String resolvedHome = null;
+        String resolvedAway = null;
+        LocalDateTime kickoff = null;
+        String kickoffRaw = null;
+        Double probabilityHome = null;
+        Double probabilityDraw = null;
+        Double probabilityAway = null;
+        LocalDateTime fetchedAt = null;
+
+        if (prediction != null) {
+            resolvedHome = prediction.getHomeTeam();
+            resolvedAway = prediction.getAwayTeam();
+            kickoff = toUtcLocalDateTime(prediction.getKickoff());
+            kickoffRaw = prediction.getKickoffRaw();
+
+            ProviderProbabilityTriple probabilities = prediction.getProbabilities();
+            if (probabilities != null) {
+                probabilityHome = probabilities.getHomeWin();
+                probabilityDraw = probabilities.getDraw();
+                probabilityAway = probabilities.getAwayWin();
+            }
+
+            fetchedAt = toUtcLocalDateTime(prediction.getFetchedAt());
+        }
+
+        return new ModelRunProviderPredictionEntity(
+                modelRunEntity,
+                matchNumber,
+                providerResult.getProvider(),
+                providerResult.getStatus().name(),
+                providerResult.getMessage(),
+                matchResult.getRequestedHomeTeam(),
+                matchResult.getRequestedAwayTeam(),
+                resolvedHome,
+                resolvedAway,
+                kickoff,
+                kickoffRaw,
+                probabilityHome,
+                probabilityDraw,
+                probabilityAway,
+                fetchedAt,
+                createdAt
+        );
+    }
+
+    private int parseRequiredMatchNumber(String clientMatchId) {
+        if (clientMatchId == null || clientMatchId.isBlank()) {
+            throw new IllegalArgumentException("clientMatchId is missing in prediction results");
+        }
+
+        String matchNumberPart = clientMatchId;
+        int colon = clientMatchId.indexOf(':');
+        if (colon >= 0) {
+            matchNumberPart = clientMatchId.substring(colon + 1);
+        }
+
+        try {
+            int parsed = Integer.parseInt(matchNumberPart);
+            if (parsed <= 0) {
+                throw new IllegalArgumentException("matchNumber must be positive: " + clientMatchId);
+            }
+            return parsed;
+        } catch (NumberFormatException e) {
+            throw new IllegalArgumentException("clientMatchId is not a valid match number: " + clientMatchId, e);
+        }
+    }
+
+    private LocalDateTime toUtcLocalDateTime(OffsetDateTime value) {
+        if (value == null) {
+            return null;
+        }
+        return value.atZoneSameInstant(ZoneOffset.UTC).toLocalDateTime();
+    }
+
+    private LocalDateTime toUtcLocalDateTime(Instant value) {
+        if (value == null) {
+            return null;
+        }
+        return value.atOffset(ZoneOffset.UTC).toLocalDateTime();
     }
 
     public record ProbabilityTripleDtoShape(

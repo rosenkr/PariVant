@@ -5,15 +5,26 @@ import ar.ss.betting.domain.Round;
 import ar.ss.betting.domain.RoundType;
 import ar.ss.betting.domain.Team;
 import ar.ss.betting.model.*;
-import ar.ss.betting.persistence.entity.RoundEntity;
 import ar.ss.betting.persistence.entity.MatchEntity;
 import ar.ss.betting.persistence.entity.ModelRunEntity;
+import ar.ss.betting.persistence.entity.RoundEntity;
 import ar.ss.betting.persistence.repo.MatchRepository;
 import ar.ss.betting.persistence.repo.ModelRunRepository;
 import ar.ss.betting.persistence.repo.RoundRepository;
+import ar.ss.betting.predictionproviders.domain.MatchPrediction;
+import ar.ss.betting.predictionproviders.domain.ProviderProbabilityTriple;
+import ar.ss.betting.predictionproviders.service.PredictionQueryService;
+import ar.ss.betting.predictionproviders.service.model.MatchPredictionResult;
+import ar.ss.betting.predictionproviders.service.model.PredictionMatchRequest;
+import ar.ss.betting.predictionproviders.service.model.PredictionQueryResponse;
+import ar.ss.betting.predictionproviders.service.model.ProviderPredictionResult;
+import ar.ss.betting.predictionproviders.service.model.ProviderPredictionStatus;
+import ar.ss.betting.predictionproviders.service.model.ProviderRawPredictionSnapshot;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
+import java.time.OffsetDateTime;
+import java.time.ZoneOffset;
 import java.util.*;
 
 @Service
@@ -26,15 +37,21 @@ public class RoundApiService {
     private final RoundRepository gameRoundRepository;
     private final MatchRepository matchRepository;
     private final ModelRunRepository modelRunRepository;
+    private final PredictionQueryService predictionQueryService;
+    private final PredictionResolutionService predictionResolutionService;
 
     public RoundApiService(RoundPersistenceService roundPersistenceService,
                            RoundRepository gameRoundRepository,
                            MatchRepository matchRepository,
-                           ModelRunRepository modelRunRepository) {
+                           ModelRunRepository modelRunRepository,
+                           PredictionQueryService predictionQueryService,
+                           PredictionResolutionService predictionResolutionService) {
         this.roundPersistenceService = Objects.requireNonNull(roundPersistenceService);
         this.gameRoundRepository = Objects.requireNonNull(gameRoundRepository);
         this.matchRepository = Objects.requireNonNull(matchRepository);
         this.modelRunRepository = Objects.requireNonNull(modelRunRepository);
+        this.predictionQueryService = Objects.requireNonNull(predictionQueryService);
+        this.predictionResolutionService = Objects.requireNonNull(predictionResolutionService);
     }
 
     public long createRound(RoundType roundType,
@@ -59,40 +76,60 @@ public class RoundApiService {
         return roundPersistenceService.saveRound(round).id();
     }
 
-    public long runModelAndPersist(long roundId,
-                                   int budgetInSek,
-                                   Map<Integer, ModelSelectionRequestDto.MatchContextDto> contexts,
-                                   Map<Integer, ModelSelectionRequestDto.MatchInterventionsDto> interventions) {
-
-        return runModelAndPersistWithTrigger(
-                roundId,
-                budgetInSek,
-                contexts,
-                interventions,
-                TRIGGER_MANUAL
-        );
+    public List<CreatedModelRun> runPresetModelRuns(long roundId,
+                                                    Map<Integer, ModelSelectionRequestDto.MatchContextDto> contexts,
+                                                    Map<Integer, ModelSelectionRequestDto.MatchInterventionsDto> interventions) {
+        return runPresetModelRunsWithTrigger(roundId, contexts, interventions, TRIGGER_MANUAL);
     }
 
-    public long runModelAndPersistWithTrigger(long roundId,
-                                              int budgetInSek,
-                                              Map<Integer, ModelSelectionRequestDto.MatchContextDto> contexts,
-                                              Map<Integer, ModelSelectionRequestDto.MatchInterventionsDto> interventions,
-                                              String trigger) {
+    public List<CreatedModelRun> runPresetModelRunsWithTrigger(long roundId,
+                                                               Map<Integer, ModelSelectionRequestDto.MatchContextDto> contexts,
+                                                               Map<Integer, ModelSelectionRequestDto.MatchInterventionsDto> interventions,
+                                                               String trigger) {
 
         Objects.requireNonNull(contexts, "contexts");
         Objects.requireNonNull(trigger, "trigger");
 
         Round round = loadRound(roundId);
 
-        ModelInput modelInput = new ModelInput(
-                toMatchContexts(contexts),
-                toMatchInterventions(interventions)
+        List<ProviderRawPredictionSnapshot> providerSnapshots =
+                predictionQueryService.fetchProviderSnapshots();
+
+        PredictionQueryResponse predictionQueryResponse = predictionResolutionService.resolve(
+                toRequests(round),
+                providerSnapshots
         );
 
-        EnsembleModel model = new EnsembleModel();
-        ModelSelectionResult result = model.generateSelection(round, modelInput, budgetInSek);
+        Map<Integer, List<ModelSelectionRequestDto.ProbabilityTripleDto>> fetchedProvidersByMatch =
+                toFetchedProviderDtosByMatch(predictionQueryResponse);
 
-        return roundPersistenceService.saveModelRun(roundId, budgetInSek, trigger, result).id();
+        List<CreatedModelRun> createdRuns = new ArrayList<>();
+
+        for (int presetBudget : PRESET_BUDGETS) {
+            ModelInput modelInput = new ModelInput(
+                    toMatchContexts(contexts, fetchedProvidersByMatch),
+                    toMatchInterventions(interventions)
+            );
+
+            EnsembleModel model = new EnsembleModel();
+            ModelSelectionResult result = model.generateSelection(round, modelInput, presetBudget);
+
+            RoundPersistenceService.SavedModelRun saved = roundPersistenceService.saveModelRun(
+                    roundId,
+                    presetBudget,
+                    trigger,
+                    result,
+                    predictionQueryResponse.getResults()
+            );
+
+            createdRuns.add(new CreatedModelRun(
+                    saved.id(),
+                    presetBudget,
+                    saved.generatedAt()
+            ));
+        }
+
+        return createdRuns;
     }
 
     public List<ModelRunView> getLatestPresetModelRuns(long roundId) {
@@ -111,7 +148,9 @@ public class RoundApiService {
         List<ModelRunView> out = new ArrayList<>();
         for (Integer b : PRESET_BUDGETS) {
             ModelRunEntity r = latestByBudget.get(b);
-            if (r != null) out.add(toView(r));
+            if (r != null) {
+                out.add(toView(r));
+            }
         }
         return out;
     }
@@ -139,7 +178,89 @@ public class RoundApiService {
         );
     }
 
-    private Map<Integer, MatchContext> toMatchContexts(Map<Integer, ModelSelectionRequestDto.MatchContextDto> contexts) {
+    private List<PredictionMatchRequest> toRequests(Round round) {
+        List<PredictionMatchRequest> requests = new ArrayList<>();
+
+        for (Match match : round.getMatches()) {
+            requests.add(new PredictionMatchRequest(
+                    String.valueOf(match.getMatchNumber()),
+                    match.getHomeTeam().getName(),
+                    match.getAwayTeam().getName(),
+                    toUtcOffset(match.getStartDate())
+            ));
+        }
+
+        return requests;
+    }
+
+    private Map<Integer, List<ModelSelectionRequestDto.ProbabilityTripleDto>> toFetchedProviderDtosByMatch(
+            PredictionQueryResponse predictionQueryResponse) {
+
+        Map<Integer, List<ModelSelectionRequestDto.ProbabilityTripleDto>> out = new HashMap<>();
+
+        if (predictionQueryResponse == null || predictionQueryResponse.getResults() == null) {
+            return out;
+        }
+
+        for (MatchPredictionResult matchResult : predictionQueryResponse.getResults()) {
+            int matchNumber = parseRequiredMatchNumber(matchResult.getClientMatchId());
+
+            List<ModelSelectionRequestDto.ProbabilityTripleDto> providerDtos = new ArrayList<>();
+
+            if (matchResult.getProviders() != null) {
+                for (ProviderPredictionResult providerResult : matchResult.getProviders()) {
+                    if (providerResult.getStatus() != ProviderPredictionStatus.OK) {
+                        continue;
+                    }
+
+                    MatchPrediction prediction = providerResult.getPrediction();
+                    if (prediction == null || prediction.getProbabilities() == null) {
+                        continue;
+                    }
+
+                    ProviderProbabilityTriple probabilities = prediction.getProbabilities();
+
+                    providerDtos.add(new ModelSelectionRequestDto.ProbabilityTripleDto(
+                            probabilities.getHomeWin(),
+                            probabilities.getDraw(),
+                            probabilities.getAwayWin()
+                    ));
+                }
+            }
+
+            out.put(matchNumber, providerDtos);
+        }
+
+        return out;
+    }
+
+    private int parseRequiredMatchNumber(String clientMatchId) {
+        if (clientMatchId == null || clientMatchId.isBlank()) {
+            throw new IllegalArgumentException("Prediction response missing clientMatchId");
+        }
+
+        try {
+            int parsed = Integer.parseInt(clientMatchId);
+            if (parsed <= 0) {
+                throw new IllegalArgumentException("Prediction response clientMatchId must be positive: " + clientMatchId);
+            }
+            return parsed;
+        } catch (NumberFormatException e) {
+            throw new IllegalArgumentException("Prediction response clientMatchId is not numeric: " + clientMatchId, e);
+        }
+    }
+
+    private OffsetDateTime toUtcOffset(LocalDateTime value) {
+        if (value == null) {
+            return null;
+        }
+        return value.atOffset(ZoneOffset.UTC);
+    }
+
+    private Map<Integer, MatchContext> toMatchContexts(
+            Map<Integer, ModelSelectionRequestDto.MatchContextDto> contexts,
+            Map<Integer, List<ModelSelectionRequestDto.ProbabilityTripleDto>> fetchedProvidersByMatch) {
+
         Map<Integer, MatchContext> out = new HashMap<>();
 
         for (Map.Entry<Integer, ModelSelectionRequestDto.MatchContextDto> e : contexts.entrySet()) {
@@ -159,12 +280,22 @@ public class RoundApiService {
             );
 
             List<ProbabilityTriple> providers = new ArrayList<>();
+
             if (dto.providers() != null) {
                 for (ModelSelectionRequestDto.ProbabilityTripleDto p : dto.providers()) {
                     providers.add(ProbabilityTriple.fromProbabilities(
                             p.homeWin(), p.draw(), p.awayWin()
                     ));
                 }
+            }
+
+            List<ModelSelectionRequestDto.ProbabilityTripleDto> fetchedProviders =
+                    fetchedProvidersByMatch.getOrDefault(matchNumber, List.of());
+
+            for (ModelSelectionRequestDto.ProbabilityTripleDto p : fetchedProviders) {
+                providers.add(ProbabilityTriple.fromProbabilities(
+                        p.homeWin(), p.draw(), p.awayWin()
+                ));
             }
 
             out.put(matchNumber, new MatchContext(market, publicPick, providers));
@@ -230,6 +361,12 @@ public class RoundApiService {
                 r.getInternalProbabilitiesJson()
         );
     }
+
+    public record CreatedModelRun(
+            long id,
+            int budgetInSek,
+            LocalDateTime generatedAt
+    ) { }
 
     public record ModelRunView(
             long id,

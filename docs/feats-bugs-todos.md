@@ -19,12 +19,16 @@ feats/bugs/todos:
 
 9. keep adding team names to match resolver
 
+10. Clean up Instant/OffsetDatetime/LocalDateTime drift across whole project
+11. Lombokize everything to reduce boilerplate in persistence code
 
-10. deploy on railway (separate frontend/backend servers?)
+
+
+12. deploy on railway (separate frontend/backend servers?)
+
 35. explanatory ai generated message for each pick
 20. Add highlighter to navbar on-hover like systemvetardagen.se
 15. add robots.txt
 25. website background animated bright/dark depending on time of day in sweden
 30. employ docker compose workflow, -docker Compose, define  containers for frontend/backend/db in yaml -> easier deployment/development
-35. add lombok to reduce boilerplate in persistence code
 40. calculate expected roi
