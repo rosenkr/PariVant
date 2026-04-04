@@ -1,8 +1,6 @@
-// src/components/MatchRow.tsx
 import { Box, Stack, Typography } from "@mui/material";
 import { SelectionBox } from "./SelectionBox";
 import type { Outcome } from "../types/modelRun";
-import type { TripleView } from "../types/round";
 import type { LiveMatchUpdate } from "../types/live";
 import { formatTimeOnly } from "../utils/time";
 
@@ -11,24 +9,12 @@ type Props = {
   home: string;
   away: string;
   kickoff: string;
-
-  // model selection set for this match
   selected: Outcome[];
-
-  // contexts
-  market: TripleView | null;
-  publicPick: TripleView | null;
-
-  // NEW: live score/status (optional)
   live?: LiveMatchUpdate | null;
-
-  onSelectionClick?: () => void; // public page: opens login dialog
+  isActive: boolean;
+  onClick: () => void;
+  onSelectionClick?: () => void;
 };
-
-function pct(n: number | null): number | null {
-  if (n == null) return null;
-  return Math.round(n * 100);
-}
 
 function isSelected(sel: Outcome[], o: Outcome) {
   return sel.includes(o);
@@ -37,7 +23,6 @@ function isSelected(sel: Outcome[], o: Outcome) {
 function liveStatusLabel(live: LiveMatchUpdate): string | null {
   if (!live.status) return null;
 
-  // prefer minute for live halves
   if (
     live.minute != null &&
     (live.status === "1H" || live.status === "2H" || live.status === "ET")
@@ -45,7 +30,6 @@ function liveStatusLabel(live: LiveMatchUpdate): string | null {
     return `${live.minute}'`;
   }
 
-  // HT/FT/etc
   return live.status;
 }
 
@@ -55,9 +39,9 @@ export function MatchRow({
   away,
   kickoff,
   selected,
-  market,
-  publicPick,
   live,
+  isActive,
+  onClick,
   onSelectionClick,
 }: Props) {
   const kickoffText = formatTimeOnly(kickoff) ?? kickoff;
@@ -72,6 +56,7 @@ export function MatchRow({
 
   return (
     <Box
+      onClick={onClick}
       sx={{
         px: 2,
         py: 1.1,
@@ -79,6 +64,14 @@ export function MatchRow({
         gridTemplateColumns: "28px 1fr auto",
         gap: 1.5,
         alignItems: "center",
+        cursor: "pointer",
+        borderLeft: "3px solid",
+        borderLeftColor: isActive ? "secondary.main" : "transparent",
+        transition:
+          "background-color 140ms ease, border-color 140ms ease, transform 140ms ease",
+        "&:hover": {
+          backgroundColor: "rgba(255,255,255,0.045)",
+        },
       }}
     >
       <Typography sx={{ fontWeight: 800, opacity: 0.9 }}>{index}</Typography>
@@ -92,7 +85,11 @@ export function MatchRow({
         </Typography>
       </Box>
 
-      <Stack direction="row" spacing={1} sx={{ justifyContent: "flex-end", alignItems: "center" }}>
+      <Stack
+        direction="row"
+        spacing={1}
+        sx={{ justifyContent: "flex-end", alignItems: "center" }}
+      >
         {hasLiveScore && live && (
           <Box
             sx={{
@@ -115,22 +112,19 @@ export function MatchRow({
         )}
 
         <SelectionBox
-          marketPct={pct(market?.homeWin ?? null)}
-          publicPct={pct(publicPick?.homeWin ?? null)}
+          label="1"
           recommended={isSelected(selected, "HOME_WIN")}
           selected={isSelected(selected, "HOME_WIN")}
           onClick={onSelectionClick}
         />
         <SelectionBox
-          marketPct={pct(market?.draw ?? null)}
-          publicPct={pct(publicPick?.draw ?? null)}
+          label="X"
           recommended={isSelected(selected, "DRAW")}
           selected={isSelected(selected, "DRAW")}
           onClick={onSelectionClick}
         />
         <SelectionBox
-          marketPct={pct(market?.awayWin ?? null)}
-          publicPct={pct(publicPick?.awayWin ?? null)}
+          label="2"
           recommended={isSelected(selected, "AWAY_WIN")}
           selected={isSelected(selected, "AWAY_WIN")}
           onClick={onSelectionClick}

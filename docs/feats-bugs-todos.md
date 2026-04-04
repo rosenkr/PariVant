@@ -13,6 +13,7 @@ feats/bugs/todos:
     -submit personal selection (1 per round)
     -upload own internal probs
        -view my past results, compare with base model
+    -allow one confident pick that overrides model, can track stats for this
 6. add gradients/animations
 7. rework value as KL divergenece for value calculation (or renyi with R = risk aversion = alpha param in Renyi = 1 for neutral risk)
 8. UI: use 11elo icons and navbar layout + about page + toggle dark/light mode + footer
@@ -23,8 +24,9 @@ feats/bugs/todos:
 11. Lombokize everything to reduce boilerplate in persistence code
 
 
-
-12. deploy on railway (separate frontend/backend servers?)
+12. information panel: more non-model "live" info to influence bettor
+13. deploy on railway (separate frontend/backend servers?)
+14. create site icon + fix tab name in browser
 
 35. explanatory ai generated message for each pick
 20. Add highlighter to navbar on-hover like systemvetardagen.se

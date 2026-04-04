@@ -2,24 +2,27 @@ export type Outcome = "HOME_WIN" | "DRAW" | "AWAY_WIN";
 
 export type ModelRunTrigger = "OPENED" | "T_MINUS_15" | "MANUAL";
 
-// This type represents the data structure of a model run as returned by the backend API.
+export type ProbabilityTripleDtoShape = {
+  homeWin: number;
+  draw: number;
+  awayWin: number;
+};
+
 export type ModelRunView = {
   id: number;
   modelName: string;
-  generatedAt: string; // ISO string
+  generatedAt: string;
   budgetInSek: number;
   totalCostInSek: number;
   halfGuardsCount: number;
-  fullGuardsCount: number;
+  fullGuardsCount?: number;
   trigger: ModelRunTrigger;
 
-  /**
-   * Backward/forward compatible:
-   * - older backend: parsed objects (selections/weights/decisionParameters)
-   * - current backend: JSON strings (selectionsJson/weightsJson/decisionParametersJson)
-   */
   selections?: Record<string, Outcome[]>;
   selectionsJson?: string;
+
+  internalProbabilities?: Record<string, ProbabilityTripleDtoShape>;
+  internalProbabilitiesJson?: string;
 
   weights?: {
     recentFormWeight?: number;

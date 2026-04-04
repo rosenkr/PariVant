@@ -9,21 +9,33 @@ import {
   Stack,
   Typography,
 } from "@mui/material";
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { Page } from "../components/layout/Page";
 import { RoundHeader } from "../components/RoundHeader";
 import { RoundStatusTabs } from "../components/RoundStatusTabs";
 import { MatchRow } from "../components/MatchRow";
+import { MatchDetailsPanel } from "../components/MatchDetailsPanel";
 
 import { useRoundsByFilters } from "../hooks/useRoundsByFilters";
 import { useModelRuns } from "../hooks/useModelRuns";
 import { useLiveRound } from "../hooks/useLiveRound";
+import { useRoundProviderPredictions } from "../hooks/useRoundProviderPredictions";
 
 import type { LiveMatchUpdate } from "../types/live";
 import type { ModelRunView, Outcome } from "../types/modelRun";
+import type {
+  MatchProviderPredictionsView,
+  ProviderPredictionView,
+} from "../types/providerPrediction";
 import type { RoundStatus, RoundType, RoundView } from "../types/round";
 
 type BudgetValue = 32 | 64 | 128 | 256;
+
+type ProbabilityTripleDtoShape = {
+  homeWin: number;
+  draw: number;
+  awayWin: number;
+};
 
 function parseSelections(run: ModelRunView): Record<string, Outcome[]> {
   if (run.selections) return run.selections;
@@ -31,11 +43,35 @@ function parseSelections(run: ModelRunView): Record<string, Outcome[]> {
   if (run.selectionsJson) {
     try {
       const obj = JSON.parse(run.selectionsJson) as unknown;
-      if (obj && typeof obj === "object") return obj as Record<string, Outcome[]>;
+      if (obj && typeof obj === "object") {
+        return obj as Record<string, Outcome[]>;
+      }
     } catch {
       // ignore
     }
   }
+
+  return {};
+}
+
+function parseInternalProbabilities(
+  run: ModelRunView | null
+): Record<string, ProbabilityTripleDtoShape> {
+  if (!run) return {};
+
+  if (run.internalProbabilities) return run.internalProbabilities;
+
+  if (run.internalProbabilitiesJson) {
+    try {
+      const obj = JSON.parse(run.internalProbabilitiesJson) as unknown;
+      if (obj && typeof obj === "object") {
+        return obj as Record<string, ProbabilityTripleDtoShape>;
+      }
+    } catch {
+      // ignore
+    }
+  }
+
   return {};
 }
 
@@ -70,11 +106,20 @@ function statusUiLabel(status: RoundStatus): string {
   }
 }
 
+function findProvidersForMatch(
+  providerMatches: MatchProviderPredictionsView[] | undefined,
+  matchNumber: number
+): ProviderPredictionView[] {
+  if (!providerMatches) return [];
+  return providerMatches.find((m) => m.matchNumber === matchNumber)?.providers ?? [];
+}
+
 export default function HomePage() {
   const [selectedStatus, setSelectedStatus] = useState<RoundStatus>("UPCOMING");
   const [roundType, setRoundType] = useState<RoundType>("STRYKTIPSET");
   const [budget, setBudget] = useState<BudgetValue>(64);
   const [loginDialogOpen, setLoginDialogOpen] = useState(false);
+  const [selectedMatchNumber, setSelectedMatchNumber] = useState<number | null>(null);
 
   const roundsQuery = useRoundsByFilters(roundType, selectedStatus);
   const roundsResult = roundsQuery.data;
@@ -88,6 +133,7 @@ export default function HomePage() {
   const roundStatus = activeRound ? selectedStatus : null;
 
   const modelRunsQuery = useModelRuns(roundId);
+  const providerPredictionsQuery = useRoundProviderPredictions(roundId);
 
   const selectedRun = useMemo(() => {
     const runsRes = modelRunsQuery.data;
@@ -99,6 +145,49 @@ export default function HomePage() {
     () => (selectedRun ? parseSelections(selectedRun) : {}),
     [selectedRun]
   );
+
+  const internalProbabilitiesByMatch = useMemo(
+    () => parseInternalProbabilities(selectedRun),
+    [selectedRun]
+  );
+
+  useEffect(() => {
+    if (!activeRound || activeRound.matches.length === 0) {
+      setSelectedMatchNumber(null);
+      return;
+    }
+
+    setSelectedMatchNumber((current) => {
+      if (
+        current != null &&
+        activeRound.matches.some((m) => m.matchNumber === current)
+      ) {
+        return current;
+      }
+      return activeRound.matches[0]?.matchNumber ?? null;
+    });
+  }, [activeRound]);
+
+  const selectedMatch = useMemo(() => {
+    if (!activeRound || selectedMatchNumber == null) return null;
+    return activeRound.matches.find((m) => m.matchNumber === selectedMatchNumber) ?? null;
+  }, [activeRound, selectedMatchNumber]);
+
+  const providerPredictionResult = providerPredictionsQuery.data;
+  const providerMatches = useMemo(() => {
+    if (!providerPredictionResult || providerPredictionResult.kind !== "ok") return [];
+    return providerPredictionResult.data.matches;
+  }, [providerPredictionResult]);
+
+  const selectedMatchProviders = useMemo(() => {
+    if (!selectedMatch) return [];
+    return findProvidersForMatch(providerMatches, selectedMatch.matchNumber);
+  }, [providerMatches, selectedMatch]);
+
+  const selectedInternal = useMemo(() => {
+    if (!selectedMatch) return null;
+    return internalProbabilitiesByMatch[String(selectedMatch.matchNumber)] ?? null;
+  }, [internalProbabilitiesByMatch, selectedMatch]);
 
   const onBoxClick = () => setLoginDialogOpen(true);
 
@@ -121,7 +210,7 @@ export default function HomePage() {
   }, [selectedStatus, roundType]);
 
   return (
-    <Page maxWidth="lg">
+    <Page maxWidth="xl">
       <Stack spacing={2}>
         <Paper
           sx={{
@@ -143,126 +232,146 @@ export default function HomePage() {
           start={activeRound?.startDate}
         />
 
-        <Paper
+        <Box
           sx={{
-            overflow: "hidden",
-            backgroundColor: "rgba(255,255,255,0.04)",
-            borderColor: "rgba(255,45,142,0.25)",
-            ...(isRunning
-              ? {
-                  borderColor: "rgba(255,45,142,0.65)",
-                  animation: "pinkPulse 7.5s ease-in-out infinite",
-                  "@keyframes pinkPulse": {
-                    "0%": {
-                      boxShadow:
-                        "0 0 0 1px rgba(255,45,142,0.28), 0 0 24px rgba(255,45,142,0.18)",
-                    },
-                    "50%": {
-                      boxShadow:
-                        "0 0 0 1px rgba(255,45,142,0.42), 0 0 36px rgba(255,45,142,0.32)",
-                    },
-                    "100%": {
-                      boxShadow:
-                        "0 0 0 1px rgba(255,45,142,0.28), 0 0 24px rgba(255,45,142,0.18)",
-                    },
-                  },
-                }
-              : null),
+            display: "grid",
+            gridTemplateColumns: { xs: "1fr", lg: "minmax(0, 1.45fr) 420px" },
+            gap: 2,
+            alignItems: "start",
           }}
         >
-          {roundsQuery.isLoading && (
-            <Box sx={{ p: 2 }}>
-              <Typography>Loading rounds…</Typography>
-            </Box>
-          )}
-
-          {!roundsQuery.isLoading && roundsResult?.kind === "ok" && !activeRound && (
-            <Box sx={{ p: 2 }}>
-              <Typography color="text.secondary">{emptyMessage}</Typography>
-            </Box>
-          )}
-
-          {!roundsQuery.isLoading &&
-            (roundsResult?.kind === "server-error" ||
-              roundsResult?.kind === "network-error") && (
+          <Paper
+            sx={{
+              overflow: "hidden",
+              backgroundColor: "rgba(255,255,255,0.04)",
+              borderColor: "rgba(255,45,142,0.25)",
+              ...(isRunning
+                ? {
+                    borderColor: "rgba(255,45,142,0.65)",
+                    animation: "pinkPulse 7.5s ease-in-out infinite",
+                    "@keyframes pinkPulse": {
+                      "0%": {
+                        boxShadow:
+                          "0 0 0 1px rgba(255,45,142,0.28), 0 0 24px rgba(255,45,142,0.18)",
+                      },
+                      "50%": {
+                        boxShadow:
+                          "0 0 0 1px rgba(255,45,142,0.42), 0 0 36px rgba(255,45,142,0.32)",
+                      },
+                      "100%": {
+                        boxShadow:
+                          "0 0 0 1px rgba(255,45,142,0.28), 0 0 24px rgba(255,45,142,0.18)",
+                      },
+                    },
+                  }
+                : null),
+            }}
+          >
+            {roundsQuery.isLoading && (
               <Box sx={{ p: 2 }}>
-                <Typography color="error">
-                  {roundsResult.kind === "server-error"
-                    ? `Server error ${roundsResult.status}: ${roundsResult.message}`
-                    : `Network error: ${roundsResult.message}`}
-                </Typography>
+                <Typography>Loading rounds…</Typography>
               </Box>
             )}
 
-          {activeRound && selectedRun && (
-            <Box>
-              <Box
-                sx={{
-                  px: 2,
-                  py: 1.0,
-                  display: "flex",
-                  justifyContent: "space-between",
-                  alignItems: "center",
-                  borderBottom: "1px solid rgba(255,255,255,0.08)",
-                }}
-              >
-                <Typography sx={{ fontWeight: 800 }}>
-                  Model picks ({budget} SEK, trigger {selectedRun.trigger})
-                </Typography>
+            {!roundsQuery.isLoading && roundsResult?.kind === "ok" && !activeRound && (
+              <Box sx={{ p: 2 }}>
+                <Typography color="text.secondary">{emptyMessage}</Typography>
+              </Box>
+            )}
 
-                <Typography variant="body2" sx={{ opacity: 0.75 }}>
-                  cost {selectedRun.totalCostInSek} • half {selectedRun.halfGuardsCount} • full{" "}
-                  {selectedRun.fullGuardsCount}
-                  {enableLive && (
-                    <>
-                      {" "}
-                      •{" "}
-                      <span style={{ opacity: 0.9 }}>
-                        LIVE {live.state.status === "live" ? "connected" : "connecting"}
-                      </span>
-                    </>
-                  )}
+            {!roundsQuery.isLoading &&
+              (roundsResult?.kind === "server-error" ||
+                roundsResult?.kind === "network-error") && (
+                <Box sx={{ p: 2 }}>
+                  <Typography color="error">
+                    {roundsResult.kind === "server-error"
+                      ? `Server error ${roundsResult.status}: ${roundsResult.message}`
+                      : `Network error: ${roundsResult.message}`}
+                  </Typography>
+                </Box>
+              )}
+
+            {activeRound && selectedRun && (
+              <Box>
+                <Box
+                  sx={{
+                    px: 2,
+                    py: 1.0,
+                    display: "flex",
+                    justifyContent: "space-between",
+                    alignItems: "center",
+                    borderBottom: "1px solid rgba(255,255,255,0.08)",
+                  }}
+                >
+                  <Typography sx={{ fontWeight: 800 }}>
+                    Model picks ({budget} SEK, trigger {selectedRun.trigger})
+                  </Typography>
+
+                  <Typography variant="body2" sx={{ opacity: 0.75 }}>
+                    cost {selectedRun.totalCostInSek} • half {selectedRun.halfGuardsCount} • full{" "}
+                    {selectedRun.fullGuardsCount ?? 0}
+                    {enableLive && (
+                      <>
+                        {" "}
+                        •{" "}
+                        <span style={{ opacity: 0.9 }}>
+                          LIVE {live.state.status === "live" ? "connected" : "connecting"}
+                        </span>
+                      </>
+                    )}
+                  </Typography>
+                </Box>
+
+                {activeRound.matches.map((m, idx) => {
+                  const key = String(m.matchNumber);
+                  const sel = selectionsByMatch[key] ?? [];
+                  const liveUpdate = liveByMatchNumber.get(m.matchNumber) ?? null;
+
+                  return (
+                    <Box
+                      key={m.matchNumber}
+                      sx={{
+                        backgroundColor:
+                          idx % 2 === 0
+                            ? "rgba(255,255,255,0.02)"
+                            : "rgba(0,0,0,0.10)",
+                      }}
+                    >
+                      <MatchRow
+                        index={m.matchNumber}
+                        home={m.homeTeamName}
+                        away={m.awayTeamName}
+                        kickoff={m.startDate}
+                        selected={sel}
+                        live={liveUpdate}
+                        isActive={selectedMatchNumber === m.matchNumber}
+                        onClick={() => setSelectedMatchNumber(m.matchNumber)}
+                        onSelectionClick={onBoxClick}
+                      />
+                    </Box>
+                  );
+                })}
+              </Box>
+            )}
+
+            {activeRound && !selectedRun && (
+              <Box sx={{ p: 2 }}>
+                <Typography color="text.secondary">
+                  No model run found for budget {budget} SEK yet.
                 </Typography>
               </Box>
+            )}
+          </Paper>
 
-              {activeRound.matches.map((m, idx) => {
-                const key = String(m.matchNumber);
-                const sel = selectionsByMatch[key] ?? [];
-                const liveUpdate = liveByMatchNumber.get(m.matchNumber) ?? null;
-
-                return (
-                  <Box
-                    key={m.matchNumber}
-                    sx={{
-                      backgroundColor:
-                        idx % 2 === 0 ? "rgba(255,255,255,0.02)" : "rgba(0,0,0,0.10)",
-                    }}
-                  >
-                    <MatchRow
-                      index={m.matchNumber}
-                      home={m.homeTeamName}
-                      away={m.awayTeamName}
-                      kickoff={m.startDate}
-                      selected={sel}
-                      market={m.market}
-                      publicPick={m.publicPick}
-                      live={liveUpdate}
-                      onSelectionClick={onBoxClick}
-                    />
-                  </Box>
-                );
-              })}
-            </Box>
-          )}
-
-          {activeRound && !selectedRun && (
-            <Box sx={{ p: 2 }}>
-              <Typography color="text.secondary">
-                No model run found for budget {budget} SEK yet.
-              </Typography>
-            </Box>
-          )}
-        </Paper>
+          <MatchDetailsPanel
+            match={selectedMatch}
+            publicPick={selectedMatch?.publicPick ?? null}
+            market={selectedMatch?.market ?? null}
+            providers={selectedMatchProviders}
+            internal={selectedInternal}
+            providerQueryState={providerPredictionsQuery}
+          />
+        </Box>
 
         <Dialog open={loginDialogOpen} onClose={() => setLoginDialogOpen(false)}>
           <DialogTitle>Log in required</DialogTitle>
