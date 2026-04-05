@@ -27,6 +27,8 @@ public class PredictionQueryService {
     }
 
     public List<ProviderRawPredictionSnapshot> fetchProviderSnapshots() {
+        System.out.println("### providers = " +
+                providers.stream().map(PredictionProvider::providerName).toList());
         return providers.stream()
                 .map(this::fetchProviderSnapshot)
                 .toList();
@@ -40,6 +42,9 @@ public class PredictionQueryService {
                     .errorMessage(null)
                     .build();
         } catch (Exception e) {
+            System.out.println("### provider failed: " + provider.providerName() + " -> " + e);
+            e.printStackTrace();
+
             return ProviderRawPredictionSnapshot.builder()
                     .provider(provider.providerName())
                     .predictions(List.of())

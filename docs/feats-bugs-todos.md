@@ -1,14 +1,10 @@
 
 feats/bugs/todos:
 
-0. consider moving tipzer code to a package under core-libs, with interface etc as prediction providers. Both can be placed under a common network package
-1. Display, per match, the %'s from provider module 
 2. add bzzoiro prediction provider, FootballData has predictions? https://www.api-football.com/documentation-v3#section/Authentication
 3. tab above round to switch which round for a round type?
-4. remove old AutoIngestScheduler/IngestOrchestrator/IngestProvider?
-5. move livescore to core-libs?
 6. see over JsonUtils/ApiFootballClient/ApiExceptionHandler
-7. do icon with figma svg on other chatgpt workflow
+9. keep adding team names to match resolver - check 11elo german matches
 
 
 
@@ -39,8 +35,6 @@ feats/bugs/todos:
 7. rework value as KL divergenece for value calculation (or renyi with R = risk aversion = alpha param in Renyi = 1 for neutral risk)
 8. UI: use 11elo icons and navbar layout + about page + toggle dark/light mode + footer
 
-9. keep adding team names to match resolver
-
 10. Clean up Instant/OffsetDatetime/LocalDateTime drift across whole project
 11. Lombokize everything to reduce boilerplate in persistence code
 
@@ -56,3 +50,4 @@ feats/bugs/todos:
 30. employ docker compose workflow, -docker Compose, define  containers for frontend/backend/db in yaml -> easier deployment/development
 40. calculate expected roi
 45. mobile-friendly rework
+46. move livescore to core-libs?
