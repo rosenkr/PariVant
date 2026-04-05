@@ -1,6 +1,8 @@
-package ar.ss.betting.rework;
+package ar.ss.betting.roundingest;
 
 import ar.ss.betting.domain.RoundType;
+import ar.ss.betting.roundingest.IngestedRound;
+import ar.ss.betting.roundingest.RoundIngestSource;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -9,33 +11,38 @@ import java.util.Objects;
 @Service
 public class IngestOrchestrator {
 
-    private final List<IngestProvider> providers;
+    private final List<RoundIngestSource> sources;
+    private final RoundIngestService roundIngestService;
 
-    public IngestOrchestrator(List<IngestProvider> providers) {
-        this.providers = List.copyOf(Objects.requireNonNull(providers));
+    public IngestOrchestrator(List<RoundIngestSource> sources,
+                              RoundIngestService roundIngestService) {
+        this.sources = List.copyOf(Objects.requireNonNull(sources));
+        this.roundIngestService = Objects.requireNonNull(roundIngestService);
     }
 
-    public OrchestratorResult ingestNext(RoundType roundType, String endpointLabel) {
+    public OrchestratorResult ingestNext(RoundType roundType) {
         Objects.requireNonNull(roundType, "roundType");
-        Objects.requireNonNull(endpointLabel, "endpointLabel");
 
         Exception last = null;
 
-        for (IngestProvider p : providers) {
-            if (!p.supports(roundType)) {
+        for (RoundIngestSource source : sources) {
+            if (!source.supports(roundType)) {
                 continue;
             }
 
             try {
-                IngestProvider.IngestOutcome outcome = p.ingestNext(roundType);
-                return OrchestratorResult.success(p.sourceName(), outcome);
+                IngestedRound ingestedRound = source.fetchRound(roundType);
+                RoundIngestService.PersistResult persistResult =
+                        roundIngestService.persistIfNew(ingestedRound);
+
+                return OrchestratorResult.success(source.sourceName(), persistResult);
             } catch (Exception ex) {
                 last = ex;
             }
         }
 
         if (last == null) {
-            last = new IllegalStateException("No provider available for " + roundType);
+            last = new IllegalStateException("No source available for " + roundType);
         }
 
         return OrchestratorResult.failed(roundType, last);
@@ -46,9 +53,9 @@ public class IngestOrchestrator {
             String source,
             RoundType roundType,
             String message,
-            IngestProvider.IngestOutcome outcome
+            RoundIngestService.PersistResult outcome
     ) {
-        public static OrchestratorResult success(String source, IngestProvider.IngestOutcome outcome) {
+        public static OrchestratorResult success(String source, RoundIngestService.PersistResult outcome) {
             return new OrchestratorResult(
                     "SUCCESS",
                     source,

@@ -1,4 +1,4 @@
-package ar.ss.betting.rework;
+package ar.ss.betting.roundingest.tipzer;
 
 import org.springframework.stereotype.Component;
 import org.springframework.web.client.RestClient;
@@ -10,17 +10,14 @@ public class TipzerClient {
 
     private static final String BASE_URL = "https://tipzer.se";
 
-    // Stryktipset
     private static final String STRYK_TEAMS_PATH = "/lagen.json";
     private static final String STRYK_SVF_PATH = "/svf.json";
     private static final String STRYK_ODDS_PATH = "/odds.json";
 
-    // Europatipset
     private static final String EURO_TEAMS_PATH = "/elagen.json";
     private static final String EURO_SVF_PATH = "/esvf.json";
     private static final String EURO_ODDS_PATH = "/eodds.json";
 
-    // Topptipset (special: embedded JS in HTML)
     private static final String TOPP_PAGE_PATH = "/topptipset.php";
 
     private final RestClient restClient;
@@ -62,9 +59,15 @@ public class TipzerClient {
     private String getRaw(String path) {
         Objects.requireNonNull(path, "path");
 
-        return restClient.get()
+        String body = restClient.get()
                 .uri(path)
                 .retrieve()
                 .body(String.class);
+
+        if (body == null || body.isBlank()) {
+            throw new IllegalArgumentException("Empty response from Tipzer path: " + path);
+        }
+
+        return body;
     }
 }

@@ -1,5 +1,8 @@
-package ar.ss.betting.rework;
+package ar.ss.betting.roundingest.tipzer;
 
+import ar.ss.betting.domain.RoundType;
+import ar.ss.betting.roundingest.IngestedMatch;
+import ar.ss.betting.roundingest.IngestedRound;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.springframework.stereotype.Component;
@@ -12,86 +15,125 @@ import java.util.Objects;
 @Component
 public class TipzerParser {
 
-    private final ObjectMapper objectMapper;
+    private static final int MATCH_COUNT = 13;
 
-    public TipzerParser(ObjectMapper objectMapper) {
-        this.objectMapper = Objects.requireNonNull(objectMapper);
-    }
+    private final ObjectMapper objectMapper = new ObjectMapper();
 
-    public TipzerSnapshot parse(String teamsRaw, String svfRaw, String oddsRaw) {
+    public IngestedRound parse(RoundType roundType, String teamsRaw, String svfRaw, String oddsRaw) {
+        Objects.requireNonNull(roundType, "roundType");
+        Objects.requireNonNull(teamsRaw, "teamsRaw");
+        Objects.requireNonNull(svfRaw, "svfRaw");
+        Objects.requireNonNull(oddsRaw, "oddsRaw");
+
         try {
             JsonNode teamsRoot = objectMapper.readTree(teamsRaw);
             JsonNode svfRoot = objectMapper.readTree(svfRaw);
             JsonNode oddsRoot = objectMapper.readTree(oddsRaw);
 
-            if (!teamsRoot.isArray()) throw new IllegalArgumentException("lagen.json must be an array");
-            if (!svfRoot.isArray()) throw new IllegalArgumentException("svf.json must be an array");
-            if (!oddsRoot.isArray()) throw new IllegalArgumentException("odds.json must be an array");
+            if (!teamsRoot.isArray()) {
+                throw new IllegalArgumentException("lagen.json must be an array");
+            }
+            if (!svfRoot.isArray()) {
+                throw new IllegalArgumentException("svf.json must be an array");
+            }
+            if (!oddsRoot.isArray()) {
+                throw new IllegalArgumentException("odds.json must be an array");
+            }
 
-            // teamsRoot: 13 match arrays + final string roundStart
-            if (teamsRoot.size() < 14) {
+            if (teamsRoot.size() != MATCH_COUNT + 1) {
                 throw new IllegalArgumentException("lagen.json expected 14 items (13 matches + roundStart string)");
             }
 
-            String roundStartStr = teamsRoot.get(teamsRoot.size() - 1).asText();
-            OffsetDateTime roundStart = OffsetDateTime.parse(roundStartStr);
+            OffsetDateTime roundStart = OffsetDateTime.parse(teamsRoot.get(MATCH_COUNT).asText());
 
-            List<TipzerMatch> matches = new ArrayList<>(13);
-            for (int i = 0; i < 13; i++) {
+            List<TipzerMatchRow> matchesFromTeams = new ArrayList<>(MATCH_COUNT);
+            for (int i = 0; i < MATCH_COUNT; i++) {
                 JsonNode row = teamsRoot.get(i);
+
                 if (!row.isArray() || row.size() < 3) {
-                    throw new IllegalArgumentException("lagen.json match row " + (i + 1) + " must be [home, away, date]");
+                    throw new IllegalArgumentException(
+                            "lagen.json match row " + (i + 1) + " must be [home, away, date]"
+                    );
                 }
+
                 String home = row.get(0).asText();
                 String away = row.get(1).asText();
                 OffsetDateTime kickoff = OffsetDateTime.parse(row.get(2).asText());
-                matches.add(new TipzerMatch(i + 1, home, away, kickoff));
+
+                matchesFromTeams.add(new TipzerMatchRow(home, away, kickoff));
             }
 
             List<TipzerTriple> svf = parseTriples(svfRoot, "svf.json");
             List<TipzerTriple> odds = parseTriples(oddsRoot, "odds.json");
 
-            if (svf.size() != 13 || odds.size() != 13) {
-                throw new IllegalArgumentException("svf/odds must have 13 rows each");
+            if (svf.size() != MATCH_COUNT) {
+                throw new IllegalArgumentException("svf.json expected 13 rows");
+            }
+            if (odds.size() != MATCH_COUNT) {
+                throw new IllegalArgumentException("odds.json expected 13 rows");
             }
 
-            return new TipzerSnapshot(roundStart, matches, svf, odds);
+            List<IngestedMatch> matches = new ArrayList<>(MATCH_COUNT);
+
+            for (int i = 0; i < MATCH_COUNT; i++) {
+                TipzerMatchRow teams = matchesFromTeams.get(i);
+                TipzerTriple publicPick = svf.get(i);
+                TipzerTriple market = odds.get(i);
+
+                matches.add(new IngestedMatch(
+                        i + 1,
+                        teams.kickoff(),
+                        teams.home(),
+                        teams.away(),
+                        IngestedMatch.ProbabilityTriple.normalized(
+                                market.home(), market.draw(), market.away()
+                        ),
+                        IngestedMatch.ProbabilityTriple.normalized(
+                                publicPick.home(), publicPick.draw(), publicPick.away()
+                        )
+                ));
+            }
+
+            return new IngestedRound(roundType, roundStart, matches);
+
         } catch (Exception e) {
             throw new IllegalArgumentException("Failed parsing Tipzer JSON: " + e.getMessage(), e);
         }
     }
 
     private List<TipzerTriple> parseTriples(JsonNode root, String label) {
-        List<TipzerTriple> out = new ArrayList<>(13);
+        List<TipzerTriple> out = new ArrayList<>();
 
         for (int i = 0; i < root.size(); i++) {
             JsonNode row = root.get(i);
+
             if (!row.isArray() || row.size() < 3) {
-                throw new IllegalArgumentException(label + " row " + (i + 1) + " must be array with first 3 entries as % strings");
+                throw new IllegalArgumentException(label + " row " + (i + 1) + " must contain 3 entries");
             }
+
             double h = parsePercent(row.get(0).asText());
             double d = parsePercent(row.get(1).asText());
             double a = parsePercent(row.get(2).asText());
+
             out.add(new TipzerTriple(h, d, a));
         }
 
         return out;
     }
 
-    private double parsePercent(String s) {
-        // Tipzer gives "50" meaning 50%. Store as probability 0.50.
-        double v = Double.parseDouble(s.trim());
-        return v / 100.0;
+    private double parsePercent(String raw) {
+        return Double.parseDouble(raw.trim()) / 100.0;
     }
 
-    public record TipzerSnapshot(
-            OffsetDateTime roundStart,
-            List<TipzerMatch> matches,
-            List<TipzerTriple> svf,
-            List<TipzerTriple> odds
+    private record TipzerMatchRow(
+            String home,
+            String away,
+            OffsetDateTime kickoff
     ) { }
 
-    public record TipzerMatch(int matchNumber, String home, String away, OffsetDateTime kickoff) { }
-
-    public record TipzerTriple(double home, double draw, double away) { }
+    private record TipzerTriple(
+            double home,
+            double draw,
+            double away
+    ) { }
 }

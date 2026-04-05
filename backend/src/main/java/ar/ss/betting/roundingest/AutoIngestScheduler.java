@@ -1,4 +1,4 @@
-package ar.ss.betting.rework;
+package ar.ss.betting.roundingest;
 
 import ar.ss.betting.domain.RoundType;
 import org.slf4j.Logger;
@@ -19,19 +19,22 @@ public class AutoIngestScheduler {
         this.ingestOrchestrator = Objects.requireNonNull(ingestOrchestrator);
     }
 
-    @Scheduled(fixedDelay = 2 * 60 * 60 * 1000L)
+    @Scheduled(fixedDelay = 60 * 60 * 1000L)
     public void tick() {
-        ingest(RoundType.STRYKTIPSET, "/scheduler/ingest/stryktipset/next");
-        ingest(RoundType.EUROPATIPSET, "/scheduler/ingest/europatipset/next");
-        ingest(RoundType.TOPPTIPSET, "/scheduler/ingest/topptipset/next");
+        ingest(RoundType.STRYKTIPSET);
+        ingest(RoundType.EUROPATIPSET);
+        ingest(RoundType.TOPPTIPSET);
     }
 
-    private void ingest(RoundType type, String endpointLabel) {
-        var r = ingestOrchestrator.ingestNext(type, endpointLabel);
+    private void ingest(RoundType type) {
+        var r = ingestOrchestrator.ingestNext(type);
 
         if ("SUCCESS".equals(r.status())) {
             log.info("[auto-ingest] {} OK via {} => {} (roundId={})",
-                    type, r.source(), r.message(), r.outcome() == null ? null : r.outcome().roundId());
+                    type,
+                    r.source(),
+                    r.message(),
+                    r.outcome() == null ? null : r.outcome().roundId());
         } else {
             log.warn("[auto-ingest] {} FAILED => {}", type, r.message());
         }
