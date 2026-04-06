@@ -76,6 +76,8 @@ public class PublicRoundController {
     private MatchView toMatchView(MatchEntity match, MatchContextEntity context) {
         TripleView market = null;
         TripleView publicPick = null;
+        boolean marketFallbackUsed = false;
+        String marketFallbackReason = null;
 
         if (context != null) {
             market = new TripleView(
@@ -88,6 +90,8 @@ public class PublicRoundController {
                     context.getPublicDraw(),
                     context.getPublicAway()
             );
+            marketFallbackUsed = context.isMarketFallbackUsed();
+            marketFallbackReason = context.getMarketFallbackReason();
         }
 
         return new MatchView(
@@ -96,10 +100,11 @@ public class PublicRoundController {
                 match.getHomeTeamName(),
                 match.getAwayTeamName(),
                 market,
-                publicPick
+                publicPick,
+                marketFallbackUsed,
+                marketFallbackReason
         );
     }
-
     public record RoundView(
             long id,
             LocalDateTime startDate,
@@ -118,6 +123,8 @@ public class PublicRoundController {
             String homeTeamName,
             String awayTeamName,
             TripleView market,
-            TripleView publicPick
+            TripleView publicPick,
+            boolean marketFallbackUsed,
+            String marketFallbackReason
     ) { }
 }

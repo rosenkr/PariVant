@@ -1,8 +1,7 @@
-/* Public round types used by the frontend when fetching rounds by filters. */
-
 export type RoundType = "TOPPTIPSET" | "STRYKTIPSET" | "EUROPATIPSET";
 
 export type RoundStatus = "UPCOMING" | "RUNNING" | "ENDED";
+
 export type TripleView = {
   homeWin: number;
   draw: number;
@@ -16,6 +15,8 @@ export type MatchView = {
   awayTeamName: string;
   market: TripleView | null;
   publicPick: TripleView | null;
+  marketFallbackUsed: boolean;
+  marketFallbackReason: string | null;
 };
 
 export type RoundView = {

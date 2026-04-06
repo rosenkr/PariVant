@@ -1,17 +1,14 @@
 
 feats/bugs/todos
 
-General: 
-1. keep adding team names to match resolver - check 11elo for german matches, bzzoiro,
-    -need to see how each provider actually calls teams in their api, then I can manually understand what this matches in my backend. 
-    - For example #1 man utd -> manchester united. #2-> man united -> manchester united
-   - write a one off script that fetches bulk upcoming match predictions, present
-    - matches one per row in an output file named <providername>_output as hometeamname awayteamname
-    - then modify matchresolver alias list so more matches can be resolved
+General:
+1. fix no-odds-available parsing bug (accept it as specail case, dfeault to svf)
 2. tab above round to switch which round for a round type?
     - the idea is, there may be not only 1 but up to (no more than) 10 upcoming rounds for topptipset, and even fewer for stryk/europatipset
     - thus can have a "round1","round2",... adaptive ui navbar like field above the presentation of the current round which allows one to swap between these. 
-    - the default one is shown leftmost and is with the closest kickoff
+    - the default one should be shown leftmost and is with the closest kickoff
+    - Preferred over a dropdown, and should be okay spacewise since the domain dictates there can only be so many upcoming rounds of a type at once
+    - this navbar field should be shown above the round display. if there is only 1 round, it should still show it as 1 selected round
 3. add more/other ingestion (relating to tipzer) so can have multiple upcoming rounds for a type (especially topptipset but also happens for europatipset)
    - for example web scraping other websites or even SS.
 4. rework value as KL divergenece for value calculation (or renyi with R = risk aversion = alpha param in Renyi = 1 for neutral risk)
@@ -34,6 +31,8 @@ Auth (MVP) work:
 8. allow one confident pick that overrides model, can track stats for this
 
 cleanup: 
+0. keep adding team names to match resolver - check 11elo for german matches, bzzoiro,
+      -use the exporting tool once a day
 1. see over JsonUtils/ApiFootballClient/ApiExceptionHandler
 2. Lombokize everything to reduce boilerplate in persistence code
 3. Clean up Instant/OffsetDatetime/LocalDateTime drift across whole project

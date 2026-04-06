@@ -347,6 +347,8 @@ export default function HomePage() {
                         isActive={selectedMatchNumber === m.matchNumber}
                         onClick={() => setSelectedMatchNumber(m.matchNumber)}
                         onSelectionClick={onBoxClick}
+                        marketFallbackUsed={m.marketFallbackUsed}
+                        marketFallbackReason={m.marketFallbackReason}
                       />
                     </Box>
                   );

@@ -34,7 +34,8 @@ CREATE TABLE IF NOT EXISTS match_context (
     public_away DOUBLE PRECISION NOT NULL,
 
     created_at TIMESTAMP NOT NULL DEFAULT now(),
-
+    market_fallback_used BOOLEAN NOT NULL DEFAULT FALSE,
+    market_fallback_reason VARCHAR(255),
     CONSTRAINT uq_match_context_round_match UNIQUE (round_id, match_number)
 );
 

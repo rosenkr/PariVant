@@ -1,4 +1,4 @@
-import { Box, Stack, Typography } from "@mui/material";
+import { Box, Stack, Tooltip, Typography } from "@mui/material";
 import { SelectionBox } from "./SelectionBox";
 import type { Outcome } from "../types/modelRun";
 import type { LiveMatchUpdate } from "../types/live";
@@ -14,6 +14,8 @@ type Props = {
   isActive: boolean;
   onClick: () => void;
   onSelectionClick?: () => void;
+  marketFallbackUsed?: boolean;
+  marketFallbackReason?: string | null;
 };
 
 function isSelected(sel: Outcome[], o: Outcome) {
@@ -33,6 +35,13 @@ function liveStatusLabel(live: LiveMatchUpdate): string | null {
   return live.status;
 }
 
+function fallbackMessage(reason?: string | null): string {
+  if (reason === "TIPZER_MARKET_ODDS_ALL_ZERO_USED_SVF") {
+    return "Market odds not available, using public percentages as fallback.";
+  }
+  return reason ?? "Market data fallback was used.";
+}
+
 export function MatchRow({
   index,
   home,
@@ -43,6 +52,8 @@ export function MatchRow({
   isActive,
   onClick,
   onSelectionClick,
+  marketFallbackUsed = false,
+  marketFallbackReason = null,
 }: Props) {
   const kickoffText = formatTimeOnly(kickoff) ?? kickoff;
 
@@ -67,8 +78,7 @@ export function MatchRow({
         cursor: "pointer",
         borderLeft: "3px solid",
         borderLeftColor: isActive ? "secondary.main" : "transparent",
-        transition:
-          "background-color 140ms ease, border-color 140ms ease, transform 140ms ease",
+        transition: "background-color 140ms ease, border-color 140ms ease, transform 140ms ease",
         "&:hover": {
           backgroundColor: "rgba(255,255,255,0.045)",
         },
@@ -85,11 +95,30 @@ export function MatchRow({
         </Typography>
       </Box>
 
-      <Stack
-        direction="row"
-        spacing={1}
-        sx={{ justifyContent: "flex-end", alignItems: "center" }}
-      >
+      <Stack direction="row" spacing={1} sx={{ justifyContent: "flex-end", alignItems: "center" }}>
+        {marketFallbackUsed && (
+          <Tooltip title={fallbackMessage(marketFallbackReason)} arrow>
+            <Box
+              sx={{
+                width: 22,
+                height: 22,
+                borderRadius: "50%",
+                display: "grid",
+                placeItems: "center",
+                fontSize: 13,
+                fontWeight: 900,
+                color: "#fff",
+                backgroundColor: "error.main",
+                boxShadow: "0 0 0 1px rgba(255,255,255,0.08)",
+                flexShrink: 0,
+              }}
+              onClick={(e) => e.stopPropagation()}
+            >
+              !
+            </Box>
+          </Tooltip>
+        )}
+
         {hasLiveScore && live && (
           <Box
             sx={{

@@ -68,7 +68,9 @@ public class RoundIngestService {
                     m.market().awayWin(),
                     m.publicPick().homeWin(),
                     m.publicPick().draw(),
-                    m.publicPick().awayWin()
+                    m.publicPick().awayWin(),
+                    m.marketFallbackUsed(),
+                    m.marketFallbackReason()
             );
             matchContextRepository.save(ctx);
         }

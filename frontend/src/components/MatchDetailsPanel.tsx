@@ -1,4 +1,4 @@
-import { Box, Divider, Paper, Stack, Typography } from "@mui/material";
+import { Alert, Box, Divider, Paper, Stack, Typography } from "@mui/material";
 import type { UseQueryResult } from "@tanstack/react-query";
 import type { GetRoundProviderPredictionsResult } from "../types/providerPrediction";
 import type { ProviderPredictionView } from "../types/providerPrediction";
@@ -26,6 +26,13 @@ function pct(n: number | null | undefined): string {
 
 function providerFallback(status: string): string {
   return status === "NOT_AVAILABLE" ? "N/A" : status;
+}
+
+function fallbackMessage(reason?: string | null): string {
+  if (reason === "TIPZER_MARKET_ODDS_ALL_ZERO_USED_SVF") {
+    return "Market odds were unavailable for this match, so public percentages are being used as the market fallback.";
+  }
+  return reason ?? "Market fallback was used for this match.";
 }
 
 function SectionRow({
@@ -79,22 +86,25 @@ export function MatchDetailsPanel({
       }}
     >
       {!match && (
-        <Typography color="text.secondary">
-          Select a match to view details.
-        </Typography>
+        <Typography color="text.secondary">Select a match to view details.</Typography>
       )}
 
       {match && (
         <Stack spacing={2}>
           <Box>
             <Typography variant="h6" sx={{ fontWeight: 900 }}>
-              {match.homeTeamName} <span style={{ opacity: 0.8 }}>–</span>{" "}
-              {match.awayTeamName}
+              {match.homeTeamName} <span style={{ opacity: 0.8 }}>–</span> {match.awayTeamName}
             </Typography>
             <Typography variant="body2" sx={{ opacity: 0.68 }}>
               Match info
             </Typography>
           </Box>
+
+          {match.marketFallbackUsed && (
+            <Alert severity="error" sx={{ alignItems: "center" }}>
+              {fallbackMessage(match.marketFallbackReason)}
+            </Alert>
+          )}
 
           <Box>
             <Box

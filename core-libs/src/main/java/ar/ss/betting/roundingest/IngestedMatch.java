@@ -9,7 +9,9 @@ public record IngestedMatch(
         String homeTeamName,
         String awayTeamName,
         ProbabilityTriple market,
-        ProbabilityTriple publicPick
+        ProbabilityTriple publicPick,
+        boolean marketFallbackUsed,
+        String marketFallbackReason
 ) {
     public IngestedMatch {
         if (matchNumber <= 0) {
@@ -27,6 +29,21 @@ public record IngestedMatch(
         if (awayTeamName.isBlank()) {
             throw new IllegalArgumentException("awayTeamName cannot be blank");
         }
+
+        if (!marketFallbackUsed && marketFallbackReason != null && !marketFallbackReason.isBlank()) {
+            throw new IllegalArgumentException("marketFallbackReason must be null/blank when fallback is not used");
+        }
+    }
+
+    public IngestedMatch(
+            int matchNumber,
+            OffsetDateTime kickoff,
+            String homeTeamName,
+            String awayTeamName,
+            ProbabilityTriple market,
+            ProbabilityTriple publicPick
+    ) {
+        this(matchNumber, kickoff, homeTeamName, awayTeamName, market, publicPick, false, null);
     }
 
     public record ProbabilityTriple(

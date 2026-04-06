@@ -16,6 +16,7 @@ import java.util.Objects;
 public class TipzerParser {
 
     private static final int MATCH_COUNT = 13;
+    private static final String MARKET_FALLBACK_REASON = "TIPZER_MARKET_ODDS_ALL_ZERO_USED_SVF";
 
     private final ObjectMapper objectMapper = new ObjectMapper();
 
@@ -77,20 +78,41 @@ public class TipzerParser {
 
             for (int i = 0; i < MATCH_COUNT; i++) {
                 TipzerMatchRow teams = matchesFromTeams.get(i);
-                TipzerTriple publicPick = svf.get(i);
-                TipzerTriple market = odds.get(i);
+                TipzerTriple publicPickRaw = svf.get(i);
+                TipzerTriple marketRaw = odds.get(i);
+
+                IngestedMatch.ProbabilityTriple publicPick =
+                        IngestedMatch.ProbabilityTriple.normalized(
+                                publicPickRaw.home(),
+                                publicPickRaw.draw(),
+                                publicPickRaw.away()
+                        );
+
+                boolean marketFallbackUsed = false;
+                String marketFallbackReason = null;
+
+                IngestedMatch.ProbabilityTriple market;
+                if (marketRaw.isAllZero()) {
+                    market = publicPick;
+                    marketFallbackUsed = true;
+                    marketFallbackReason = MARKET_FALLBACK_REASON;
+                } else {
+                    market = IngestedMatch.ProbabilityTriple.normalized(
+                            marketRaw.home(),
+                            marketRaw.draw(),
+                            marketRaw.away()
+                    );
+                }
 
                 matches.add(new IngestedMatch(
                         i + 1,
                         teams.kickoff(),
                         teams.home(),
                         teams.away(),
-                        IngestedMatch.ProbabilityTriple.normalized(
-                                market.home(), market.draw(), market.away()
-                        ),
-                        IngestedMatch.ProbabilityTriple.normalized(
-                                publicPick.home(), publicPick.draw(), publicPick.away()
-                        )
+                        market,
+                        publicPick,
+                        marketFallbackUsed,
+                        marketFallbackReason
                 ));
             }
 
@@ -122,7 +144,16 @@ public class TipzerParser {
     }
 
     private double parsePercent(String raw) {
-        return Double.parseDouble(raw.trim()) / 100.0;
+        if (raw == null) {
+            return 0.0;
+        }
+
+        String trimmed = raw.trim();
+        if (trimmed.isEmpty()) {
+            return 0.0;
+        }
+
+        return Double.parseDouble(trimmed) / 100.0;
     }
 
     private record TipzerMatchRow(
@@ -135,5 +166,9 @@ public class TipzerParser {
             double home,
             double draw,
             double away
-    ) { }
+    ) {
+        private boolean isAllZero() {
+            return home == 0.0 && draw == 0.0 && away == 0.0;
+        }
+    }
 }
