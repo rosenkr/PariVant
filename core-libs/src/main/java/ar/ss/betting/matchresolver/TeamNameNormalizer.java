@@ -24,12 +24,31 @@ public class TeamNameNormalizer {
         aliases.put("m gladbach", "borussia monchengladbach");
         aliases.put("borussia m gladbach", "borussia monchengladbach");
         aliases.put("ein frankfurt", "eintracht frankfurt");
-        aliases.put("fc koln", "koln");
         aliases.put("dusseldorf", "fortuna dusseldorf");
         aliases.put("afc wimbledon", "wimbledon");
         aliases.put("oxford united", "oxford");
         aliases.put("sheffield utd", "sheffield u");
         aliases.put("qpr", "queens park rangers");
+
+
+        // Added using TeamNameExportTool. Entries from clubelo and bzzoiro but not yet api-football or 11elo
+        aliases.put("girona fc", "girona");
+        aliases.put("hull city", "hull");
+        aliases.put("coventry city", "coventry");
+        aliases.put("casa pia", "casa pia lisbon");
+        aliases.put("sociedad b", "real sociedad b");
+        aliases.put("gijon", "sporting gijón");
+        aliases.put("le mans", "le mans fc");
+        aliases.put("sporting braga", "braga");
+        aliases.put("nottingham forest", "nottingham");
+        aliases.put("celta vigo", "celta de vigo");
+        aliases.put("sporting", "sporting lissabon");
+        aliases.put("bayern", "bayern munchen");
+        aliases.put("atletico", "atletico madrid");
+        aliases.put("betis", "real betis");
+        aliases.put("aek", "aek aten");
+        aliases.put("celta", "celta de vigo");
+        aliases.put("argentinos jrs", "argentinos juniors");
     }
 
     public String normalize(String teamName) {

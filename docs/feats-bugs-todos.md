@@ -1,53 +1,56 @@
 
-feats/bugs/todos:
+feats/bugs/todos
 
-2. add bzzoiro prediction provider, FootballData has predictions? https://www.api-football.com/documentation-v3#section/Authentication
-3. tab above round to switch which round for a round type?
-6. see over JsonUtils/ApiFootballClient/ApiExceptionHandler
-9. keep adding team names to match resolver - check 11elo german matches
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+General: 
+1. keep adding team names to match resolver - check 11elo for german matches, bzzoiro,
+    -need to see how each provider actually calls teams in their api, then I can manually understand what this matches in my backend. 
+    - For example #1 man utd -> manchester united. #2-> man united -> manchester united
+   - write a one off script that fetches bulk upcoming match predictions, present
+    - matches one per row in an output file named <providername>_output as hometeamname awayteamname
+    - then modify matchresolver alias list so more matches can be resolved
+2. tab above round to switch which round for a round type?
+    - the idea is, there may be not only 1 but up to (no more than) 10 upcoming rounds for topptipset, and even fewer for stryk/europatipset
+    - thus can have a "round1","round2",... adaptive ui navbar like field above the presentation of the current round which allows one to swap between these. 
+    - the default one is shown leftmost and is with the closest kickoff
+3. add more/other ingestion (relating to tipzer) so can have multiple upcoming rounds for a type (especially topptipset but also happens for europatipset)
+   - for example web scraping other websites or even SS.
+4. rework value as KL divergenece for value calculation (or renyi with R = risk aversion = alpha param in Renyi = 1 for neutral risk)
+    -currently may be crude way of using subtraction
+5. deploy on railway (PariVant) (separate frontend/backend servers?)
 
 
 
+Auth (MVP) work:
+    -what is the modern way for handling secure auth and seamless UX?
+    -How will I persist a user and store their decisions to build my own defensible data set which can refine my own model? (for example if allowing users 1 high confidence pick per round, then check their ROI over time, then mix their knowledge into the model run step accordingly)
+    -how to do it safe/secure/law-abiding GDPR/modern web dev style?
+1. add My Page dashboard page (authentication). User table? Security? Views? gmail?
+2. sliders&tags
+3. run model
+4. modify selection
+5. submit personal selection (1 per round)
+6. upload/set own internal probs
+7. view my past results, compare with base model
+8. allow one confident pick that overrides model, can track stats for this
 
-3. add My Page page (authentication). User table? Security? Views? gmail?
-    -sliders&tags
-    -run model
-    -modify selection
-    -submit personal selection (1 per round)
-    -upload own internal probs
-       -view my past results, compare with base model
-    -allow one confident pick that overrides model, can track stats for this
-6. add gradients/animations
-7. rework value as KL divergenece for value calculation (or renyi with R = risk aversion = alpha param in Renyi = 1 for neutral risk)
-8. UI: use 11elo icons and navbar layout + about page + toggle dark/light mode + footer
+cleanup: 
+1. see over JsonUtils/ApiFootballClient/ApiExceptionHandler
+2. Lombokize everything to reduce boilerplate in persistence code
+3. Clean up Instant/OffsetDatetime/LocalDateTime drift across whole project
+4. add robots.txt
 
-10. Clean up Instant/OffsetDatetime/LocalDateTime drift across whole project
-11. Lombokize everything to reduce boilerplate in persistence code
+ui refinements: 
+0. color rework (pink/dark green)
+1. add gradients/animations
+2. use 11elo icons and navbar layout + about page + toggle dark/light mode + footer
+3. Add highlighter to navbar on-hover like systemvetardagen.se
 
-
-12. information panel: more non-model "live" info to influence bettor
-13. deploy on railway (separate frontend/backend servers?)
-14. create site icon + fix tab name in browser
-
-35. explanatory ai generated message for each pick
-20. Add highlighter to navbar on-hover like systemvetardagen.se
-15. add robots.txt
-25. website background animated bright/dark depending on time of day in sweden
-30. employ docker compose workflow, -docker Compose, define  containers for frontend/backend/db in yaml -> easier deployment/development
-40. calculate expected roi
-45. mobile-friendly rework
-46. move livescore to core-libs?
+wishes:
+*Information panel: more non-model "live" info to influence bettor
+-explanatory ai generated message for each pick
+-refined model
+-investigate docker compose workflow, -docker Compose, define  containers for frontend/backend/db in yaml -> easier deployment/development
+-calculate expected roi
+-mobile-friendly rework
+-FootballData match predictions? https://www.football-data.org/documentation/quickstart
+    -costs 15$ month .. 
