@@ -15,7 +15,7 @@ import { RoundHeader } from "../components/RoundHeader";
 import { RoundStatusTabs } from "../components/RoundStatusTabs";
 import { MatchRow } from "../components/MatchRow";
 import { MatchDetailsPanel } from "../components/MatchDetailsPanel";
-
+import { RoundSelectorTabs } from "../components/RoundSelectorTabs";
 import { useRoundsByFilters } from "../hooks/useRoundsByFilters";
 import { useModelRuns } from "../hooks/useModelRuns";
 import { useLiveRound } from "../hooks/useLiveRound";
@@ -36,6 +36,7 @@ type ProbabilityTripleDtoShape = {
   draw: number;
   awayWin: number;
 };
+
 
 function parseSelections(run: ModelRunView): Record<string, Outcome[]> {
   if (run.selections) return run.selections;
@@ -89,11 +90,6 @@ function sortRoundsForStatus(rounds: RoundView[], status: RoundStatus): RoundVie
   );
 }
 
-function pickPrimaryRound(rounds: RoundView[], status: RoundStatus): RoundView | null {
-  if (rounds.length === 0) return null;
-  const sorted = sortRoundsForStatus(rounds, status);
-  return sorted[0] ?? null;
-}
 
 function statusUiLabel(status: RoundStatus): string {
   switch (status) {
@@ -120,14 +116,40 @@ export default function HomePage() {
   const [budget, setBudget] = useState<BudgetValue>(64);
   const [loginDialogOpen, setLoginDialogOpen] = useState(false);
   const [selectedMatchNumber, setSelectedMatchNumber] = useState<number | null>(null);
+  const [selectedRoundId, setSelectedRoundId] = useState<number | null>(null);
 
   const roundsQuery = useRoundsByFilters(roundType, selectedStatus);
   const roundsResult = roundsQuery.data;
 
-  const activeRound = useMemo(() => {
-    if (!roundsResult || roundsResult.kind !== "ok") return null;
-    return pickPrimaryRound(roundsResult.data, selectedStatus);
+  const sortedRounds = useMemo(() => {
+    if (!roundsResult || roundsResult.kind !== "ok") return [];
+    return sortRoundsForStatus(roundsResult.data, selectedStatus);
   }, [roundsResult, selectedStatus]);
+
+  const activeRound = useMemo(() => {
+    if (sortedRounds.length === 0) return null;
+
+    if (selectedRoundId != null) {
+      const selected = sortedRounds.find((r) => r.id === selectedRoundId);
+      if (selected) return selected;
+    }
+
+    return sortedRounds[0] ?? null;
+  }, [sortedRounds, selectedRoundId]);
+
+  useEffect(() => {
+    if (sortedRounds.length === 0) {
+      setSelectedRoundId(null);
+      return;
+    }
+
+    setSelectedRoundId((current) => {
+      if (current != null && sortedRounds.some((r) => r.id === current)) {
+        return current;
+      }
+      return sortedRounds[0].id;
+    });
+  }, [sortedRounds]);
 
   const roundId = activeRound?.id ?? null;
   const roundStatus = activeRound ? selectedStatus : null;
@@ -231,6 +253,13 @@ export default function HomePage() {
           roundStatus={activeRound ? selectedStatus : undefined}
           start={activeRound?.startDate}
         />
+        {sortedRounds.length > 0 && (
+          <RoundSelectorTabs
+            rounds={sortedRounds}
+            selectedRoundId={activeRound?.id ?? null}
+            onSelectRound={setSelectedRoundId}
+          />
+        )}
 
         <Box
           sx={{

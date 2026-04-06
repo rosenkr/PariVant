@@ -2,7 +2,8 @@
 feats/bugs/todos
 
 General:
-1. fix no-odds-available parsing bug (accept it as specail case, dfeault to svf)
+0. refine 1x2 (base pick by model as darker orange, cover picks current light orange, pink border for either 1x2 on live score depending on fetched score)
+1. default if no stryktipset to show eur, if no eur, show topptips, if no topptips, show stryk
 2. tab above round to switch which round for a round type?
     - the idea is, there may be not only 1 but up to (no more than) 10 upcoming rounds for topptipset, and even fewer for stryk/europatipset
     - thus can have a "round1","round2",... adaptive ui navbar like field above the presentation of the current round which allows one to swap between these. 
