@@ -41,7 +41,7 @@ public class ModelRunScheduler {
     private static final String TRIGGER_T_MINUS_15 = "T_MINUS_15";
 
     private static final int T_MINUS_15_MINUTES = 15;
-    private static final int LOOKAHEAD_HOURS = 72;
+    private static final int LOOKAHEAD_HOURS = 168;
     private static final int OPENED_GRACE_MINUTES_AFTER_START = 2;
 
     private static final ProbabilityTriple DEFAULT_MARKET = ProbabilityTriple.fromProbabilities(0.5, 0.25, 0.25);

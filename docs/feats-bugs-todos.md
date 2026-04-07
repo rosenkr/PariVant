@@ -2,6 +2,7 @@
 feats/bugs/todos
 
 General:
+0. if has only 1 round, do not show the "Round 1" pill. 
 0. refine 1x2 (base pick by model as darker orange, cover picks current light orange, pink border for either 1x2 on live score depending on fetched score)
 1. default if no stryktipset to show eur, if no eur, show topptips, if no topptips, show stryk
 3. add more/other ingestion (relating to tipzer) so can have multiple upcoming rounds for a type (especially topptipset but also happens for europatipset)
@@ -36,6 +37,7 @@ cleanup:
 2. Lombokize everything to reduce boilerplate in persistence code
 3. Clean up Instant/OffsetDatetime/LocalDateTime drift across whole project
 4. add robots.txt
+5. check that T-15 model runs are being generated
 
 ui refinements: 
 0. color rework (pink/dark green)
