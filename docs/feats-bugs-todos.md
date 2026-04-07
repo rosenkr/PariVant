@@ -30,7 +30,7 @@ Auth (MVP) work:
 7. view my past results, compare with base model
 8. allow one confident pick that overrides model, can track stats for this
 
-cleanup: 
+cleanup:
 0. keep adding team names to match resolver - check 11elo for german matches, bzzoiro,
       -use the exporting tool once a day
 1. see over JsonUtils/ApiFootballClient/ApiExceptionHandler
@@ -38,6 +38,7 @@ cleanup:
 3. Clean up Instant/OffsetDatetime/LocalDateTime drift across whole project
 4. add robots.txt
 5. check that T-15 model runs are being generated
+6. add an About page explaining the model, the purpose, restrictions, etc
 
 ui refinements: 
 0. color rework (pink/dark green)

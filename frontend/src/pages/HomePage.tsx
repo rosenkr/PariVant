@@ -55,7 +55,7 @@ function parseSelections(run: ModelRunView): Record<string, Outcome[]> {
 }
 
 function parseInternalProbabilities(
-  run: ModelRunView | null
+  run: ModelRunView | null,
 ): Record<string, ProbabilityTripleDtoShape> {
   if (!run) return {};
 
@@ -75,17 +75,21 @@ function parseInternalProbabilities(
   return {};
 }
 
-function sortRoundsForStatus(rounds: RoundView[], status: RoundStatus): RoundView[] {
+function sortRoundsForStatus(
+  rounds: RoundView[],
+  status: RoundStatus,
+): RoundView[] {
   const copy = [...rounds];
 
   if (status === "ENDED") {
     return copy.sort(
-      (a, b) => new Date(b.startDate).getTime() - new Date(a.startDate).getTime()
+      (a, b) =>
+        new Date(b.startDate).getTime() - new Date(a.startDate).getTime(),
     );
   }
 
   return copy.sort(
-    (a, b) => new Date(a.startDate).getTime() - new Date(b.startDate).getTime()
+    (a, b) => new Date(a.startDate).getTime() - new Date(b.startDate).getTime(),
   );
 }
 
@@ -102,13 +106,17 @@ function statusUiLabel(status: RoundStatus): string {
 
 function findProvidersForMatch(
   providerMatches: MatchProviderPredictionsView[] | undefined,
-  matchNumber: number
+  matchNumber: number,
 ): ProviderPredictionView[] {
   if (!providerMatches) return [];
-  return providerMatches.find((m) => m.matchNumber === matchNumber)?.providers ?? [];
+  return (
+    providerMatches.find((m) => m.matchNumber === matchNumber)?.providers ?? []
+  );
 }
 
-function groupRoundsByType(rounds: RoundView[]): Record<RoundType, RoundView[]> {
+function groupRoundsByType(
+  rounds: RoundView[],
+): Record<RoundType, RoundView[]> {
   return {
     STRYKTIPSET: rounds.filter((r) => r.roundType === "STRYKTIPSET"),
     EUROPATIPSET: rounds.filter((r) => r.roundType === "EUROPATIPSET"),
@@ -130,7 +138,9 @@ export default function HomePage() {
   const [roundType, setRoundType] = useState<RoundType>("STRYKTIPSET");
   const [budget, setBudget] = useState<BudgetValue>(64);
   const [loginDialogOpen, setLoginDialogOpen] = useState(false);
-  const [selectedMatchNumber, setSelectedMatchNumber] = useState<number | null>(null);
+  const [selectedMatchNumber, setSelectedMatchNumber] = useState<number | null>(
+    null,
+  );
   const [selectedRoundId, setSelectedRoundId] = useState<number | null>(null);
   const autoPickedTypeByStatusRef = useRef<Record<RoundStatus, boolean>>({
     UPCOMING: false,
@@ -204,12 +214,12 @@ export default function HomePage() {
 
   const selectionsByMatch = useMemo(
     () => (selectedRun ? parseSelections(selectedRun) : {}),
-    [selectedRun]
+    [selectedRun],
   );
 
   const internalProbabilitiesByMatch = useMemo(
     () => parseInternalProbabilities(selectedRun),
-    [selectedRun]
+    [selectedRun],
   );
 
   useEffect(() => {
@@ -231,12 +241,16 @@ export default function HomePage() {
 
   const selectedMatch = useMemo(() => {
     if (!activeRound || selectedMatchNumber == null) return null;
-    return activeRound.matches.find((m) => m.matchNumber === selectedMatchNumber) ?? null;
+    return (
+      activeRound.matches.find((m) => m.matchNumber === selectedMatchNumber) ??
+      null
+    );
   }, [activeRound, selectedMatchNumber]);
 
   const providerPredictionResult = providerPredictionsQuery.data;
   const providerMatches = useMemo(() => {
-    if (!providerPredictionResult || providerPredictionResult.kind !== "ok") return [];
+    if (!providerPredictionResult || providerPredictionResult.kind !== "ok")
+      return [];
     return providerPredictionResult.data.matches;
   }, [providerPredictionResult]);
 
@@ -247,7 +261,9 @@ export default function HomePage() {
 
   const selectedInternal = useMemo(() => {
     if (!selectedMatch) return null;
-    return internalProbabilitiesByMatch[String(selectedMatch.matchNumber)] ?? null;
+    return (
+      internalProbabilitiesByMatch[String(selectedMatch.matchNumber)] ?? null
+    );
   }, [internalProbabilitiesByMatch, selectedMatch]);
 
   const onBoxClick = () => setLoginDialogOpen(true);
@@ -280,7 +296,10 @@ export default function HomePage() {
             overflow: "hidden",
           }}
         >
-          <RoundStatusTabs value={selectedStatus} onChange={setSelectedStatus} />
+          <RoundStatusTabs
+            value={selectedStatus}
+            onChange={setSelectedStatus}
+          />
         </Paper>
 
         <RoundHeader
@@ -293,7 +312,7 @@ export default function HomePage() {
           start={activeRound?.startDate}
         />
 
-        {sortedRounds.length > 0 && (
+        {sortedRounds.length > 1 && (
           <RoundSelectorTabs
             rounds={sortedRounds}
             selectedRoundId={activeRound?.id ?? null}
@@ -342,11 +361,13 @@ export default function HomePage() {
               </Box>
             )}
 
-            {!roundsQuery.isLoading && roundsResult?.kind === "ok" && !activeRound && (
-              <Box sx={{ p: 2 }}>
-                <Typography color="text.secondary">{emptyMessage}</Typography>
-              </Box>
-            )}
+            {!roundsQuery.isLoading &&
+              roundsResult?.kind === "ok" &&
+              !activeRound && (
+                <Box sx={{ p: 2 }}>
+                  <Typography color="text.secondary">{emptyMessage}</Typography>
+                </Box>
+              )}
 
             {!roundsQuery.isLoading &&
               (roundsResult?.kind === "server-error" ||
@@ -377,14 +398,18 @@ export default function HomePage() {
                   </Typography>
 
                   <Typography variant="body2" sx={{ opacity: 0.75 }}>
-                    cost {selectedRun.totalCostInSek} • half {selectedRun.halfGuardsCount} • full{" "}
+                    cost {selectedRun.totalCostInSek} • half{" "}
+                    {selectedRun.halfGuardsCount} • full{" "}
                     {selectedRun.fullGuardsCount ?? 0}
                     {enableLive && (
                       <>
                         {" "}
                         •{" "}
                         <span style={{ opacity: 0.9 }}>
-                          LIVE {live.state.status === "live" ? "connected" : "connecting"}
+                          LIVE{" "}
+                          {live.state.status === "live"
+                            ? "connected"
+                            : "connecting"}
                         </span>
                       </>
                     )}
@@ -394,7 +419,8 @@ export default function HomePage() {
                 {activeRound.matches.map((m, idx) => {
                   const key = String(m.matchNumber);
                   const sel = selectionsByMatch[key] ?? [];
-                  const liveUpdate = liveByMatchNumber.get(m.matchNumber) ?? null;
+                  const liveUpdate =
+                    liveByMatchNumber.get(m.matchNumber) ?? null;
 
                   return (
                     <Box
@@ -444,10 +470,15 @@ export default function HomePage() {
           />
         </Box>
 
-        <Dialog open={loginDialogOpen} onClose={() => setLoginDialogOpen(false)}>
+        <Dialog
+          open={loginDialogOpen}
+          onClose={() => setLoginDialogOpen(false)}
+        >
           <DialogTitle>Log in required</DialogTitle>
           <DialogContent>
-            <Typography>Log in to make and save your own selections.</Typography>
+            <Typography>
+              Log in to make and save your own selections.
+            </Typography>
           </DialogContent>
           <DialogActions>
             <Button onClick={() => setLoginDialogOpen(false)}>Close</Button>
