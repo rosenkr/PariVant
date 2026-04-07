@@ -358,6 +358,7 @@ public class RoundApiService {
                 r.getHalfGuardsCount(),
                 r.getTrigger(),
                 r.getSelectionsJson(),
+                r.getBasePicksJson(),
                 r.getInternalProbabilitiesJson()
         );
     }
@@ -377,6 +378,7 @@ public class RoundApiService {
             int halfGuardsCount,
             String trigger,
             String selectionsJson,
+            String basePicksJson,
             String internalProbabilitiesJson
     ) { }
 }

@@ -54,6 +54,27 @@ function parseSelections(run: ModelRunView): Record<string, Outcome[]> {
   return {};
 }
 
+function parseBasePicks(
+  run: ModelRunView | null
+): Record<string, Outcome> {
+  if (!run) return {};
+
+  if (run.basePicks) return run.basePicks;
+
+  if (run.basePicksJson) {
+    try {
+      const obj = JSON.parse(run.basePicksJson) as unknown;
+      if (obj && typeof obj === "object") {
+        return obj as Record<string, Outcome>;
+      }
+    } catch {
+      // ignore
+    }
+  }
+
+  return {};
+}
+
 function parseInternalProbabilities(
   run: ModelRunView | null,
 ): Record<string, ProbabilityTripleDtoShape> {
@@ -215,6 +236,11 @@ export default function HomePage() {
   const selectionsByMatch = useMemo(
     () => (selectedRun ? parseSelections(selectedRun) : {}),
     [selectedRun],
+  );
+
+  const basePicksByMatch = useMemo(
+    () => parseBasePicks(selectedRun),
+    [selectedRun]
   );
 
   const internalProbabilitiesByMatch = useMemo(
@@ -419,8 +445,8 @@ export default function HomePage() {
                 {activeRound.matches.map((m, idx) => {
                   const key = String(m.matchNumber);
                   const sel = selectionsByMatch[key] ?? [];
-                  const liveUpdate =
-                    liveByMatchNumber.get(m.matchNumber) ?? null;
+                  const basePick = basePicksByMatch[key] ?? null;
+                  const liveUpdate = liveByMatchNumber.get(m.matchNumber) ?? null;
 
                   return (
                     <Box
@@ -438,6 +464,7 @@ export default function HomePage() {
                         away={m.awayTeamName}
                         kickoff={m.startDate}
                         selected={sel}
+                        basePick={basePick}
                         live={liveUpdate}
                         isActive={selectedMatchNumber === m.matchNumber}
                         onClick={() => setSelectedMatchNumber(m.matchNumber)}

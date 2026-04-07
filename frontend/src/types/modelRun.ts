@@ -1,7 +1,5 @@
 export type Outcome = "HOME_WIN" | "DRAW" | "AWAY_WIN";
 
-export type ModelRunTrigger = "OPENED" | "T_MINUS_15" | "MANUAL";
-
 export type ProbabilityTripleDtoShape = {
   homeWin: number;
   draw: number;
@@ -16,31 +14,13 @@ export type ModelRunView = {
   totalCostInSek: number;
   halfGuardsCount: number;
   fullGuardsCount?: number;
-  trigger: ModelRunTrigger;
+  trigger: string;
 
-  selections?: Record<string, Outcome[]>;
   selectionsJson?: string;
-
-  internalProbabilities?: Record<string, ProbabilityTripleDtoShape>;
+  basePicksJson?: string;
   internalProbabilitiesJson?: string;
 
-  weights?: {
-    recentFormWeight?: number;
-  };
-  weightsJson?: string;
-
-  decisionParameters?: {
-    maxFullGuardsTopptipset?: number;
-    maxFullGuardsStryktipset?: number;
-    valueThresholdTopptipset?: number;
-    valueThresholdStryktipset?: number;
-    probabilityFloorTopptipset?: number;
-    probabilityFloorStryktipset?: number;
-  };
-  decisionParametersJson?: string;
+  selections?: Record<string, Outcome[]>;
+  basePicks?: Record<string, Outcome>;
+  internalProbabilities?: Record<string, ProbabilityTripleDtoShape>;
 };
-
-export type GetModelRunsResult =
-  | { kind: "ok"; data: ModelRunView[] }
-  | { kind: "server-error"; status: number; message: string }
-  | { kind: "network-error"; message: string };

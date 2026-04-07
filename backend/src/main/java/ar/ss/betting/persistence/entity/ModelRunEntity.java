@@ -5,21 +5,26 @@ import org.hibernate.annotations.JdbcTypeCode;
 import org.hibernate.type.SqlTypes;
 
 import java.time.LocalDateTime;
-import java.util.Objects;
 
 @Entity
-@Table(name = "model_run")
+@Table(
+        name = "model_run",
+        indexes = {
+                @Index(name = "idx_model_run_round_id", columnList = "round_id"),
+                @Index(name = "idx_model_run_generated_at", columnList = "generated_at")
+        }
+)
 public class ModelRunEntity {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
+    @ManyToOne(optional = false, fetch = FetchType.LAZY)
     @JoinColumn(name = "round_id", nullable = false)
-    @ManyToOne(fetch = FetchType.LAZY, optional = false)
     private RoundEntity round;
 
-    @Column(name = "model_name", nullable = false, length = 128)
+    @Column(name = "model_name", nullable = false, length = 64)
     private String modelName;
 
     @Column(name = "generated_at", nullable = false)
@@ -39,6 +44,10 @@ public class ModelRunEntity {
     private String selectionsJson;
 
     @JdbcTypeCode(SqlTypes.JSON)
+    @Column(name = "base_picks_json", nullable = false, columnDefinition = "jsonb")
+    private String basePicksJson;
+
+    @JdbcTypeCode(SqlTypes.JSON)
     @Column(name = "internal_probabilities_json", nullable = false, columnDefinition = "jsonb")
     private String internalProbabilitiesJson;
 
@@ -46,7 +55,6 @@ public class ModelRunEntity {
     private String trigger;
 
     protected ModelRunEntity() {
-        // JPA
     }
 
     public ModelRunEntity(RoundEntity round,
@@ -56,37 +64,19 @@ public class ModelRunEntity {
                           int totalCostInSek,
                           int halfGuardsCount,
                           String selectionsJson,
+                          String basePicksJson,
                           String internalProbabilitiesJson,
                           String trigger) {
-
-        this.round = Objects.requireNonNull(round, "round cannot be null");
-        this.modelName = requireNonBlank(modelName, "modelName");
-        this.generatedAt = Objects.requireNonNull(generatedAt, "generatedAt cannot be null");
-        this.budgetInSek = requirePositive(budgetInSek, "budgetInSek");
-        this.totalCostInSek = requirePositive(totalCostInSek, "totalCostInSek");
-
-        if (halfGuardsCount < 0) {
-            throw new IllegalArgumentException("halfGuardsCount cannot be negative");
-        }
-
+        this.round = round;
+        this.modelName = modelName;
+        this.generatedAt = generatedAt;
+        this.budgetInSek = budgetInSek;
+        this.totalCostInSek = totalCostInSek;
         this.halfGuardsCount = halfGuardsCount;
-        this.selectionsJson = requireNonBlank(selectionsJson, "selectionsJson");
-        this.internalProbabilitiesJson = requireNonBlank(internalProbabilitiesJson, "internalProbabilitiesJson");
-        this.trigger = requireNonBlank(trigger, "trigger");
-    }
-
-    private static int requirePositive(int value, String field) {
-        if (value <= 0) {
-            throw new IllegalArgumentException(field + " must be positive");
-        }
-        return value;
-    }
-
-    private static String requireNonBlank(String value, String field) {
-        if (value == null || value.isBlank()) {
-            throw new IllegalArgumentException(field + " cannot be blank");
-        }
-        return value;
+        this.selectionsJson = selectionsJson;
+        this.basePicksJson = basePicksJson;
+        this.internalProbabilitiesJson = internalProbabilitiesJson;
+        this.trigger = trigger;
     }
 
     public Long getId() {
@@ -119,6 +109,10 @@ public class ModelRunEntity {
 
     public String getSelectionsJson() {
         return selectionsJson;
+    }
+
+    public String getBasePicksJson() {
+        return basePicksJson;
     }
 
     public String getInternalProbabilitiesJson() {

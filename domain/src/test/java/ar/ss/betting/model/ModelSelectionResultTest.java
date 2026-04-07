@@ -20,6 +20,10 @@ class ModelSelectionResultTest {
                 "EnsembleModel",
                 generatedAt,
                 Map.of(
+                        1, Outcome.HOME_WIN,
+                        2, Outcome.DRAW
+                ),
+                Map.of(
                         1, Set.of(Outcome.HOME_WIN),
                         2, Set.of(Outcome.DRAW, Outcome.AWAY_WIN)
                 ),
@@ -34,6 +38,8 @@ class ModelSelectionResultTest {
 
         assertEquals("EnsembleModel", result.getModelName());
         assertEquals(generatedAt, result.getGeneratedAt());
+        assertEquals(Outcome.HOME_WIN, result.getBasePicks().get(1));
+        assertEquals(Outcome.DRAW, result.getBasePicks().get(2));
         assertEquals(Set.of(Outcome.HOME_WIN), result.getSelections().get(1));
         assertEquals(Set.of(Outcome.DRAW, Outcome.AWAY_WIN), result.getSelections().get(2));
         assertEquals(0.60, result.getInternalProbabilities().get(1).get(Outcome.HOME_WIN), 1e-9);
@@ -44,24 +50,11 @@ class ModelSelectionResultTest {
     }
 
     @Test
-    void transitionalConstructorShouldDefaultInternalProbabilitiesToEmptyMap() {
-        ModelSelectionResult result = new ModelSelectionResult(
-                "EnsembleModel",
-                LocalDateTime.now(),
-                Map.of(1, Set.of(Outcome.HOME_WIN)),
-                1,
-                0,
-                0
-        );
-
-        assertEquals(Map.of(), result.getInternalProbabilities());
-    }
-
-    @Test
     void shouldRejectNonPositiveTotalCost() {
         assertThrows(IllegalArgumentException.class, () -> new ModelSelectionResult(
                 "EnsembleModel",
                 LocalDateTime.now(),
+                Map.of(1, Outcome.HOME_WIN),
                 Map.of(1, Set.of(Outcome.HOME_WIN)),
                 Map.of(),
                 0,
@@ -75,6 +68,7 @@ class ModelSelectionResultTest {
         assertThrows(IllegalArgumentException.class, () -> new ModelSelectionResult(
                 "EnsembleModel",
                 LocalDateTime.now(),
+                Map.of(1, Outcome.HOME_WIN),
                 Map.of(1, Set.of(Outcome.HOME_WIN)),
                 Map.of(),
                 1,
@@ -85,6 +79,7 @@ class ModelSelectionResultTest {
         assertThrows(IllegalArgumentException.class, () -> new ModelSelectionResult(
                 "EnsembleModel",
                 LocalDateTime.now(),
+                Map.of(1, Outcome.HOME_WIN),
                 Map.of(1, Set.of(Outcome.HOME_WIN)),
                 Map.of(),
                 1,
@@ -94,10 +89,28 @@ class ModelSelectionResultTest {
     }
 
     @Test
+    void shouldReturnAnUnmodifiableBasePicksMap() {
+        ModelSelectionResult result = new ModelSelectionResult(
+                "EnsembleModel",
+                LocalDateTime.now(),
+                Map.of(1, Outcome.HOME_WIN),
+                Map.of(1, Set.of(Outcome.HOME_WIN)),
+                Map.of(),
+                1,
+                0,
+                0
+        );
+
+        assertThrows(UnsupportedOperationException.class, () ->
+                result.getBasePicks().put(2, Outcome.DRAW));
+    }
+
+    @Test
     void shouldReturnAnUnmodifiableSelectionsMap() {
         ModelSelectionResult result = new ModelSelectionResult(
                 "EnsembleModel",
                 LocalDateTime.now(),
+                Map.of(1, Outcome.HOME_WIN),
                 Map.of(1, Set.of(Outcome.HOME_WIN)),
                 Map.of(),
                 1,
@@ -114,6 +127,7 @@ class ModelSelectionResultTest {
         ModelSelectionResult result = new ModelSelectionResult(
                 "EnsembleModel",
                 LocalDateTime.now(),
+                Map.of(1, Outcome.HOME_WIN),
                 Map.of(1, Set.of(Outcome.HOME_WIN)),
                 Map.of(1, ProbabilityTriple.fromProbabilities(0.60, 0.25, 0.15)),
                 1,

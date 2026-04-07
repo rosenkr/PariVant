@@ -8,17 +8,6 @@ import java.time.LocalDateTime;
 import java.util.*;
 import java.util.stream.Collectors;
 
-/**
- * Ensemble betting model.
- *
- * Pipeline:
- * 1. ensemble internal probabilities from market + providers
- * 2. optional runtime overlays (tags and/or buff)
- * 3. score-based base pick selection
- * 4. uncertainty-based half-guard allocation
- *
- * Full guard logic is removed.
- */
 public class EnsembleModel implements GameModel {
 
     private final BaseOutcomeSelector baseOutcomeSelector;
@@ -33,7 +22,6 @@ public class EnsembleModel implements GameModel {
     public ModelSelectionResult generateSelection(Round round,
                                                   ModelInput modelInput,
                                                   int maxBudgetInSek) {
-
         Objects.requireNonNull(round, "round cannot be null");
         Objects.requireNonNull(modelInput, "modelInput cannot be null");
 
@@ -43,46 +31,51 @@ public class EnsembleModel implements GameModel {
 
         validateBuffQuota(round, modelInput);
 
-        Map<Integer, ProbabilityTriple> internalProbs = new HashMap<>();
+        Map<Integer, ProbabilityTriple> internalProbabilities = new HashMap<>();
         Map<Integer, Outcome> basePicks = new HashMap<>();
 
         for (Match match : round.getMatches()) {
             int matchNumber = match.getMatchNumber();
 
-            MatchContext ctx = modelInput.getMatchContext(matchNumber);
+            MatchContext context = modelInput.getMatchContext(matchNumber);
             MatchInterventions interventions = modelInput.getMatchInterventions(matchNumber);
 
-            ProbabilityTriple internal = probabilityCalculator.calculateInternalProbabilities(ctx, interventions);
-            internalProbs.put(matchNumber, internal);
-
-            Outcome base = baseOutcomeSelector.chooseBaseOutcome(
-                    internal,
-                    ctx.getPublicProbabilities()
+            ProbabilityTriple internal = probabilityCalculator.calculateInternalProbabilities(
+                    context,
+                    interventions
             );
+            internalProbabilities.put(matchNumber, internal);
 
-            basePicks.put(matchNumber, base);
+            Outcome basePick = baseOutcomeSelector.chooseBaseOutcome(
+                    internal,
+                    context.getPublicProbabilities()
+            );
+            basePicks.put(matchNumber, basePick);
         }
 
         Map<Integer, Set<Outcome>> selections = basePicks.entrySet().stream()
                 .collect(Collectors.toMap(
                         Map.Entry::getKey,
-                        e -> new LinkedHashSet<>(Set.of(e.getValue()))
+                        entry -> {
+                            LinkedHashSet<Outcome> set = new LinkedHashSet<>();
+                            set.add(entry.getValue());
+                            return set;
+                        }
                 ));
 
         int halfGuardsToUse = computeHalfGuards(round.getMatches().size(), maxBudgetInSek);
-        List<Integer> rankedMatches = rankByUncertainty(internalProbs);
+        List<Integer> rankedMatches = rankByUncertainty(internalProbabilities);
 
         int appliedHalfGuards = 0;
-
         for (Integer matchNumber : rankedMatches) {
             if (appliedHalfGuards >= halfGuardsToUse) {
                 break;
             }
 
-            Outcome base = basePicks.get(matchNumber);
-            ProbabilityTriple internal = internalProbs.get(matchNumber);
+            Outcome basePick = basePicks.get(matchNumber);
+            ProbabilityTriple internal = internalProbabilities.get(matchNumber);
 
-            selections.put(matchNumber, expandToHalfGuard(base, internal));
+            selections.put(matchNumber, expandToHalfGuard(basePick, internal));
             appliedHalfGuards++;
         }
 
@@ -91,8 +84,9 @@ public class EnsembleModel implements GameModel {
         return new ModelSelectionResult(
                 "EnsembleModel",
                 LocalDateTime.now(),
+                freezeBasePicks(basePicks),
                 freezeSelections(selections),
-                freezeInternalProbabilities(internalProbs),
+                freezeInternalProbabilities(internalProbabilities),
                 totalCost,
                 countHalfGuards(selections),
                 0
@@ -114,43 +108,52 @@ public class EnsembleModel implements GameModel {
         }
     }
 
+    private Map<Integer, Outcome> freezeBasePicks(Map<Integer, Outcome> basePicks) {
+        return Collections.unmodifiableMap(new HashMap<>(basePicks));
+    }
+
     private Map<Integer, Set<Outcome>> freezeSelections(Map<Integer, Set<Outcome>> selections) {
         Map<Integer, Set<Outcome>> frozen = new HashMap<>();
-        for (Map.Entry<Integer, Set<Outcome>> e : selections.entrySet()) {
-            frozen.put(e.getKey(), Collections.unmodifiableSet(new LinkedHashSet<>(e.getValue())));
+        for (Map.Entry<Integer, Set<Outcome>> entry : selections.entrySet()) {
+            frozen.put(
+                    entry.getKey(),
+                    Collections.unmodifiableSet(new LinkedHashSet<>(entry.getValue()))
+            );
         }
         return Collections.unmodifiableMap(frozen);
     }
 
-    private Map<Integer, ProbabilityTriple> freezeInternalProbabilities(Map<Integer, ProbabilityTriple> internalProbabilities) {
+    private Map<Integer, ProbabilityTriple> freezeInternalProbabilities(
+            Map<Integer, ProbabilityTriple> internalProbabilities
+    ) {
         return Collections.unmodifiableMap(new HashMap<>(internalProbabilities));
     }
 
     private int countHalfGuards(Map<Integer, Set<Outcome>> selections) {
-        int c = 0;
-        for (Set<Outcome> s : selections.values()) {
-            if (s.size() == 2) {
-                c++;
+        int count = 0;
+        for (Set<Outcome> selection : selections.values()) {
+            if (selection.size() == 2) {
+                count++;
             }
         }
-        return c;
+        return count;
     }
 
     private int computeTotalCost(Map<Integer, Set<Outcome>> selections) {
         int cost = 1;
-        for (Set<Outcome> s : selections.values()) {
-            cost *= s.size();
+        for (Set<Outcome> selection : selections.values()) {
+            cost *= selection.size();
         }
         return cost;
     }
 
-    private List<Integer> rankByUncertainty(Map<Integer, ProbabilityTriple> internalProbs) {
-        List<Integer> matchNumbers = new ArrayList<>(internalProbs.keySet());
+    private List<Integer> rankByUncertainty(Map<Integer, ProbabilityTriple> internalProbabilities) {
+        List<Integer> matchNumbers = new ArrayList<>(internalProbabilities.keySet());
 
         matchNumbers.sort((a, b) -> {
-            double ua = uncertainty(internalProbs.get(a));
-            double ub = uncertainty(internalProbs.get(b));
-            int cmp = Double.compare(ub, ua);
+            double uncertaintyA = uncertainty(internalProbabilities.get(a));
+            double uncertaintyB = uncertainty(internalProbabilities.get(b));
+            int cmp = Double.compare(uncertaintyB, uncertaintyA);
             if (cmp != 0) {
                 return cmp;
             }
@@ -168,42 +171,44 @@ public class EnsembleModel implements GameModel {
         return 1.0 - max;
     }
 
-    private Set<Outcome> expandToHalfGuard(Outcome base, ProbabilityTriple internal) {
-        Outcome bestAlt = bestAlternative(base, internal);
+    private Set<Outcome> expandToHalfGuard(Outcome basePick, ProbabilityTriple internal) {
+        Outcome bestAlternative = bestAlternative(basePick, internal);
 
         LinkedHashSet<Outcome> set = new LinkedHashSet<>();
-        set.add(base);
-        set.add(bestAlt);
+        set.add(basePick);
+        set.add(bestAlternative);
 
         return set;
     }
 
-    private Outcome bestAlternative(Outcome base, ProbabilityTriple internal) {
+    private Outcome bestAlternative(Outcome basePick, ProbabilityTriple internal) {
         Outcome best = null;
-        double bestP = Double.NEGATIVE_INFINITY;
+        double bestProbability = Double.NEGATIVE_INFINITY;
 
-        for (Outcome o : Outcome.values()) {
-            if (o == base) {
+        for (Outcome outcome : Outcome.values()) {
+            if (outcome == basePick) {
                 continue;
             }
-            double p = internal.get(o);
-            if (p > bestP) {
-                bestP = p;
-                best = o;
+
+            double probability = internal.get(outcome);
+            if (probability > bestProbability) {
+                bestProbability = probability;
+                best = outcome;
             }
         }
+
         return Objects.requireNonNull(best);
     }
 
     private int computeHalfGuards(int numberOfMatches, int budget) {
-        int half = 0;
+        int halfGuards = 0;
         int cost = 1;
 
-        while (half < numberOfMatches && cost * 2 <= budget) {
+        while (halfGuards < numberOfMatches && cost * 2 <= budget) {
             cost *= 2;
-            half++;
+            halfGuards++;
         }
 
-        return half;
+        return halfGuards;
     }
 }

@@ -49,6 +49,7 @@ CREATE TABLE IF NOT EXISTS model_run (
     half_guards_count INT NOT NULL,
     trigger VARCHAR(64) NOT NULL,
     selections_json JSONB NOT NULL,
+    base_picks_json JSONB NOT NULL,
     internal_probabilities_json JSONB NOT NULL
 );
 

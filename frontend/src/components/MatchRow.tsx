@@ -2,7 +2,7 @@ import { Box, Stack, Tooltip, Typography } from "@mui/material";
 import { SelectionBox } from "./SelectionBox";
 import type { Outcome } from "../types/modelRun";
 import type { LiveMatchUpdate } from "../types/live";
-import { formatTimeOnly } from "../utils/time";
+import { formatTimeOnly, parseLocalDateTime } from "../utils/time";
 
 type Props = {
   index: number;
@@ -10,6 +10,7 @@ type Props = {
   away: string;
   kickoff: string;
   selected: Outcome[];
+  basePick?: Outcome | null;
   live?: LiveMatchUpdate | null;
   isActive: boolean;
   onClick: () => void;
@@ -18,8 +19,15 @@ type Props = {
   marketFallbackReason?: string | null;
 };
 
-function isSelected(sel: Outcome[], o: Outcome) {
-  return sel.includes(o);
+type ScoreBorderTone = "none" | "static" | "live";
+
+function toneForOutcome(
+  selected: Outcome[],
+  basePick: Outcome | null | undefined,
+  outcome: Outcome
+): "none" | "base" | "coverage" {
+  if (!selected.includes(outcome)) return "none";
+  return basePick === outcome ? "base" : "coverage";
 }
 
 function liveStatusLabel(live: LiveMatchUpdate): string | null {
@@ -42,12 +50,37 @@ function fallbackMessage(reason?: string | null): string {
   return reason ?? "Market data fallback was used.";
 }
 
+function currentScoreOutcome(live: LiveMatchUpdate | null | undefined): Outcome | null {
+  if (!live || live.homeGoals == null || live.awayGoals == null) return null;
+
+  if (live.homeGoals > live.awayGoals) return "HOME_WIN";
+  if (live.homeGoals < live.awayGoals) return "AWAY_WIN";
+  return "DRAW";
+}
+
+function scoreBorderForOutcome(
+  kickoff: string,
+  live: LiveMatchUpdate | null | undefined,
+  outcome: Outcome
+): ScoreBorderTone {
+  const kickoffDate = parseLocalDateTime(kickoff);
+  const started = kickoffDate != null && kickoffDate.getTime() <= Date.now();
+
+  const liveOutcome = currentScoreOutcome(live);
+  if (started) {
+    return liveOutcome === outcome ? "live" : "none";
+  }
+
+  return outcome === "DRAW" ? "static" : "none";
+}
+
 export function MatchRow({
   index,
   home,
   away,
   kickoff,
   selected,
+  basePick = null,
   live,
   isActive,
   onClick,
@@ -78,7 +111,7 @@ export function MatchRow({
         cursor: "pointer",
         borderLeft: "3px solid",
         borderLeftColor: isActive ? "secondary.main" : "transparent",
-        transition: "background-color 140ms ease, border-color 140ms ease, transform 140ms ease",
+        transition: "background-color 140ms ease, border-color 140ms ease",
         "&:hover": {
           backgroundColor: "rgba(255,255,255,0.045)",
         },
@@ -142,20 +175,20 @@ export function MatchRow({
 
         <SelectionBox
           label="1"
-          recommended={isSelected(selected, "HOME_WIN")}
-          selected={isSelected(selected, "HOME_WIN")}
+          tone={toneForOutcome(selected, basePick, "HOME_WIN")}
+          scoreBorder={scoreBorderForOutcome(kickoff, live, "HOME_WIN")}
           onClick={onSelectionClick}
         />
         <SelectionBox
           label="X"
-          recommended={isSelected(selected, "DRAW")}
-          selected={isSelected(selected, "DRAW")}
+          tone={toneForOutcome(selected, basePick, "DRAW")}
+          scoreBorder={scoreBorderForOutcome(kickoff, live, "DRAW")}
           onClick={onSelectionClick}
         />
         <SelectionBox
           label="2"
-          recommended={isSelected(selected, "AWAY_WIN")}
-          selected={isSelected(selected, "AWAY_WIN")}
+          tone={toneForOutcome(selected, basePick, "AWAY_WIN")}
+          scoreBorder={scoreBorderForOutcome(kickoff, live, "AWAY_WIN")}
           onClick={onSelectionClick}
         />
       </Stack>

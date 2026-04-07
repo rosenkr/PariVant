@@ -43,6 +43,9 @@ cleanup:
 4. add robots.txt
 5. check that T-15 model runs are being generated
 6. add an About page explaining the model, the purpose, restrictions, etc
+7. Investigate how I handle an ended round: trigger, storage, presentation, correctness, match scores
+   - How does it intermingle with model runs, compare result to model run. On ended page, store actual result
+   - and comparison to model, display the models hitrate. Must have a solid way of knowing the scores of all matches at end of a round
 
 ui refinements: 
 0. color rework (pink/dark green)
