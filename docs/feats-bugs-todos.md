@@ -4,17 +4,15 @@ feats/bugs/todos
 General:
 0. refine 1x2 (base pick by model as darker orange, cover picks current light orange, pink border for either 1x2 on live score depending on fetched score)
 1. default if no stryktipset to show eur, if no eur, show topptips, if no topptips, show stryk
-2. tab above round to switch which round for a round type?
-    - the idea is, there may be not only 1 but up to (no more than) 10 upcoming rounds for topptipset, and even fewer for stryk/europatipset
-    - thus can have a "round1","round2",... adaptive ui navbar like field above the presentation of the current round which allows one to swap between these. 
-    - the default one should be shown leftmost and is with the closest kickoff
-    - Preferred over a dropdown, and should be okay spacewise since the domain dictates there can only be so many upcoming rounds of a type at once
-    - this navbar field should be shown above the round display. if there is only 1 round, it should still show it as 1 selected round
 3. add more/other ingestion (relating to tipzer) so can have multiple upcoming rounds for a type (especially topptipset but also happens for europatipset)
    - for example web scraping other websites or even SS.
 4. rework value as KL divergenece for value calculation (or renyi with R = risk aversion = alpha param in Renyi = 1 for neutral risk)
     -currently may be crude way of using subtraction
 5. deploy on railway (PariVant) (separate frontend/backend servers?)
+
+6. create name PariVant on social media, buy host name, enter forums for swedish bettors, or skugga. For example flashback. User research.
+    - Write down pain points, wishes, etc with the betting experience or svenskaspel. 
+    - Sites?: flashback, sweclockers, reddit, ???
 
 
 

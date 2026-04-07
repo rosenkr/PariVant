@@ -9,7 +9,7 @@ import {
   Stack,
   Typography,
 } from "@mui/material";
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { Page } from "../components/layout/Page";
 import { RoundHeader } from "../components/RoundHeader";
 import { RoundStatusTabs } from "../components/RoundStatusTabs";
@@ -36,7 +36,6 @@ type ProbabilityTripleDtoShape = {
   draw: number;
   awayWin: number;
 };
-
 
 function parseSelections(run: ModelRunView): Record<string, Outcome[]> {
   if (run.selections) return run.selections;
@@ -90,7 +89,6 @@ function sortRoundsForStatus(rounds: RoundView[], status: RoundStatus): RoundVie
   );
 }
 
-
 function statusUiLabel(status: RoundStatus): string {
   switch (status) {
     case "UPCOMING":
@@ -110,6 +108,23 @@ function findProvidersForMatch(
   return providerMatches.find((m) => m.matchNumber === matchNumber)?.providers ?? [];
 }
 
+function groupRoundsByType(rounds: RoundView[]): Record<RoundType, RoundView[]> {
+  return {
+    STRYKTIPSET: rounds.filter((r) => r.roundType === "STRYKTIPSET"),
+    EUROPATIPSET: rounds.filter((r) => r.roundType === "EUROPATIPSET"),
+    TOPPTIPSET: rounds.filter((r) => r.roundType === "TOPPTIPSET"),
+  };
+}
+
+function pickDefaultRoundType(rounds: RoundView[]): RoundType {
+  const byType = groupRoundsByType(rounds);
+
+  if (byType.STRYKTIPSET.length > 0) return "STRYKTIPSET";
+  if (byType.EUROPATIPSET.length > 0) return "EUROPATIPSET";
+  if (byType.TOPPTIPSET.length > 0) return "TOPPTIPSET";
+  return "STRYKTIPSET";
+}
+
 export default function HomePage() {
   const [selectedStatus, setSelectedStatus] = useState<RoundStatus>("UPCOMING");
   const [roundType, setRoundType] = useState<RoundType>("STRYKTIPSET");
@@ -117,14 +132,23 @@ export default function HomePage() {
   const [loginDialogOpen, setLoginDialogOpen] = useState(false);
   const [selectedMatchNumber, setSelectedMatchNumber] = useState<number | null>(null);
   const [selectedRoundId, setSelectedRoundId] = useState<number | null>(null);
+  const autoPickedTypeByStatusRef = useRef<Record<RoundStatus, boolean>>({
+    UPCOMING: false,
+    RUNNING: false,
+    ENDED: false,
+  });
 
-  const roundsQuery = useRoundsByFilters(roundType, selectedStatus);
+  const roundsQuery = useRoundsByFilters(selectedStatus);
   const roundsResult = roundsQuery.data;
 
-  const sortedRounds = useMemo(() => {
+  const roundsForSelectedType = useMemo(() => {
     if (!roundsResult || roundsResult.kind !== "ok") return [];
-    return sortRoundsForStatus(roundsResult.data, selectedStatus);
-  }, [roundsResult, selectedStatus]);
+    return roundsResult.data.filter((r) => r.roundType === roundType);
+  }, [roundsResult, roundType]);
+
+  const sortedRounds = useMemo(() => {
+    return sortRoundsForStatus(roundsForSelectedType, selectedStatus);
+  }, [roundsForSelectedType, selectedStatus]);
 
   const activeRound = useMemo(() => {
     if (sortedRounds.length === 0) return null;
@@ -136,6 +160,21 @@ export default function HomePage() {
 
     return sortedRounds[0] ?? null;
   }, [sortedRounds, selectedRoundId]);
+
+  useEffect(() => {
+    autoPickedTypeByStatusRef.current[selectedStatus] = false;
+    setSelectedRoundId(null);
+    setSelectedMatchNumber(null);
+  }, [selectedStatus]);
+
+  useEffect(() => {
+    if (!roundsResult || roundsResult.kind !== "ok") return;
+    if (autoPickedTypeByStatusRef.current[selectedStatus]) return;
+
+    const preferred = pickDefaultRoundType(roundsResult.data);
+    setRoundType(preferred);
+    autoPickedTypeByStatusRef.current[selectedStatus] = true;
+  }, [roundsResult, selectedStatus]);
 
   useEffect(() => {
     if (sortedRounds.length === 0) {
@@ -253,6 +292,7 @@ export default function HomePage() {
           roundStatus={activeRound ? selectedStatus : undefined}
           start={activeRound?.startDate}
         />
+
         {sortedRounds.length > 0 && (
           <RoundSelectorTabs
             rounds={sortedRounds}

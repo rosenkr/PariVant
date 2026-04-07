@@ -1,4 +1,4 @@
-package ar.ss.betting.rework;
+package ar.ss.betting.controllers.dev;
 
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RestController;

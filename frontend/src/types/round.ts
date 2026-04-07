@@ -21,6 +21,7 @@ export type MatchView = {
 
 export type RoundView = {
   id: number;
+  roundType: RoundType;
   startDate: string;
   matches: MatchView[];
 };

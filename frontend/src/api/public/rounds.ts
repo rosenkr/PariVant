@@ -1,7 +1,7 @@
 import { API_BASE_URL } from "../http";
 import type { RoundStatus, RoundType, RoundView } from "../../types/round";
 
-export type GetRoundsByFiltersResult =
+export type GetRoundsResult =
   | { kind: "ok"; data: RoundView[] }
   | { kind: "server-error"; status: number; message: string }
   | { kind: "network-error"; message: string };
@@ -11,22 +11,17 @@ async function readErrorMessage(response: Response): Promise<string> {
   return text || `HTTP ${response.status}`;
 }
 
-/**
- * Expected backend contract:
- * GET /public/rounds?roundType=STRYKTIPSET&status=UPCOMING
- * -> RoundView[]
- *
- * The frontend owns the semantics of "which one is primary/current"
- * by selecting from the returned list.
- */
-export async function getRoundsByFilters(
-  roundType: RoundType,
-  status: RoundStatus
-): Promise<GetRoundsByFiltersResult> {
-  const url =
-    `${API_BASE_URL}/public/rounds` +
-    `?roundType=${encodeURIComponent(roundType)}` +
-    `&status=${encodeURIComponent(status)}`;
+export async function getRounds(
+  status: RoundStatus,
+  roundType?: RoundType
+): Promise<GetRoundsResult> {
+  const params = new URLSearchParams();
+  params.set("status", status);
+  if (roundType) {
+    params.set("roundType", roundType);
+  }
+
+  const url = `${API_BASE_URL}/public/rounds?${params.toString()}`;
 
   try {
     const response = await fetch(url);

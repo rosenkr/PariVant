@@ -30,16 +30,22 @@ public class PublicRoundController {
         this.matchContextRepository = Objects.requireNonNull(matchContextRepository);
     }
 
+    // Ex #1: on site enter, get all "status = upcoming" rounds (for all types), so frontend can choose which to show
+    // Ex #2: on navigating from upcoming to live, get all "status = running"
     @GetMapping("/rounds")
     public ResponseEntity<List<RoundView>> getRounds(
-            @RequestParam("roundType") String roundTypeParam,
-            @RequestParam("status") String statusParam
+            @RequestParam("status") String statusParam,
+            @RequestParam(value = "roundType", required = false) String roundTypeParam
     ) {
-        RoundType roundType = RoundType.valueOf(roundTypeParam);
         RoundStatus status = RoundStatus.valueOf(statusParam);
 
-        List<RoundEntity> rounds =
-                roundRepository.findByRoundTypeAndStatusOrderByStartDateAsc(roundType, status);
+        List<RoundEntity> rounds;
+        if (roundTypeParam == null || roundTypeParam.isBlank()) {
+            rounds = roundRepository.findByStatusOrderByStartDateAsc(status);
+        } else {
+            RoundType roundType = RoundType.valueOf(roundTypeParam);
+            rounds = roundRepository.findByRoundTypeAndStatusOrderByStartDateAsc(roundType, status);
+        }
 
         List<RoundView> response = rounds.stream()
                 .map(this::toRoundView)
@@ -68,6 +74,7 @@ public class PublicRoundController {
 
         return new RoundView(
                 round.getId(),
+                round.getRoundType().name(),
                 round.getStartDate(),
                 matches
         );
@@ -105,8 +112,10 @@ public class PublicRoundController {
                 marketFallbackReason
         );
     }
+
     public record RoundView(
             long id,
+            String roundType,
             LocalDateTime startDate,
             List<MatchView> matches
     ) { }

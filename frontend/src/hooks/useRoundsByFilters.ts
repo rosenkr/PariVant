@@ -1,12 +1,12 @@
 import { useQuery } from "@tanstack/react-query";
-import { getRoundsByFilters } from "../api/public/rounds";
+import { getRounds } from "../api/public/rounds";
 import type { RoundStatus, RoundType } from "../types/round";
 
-export function useRoundsByFilters(roundType: RoundType, status: RoundStatus) {
+export function useRoundsByFilters(status: RoundStatus, roundType?: RoundType) {
   return useQuery({
-    queryKey: ["roundsByFilters", roundType, status],
-    queryFn: () => getRoundsByFilters(roundType, status),
-    staleTime: 60 * 1000 * 5,
+    queryKey: ["rounds", status, roundType ?? "ALL"],
+    queryFn: () => getRounds(status, roundType),
+    staleTime: 1000 * 60 * 5,
     retry: false,
   });
 }
