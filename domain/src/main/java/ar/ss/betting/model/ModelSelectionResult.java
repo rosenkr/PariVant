@@ -8,16 +8,10 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
 
-public class ModelSelectionResult {
-
-    private final String modelName;
-    private final LocalDateTime generatedAt;
-    private final Map<Integer, Outcome> basePicks;
-    private final Map<Integer, Set<Outcome>> selections;
-    private final Map<Integer, ProbabilityTriple> internalProbabilities;
-    private final int totalCostInSek;
-    private final int halfGuardsCount;
-    private final int fullGuardsCount;
+public record ModelSelectionResult(String modelName, LocalDateTime generatedAt, Map<Integer, Outcome> basePicks,
+                                   Map<Integer, Set<Outcome>> selections,
+                                   Map<Integer, ProbabilityTriple> internalProbabilities, int totalCostInSek,
+                                   int halfGuardsCount, int fullGuardsCount) {
 
     public ModelSelectionResult(String modelName,
                                 LocalDateTime generatedAt,
@@ -50,35 +44,18 @@ public class ModelSelectionResult {
         this.fullGuardsCount = fullGuardsCount;
     }
 
-    public String getModelName() {
-        return modelName;
-    }
-
-    public LocalDateTime getGeneratedAt() {
-        return generatedAt;
-    }
-
-    public Map<Integer, Outcome> getBasePicks() {
+    @Override
+    public Map<Integer, Outcome> basePicks() {
         return Collections.unmodifiableMap(basePicks);
     }
 
-    public Map<Integer, Set<Outcome>> getSelections() {
+    @Override
+    public Map<Integer, Set<Outcome>> selections() {
         return Collections.unmodifiableMap(selections);
     }
 
-    public Map<Integer, ProbabilityTriple> getInternalProbabilities() {
+    @Override
+    public Map<Integer, ProbabilityTriple> internalProbabilities() {
         return Collections.unmodifiableMap(internalProbabilities);
-    }
-
-    public int getTotalCostInSek() {
-        return totalCostInSek;
-    }
-
-    public int getHalfGuardsCount() {
-        return halfGuardsCount;
-    }
-
-    public int getFullGuardsCount() {
-        return fullGuardsCount;
     }
 }

@@ -1,65 +1,84 @@
+V1:
+0. Lombokize everything to reduce boilerplate in persistence code https://www.youtube.com/watch?v=iCdK8SalG6E, https://www.youtube.com/watch?v=4dwlS39xO4A
+      -or add records according to guidelines in https://www.youtube.com/watch?v=4dwlS39xO4A
+    Records: 
+0. see over ApiFootballClient
+1. UI Rework V1
+2. "Rework value as KL divergence for value calculation "
+3. Impl Auth V1, first see https://www.youtube.com/watch?v=eYCOzPx3ht8
 
-feats/bugs/todos
+--------------------------------------------------------------------------------------------------------
+--------------------------------------------------------------------------------------------------------
+--------------------------------------------------------------------------------------------------------
 
-General:
-0. refine 1x2 pills in a match view:
-    -base pick by model as darker orange, cover picks remain current light orange
-    -pink border for the score (static pink when match not started at DRAW), 
-        but as soon as livescore poller connects, add gradient to the live score, it will move between 1x2 as teams score
+UI REWORK V1:
+0. Standardize bright mode and dark mode colors
+    -app init with default dark mode, top navbar will need toggle button (see below)
+    - dark mode = variations of nardo gray for backgrounds + variations of cyan for borders, on-hovers, etc
+    - bright mode = similarly but white-gray + dark green as currently have in codebase
+    - Currently have hardcoded pink in many places. Even the orange colors for picks. All of these should be in
+    - a theme or colors folder MUI-style. Want to avoid hardcoded inline colors.
+    - probably will need separate definition for lightMode/darkMode 
+1. Inspiration from 11elo & Systemvetardagen
+    - Compress navbar layour & center it instead of having it on the right. 3 parts:
+        - on the left side alone: Placeholder icon (to be a larger version of my homemade SVG currently used in browser favicon. Clicking this leads to home page
+        - in the middle: all the main navigation (currently only Home & Rounds, to be reworked)
+        - on the right: EN/SV language selection + bright/dark mode toggler. See 11elo for icons
+2. add a temporary About page placeholder, remove the placeholding "Rounds" one. Also add "My Page"
+3. add a footer like 11elo 
+4. Add very light tint on hover for matches in the round view.
+5. Add on-hover to navbar for good UX. Only changes color of the text and potentially the background of 
+        the immediate container it is in, but doesnt increase font size
 
-2. add more/other ingestion (relating to tipzer) so can have multiple upcoming rounds for a type (especially topptipset but also happens for europatipset)
-   - for example web scraping other websites or even SS.
-4. rework value as KL divergenece for value calculation (or renyi with R = risk aversion = alpha param in Renyi = 1 for neutral risk)
-    -currently may be crude way of using subtraction
-5. deploy on railway (PariVant) (separate frontend/backend servers?)
+--------------------------------------------------------------------------------------------------------
 
-6. create name PariVant on social media, buy host name, enter forums for swedish bettors, or skugga. For example flashback. User research.
-    - Write down pain points, wishes, etc with the betting experience or svenskaspel. 
-    - Sites?: flashback, sweclockers, reddit, ???
-7. Rework pink to bright cyan (for dark mode). Put it under a theme or colors folder to avoid hardcoding colors
-
-
-Auth (MVP) work:
+AUTH V1:
     -what is the modern way for handling secure auth and seamless UX?
     -How will I persist a user and store their decisions to build my own defensible data set which can refine my own model? (for example if allowing users 1 high confidence pick per round, then check their ROI over time, then mix their knowledge into the model run step accordingly)
     -how to do it safe/secure/law-abiding GDPR/modern web dev style?
+    - Will want to support different views/possibilities for authenticated users vs just website visitor
+    - will want to handle payments for additional service in future.
 1. add My Page dashboard page (authentication). User table? Security? Views? gmail?
 2. sliders&tags
 3. run model
-4. modify selection
+4. modify selection (with full coverage?)
 5. submit personal selection (1 per round)
 6. upload/set own internal probs
 7. view my past results, compare with base model
 8. allow one confident pick that overrides model, can track stats for this
 
-cleanup:
-0. keep adding team names to match resolver - check 11elo for german matches, bzzoiro,
-      -use the exporting tool once a day
-2. bugfix: aliases.put("paris saint germain", "paris saint germain"); inferred from api-football "Paris Saint Germain vs Liverpool" matched to truth "Paris Saint-Germain|Liverpool"
-   - team name normalizer strips "-" from db which is bad
-1. see over JsonUtils/ApiFootballClient/ApiExceptionHandler
-2. Lombokize everything to reduce boilerplate in persistence code
-3. Clean up Instant/OffsetDatetime/LocalDateTime drift across whole project
-4. add robots.txt
-5. check that T-15 model runs are being generated
-6. add an About page explaining the model, the purpose, restrictions, etc
-7. Investigate how I handle an ended round: trigger, storage, presentation, correctness, match scores
-   - How does it intermingle with model runs, compare result to model run. On ended page, store actual result
-   - and comparison to model, display the models hitrate. Must have a solid way of knowing the scores of all matches at end of a round
+--------------------------------------------------------------------------------------------------------
 
-ui refinements: 
-0. color rework (pink/dark green)
-1. add gradients/animations
-2. use 11elo icons and navbar layout + about page + toggle dark/light mode + footer
-3. Add highlighter to navbar on-hover like systemvetardagen.se
+V2:
+1. Refine Ensemble model
+2. mobile-friendly rework
+3. Explanatory AI messages per pick
+4. More information in info panel (weather, injuries, type of clash, not sure what else). Goal is to provide value to make bettor more informed
+5. Impl the About page explaining the model, the purpose, constraints, stats/maths + fresh domain data + knowledge = Parivant logo, etc
 
+--------------------------------------------------------------------------------------------------------
 
-wishes:
-*Information panel: more non-model "live" info to influence bettor
--explanatory ai generated message for each pick
--refined model
--investigate docker compose workflow, -docker Compose, define  containers for frontend/backend/db in yaml -> easier deployment/development
--calculate expected roi
--mobile-friendly rework
--FootballData match predictions? https://www.football-data.org/documentation/quickstart
-    -costs 15$ month .. 
+Control of already implemented code behavior:
+1. Investigate how I handle an ended round: trigger, storage, presentation, correctness, match scores
+    - How does it intermingle with model runs, compare result to model run. On ended page, store actual result
+    - and comparison to model, display the models hitrate. Must have a solid way of knowing the scores of all matches at end of a round
+2. Ensure match 1x2 border is gradienty and depends on live score
+3. check that T-15 model runs are being generated
+
+--------------------------------------------------------------------------------------------------------
+Other:
+1. Investigate Docker Compose https://www.youtube.com/watch?v=kOryO5I_w14, https://www.youtube.com/watch?v=Q5evuP3OnPY
+2. Add more ingestion for rounds (Tipzer only gives 1 per type, best would be to scrape off source SS or the other website if has)
+3. Buy domain name PariVant.se? deploy on railway (PariVant) (separate frontend/backend servers?)
+4. Do user research: create name PariVant on social media, buy host name, enter forums for swedish bettors, or skugga. For example flashback. User research.
+    - Write down pain points, wishes, etc with the betting experience or svenskaspel.
+    - Sites?: flashback, sweclockers, reddit, ???
+5. keep adding team names to match resolver - check 11elo for german matches, bzzoiro,
+   -use the exporting tool once a day
+   -bugfix: aliases.put("paris saint germain", "paris saint germain"); inferred from api-football "Paris Saint Germain vs Liverpool" matched to truth "Paris Saint-Germain|Liverpool"
+    - team name normalizer strips "-" from db which is bad
+8. "rework/" should be split into sensible structure over time
+8. Clean up Instant/OffsetDatetime/LocalDateTime drift across whole project
+9. add robots.txt
+11. introduce differernt runtime environments dev/test/staging/prod? flavors?
+12. add extensive logging in the code (dev env)?

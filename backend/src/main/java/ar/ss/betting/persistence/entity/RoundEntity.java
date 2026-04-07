@@ -3,14 +3,20 @@ package ar.ss.betting.persistence.entity;
 import ar.ss.betting.domain.RoundStatus;
 import ar.ss.betting.domain.RoundType;
 import jakarta.persistence.*;
+import lombok.AccessLevel;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
 
 @Entity
 @Table(name = "round")
+@Getter
+@NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class RoundEntity {
 
     @Id
@@ -31,10 +37,6 @@ public class RoundEntity {
     @OneToMany(mappedBy = "round", cascade = CascadeType.ALL, orphanRemoval = true)
     @OrderBy("matchNumber ASC")
     private List<MatchEntity> matches = new ArrayList<>();
-
-    protected RoundEntity() {
-        // JPA
-    }
 
     public RoundEntity(RoundType roundType, LocalDateTime startDate) {
         this(roundType, RoundStatus.UPCOMING, startDate);
@@ -60,24 +62,7 @@ public class RoundEntity {
     public void setStatus(RoundStatus status) {
         this.status = Objects.requireNonNull(status, "status cannot be null");
     }
-
-    public Long getId() {
-        return id;
-    }
-
-    public RoundType getRoundType() {
-        return roundType;
-    }
-
-    public RoundStatus getStatus() {
-        return status;
-    }
-
-    public LocalDateTime getStartDate() {
-        return startDate;
-    }
-
     public List<MatchEntity> getMatches() {
-        return matches;
+        return Collections.unmodifiableList(matches);
     }
 }

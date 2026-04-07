@@ -33,8 +33,8 @@ public class InternalProbabilityCalculator {
     }
 
     private ProbabilityTriple aggregateBaseProbabilities(MatchContext ctx) {
-        ProbabilityTriple market = ctx.getMarketProbabilities();
-        List<ProbabilityTriple> providers = ctx.getProviderProbabilities();
+        ProbabilityTriple market = ctx.marketProbabilities();
+        List<ProbabilityTriple> providers = ctx.providerProbabilities();
 
         double home = market.get(Outcome.HOME_WIN);
         double draw = market.get(Outcome.DRAW);
@@ -64,7 +64,7 @@ public class InternalProbabilityCalculator {
 
         if (interventions.getBuff().isPresent()) {
             MatchBuff buff = interventions.getBuff().get();
-            total = total.plus(ModelConstants.buffShift(buff.getTargetOutcome(), buff.getPoints()));
+            total = total.plus(ModelConstants.buffShift(buff.targetOutcome(), buff.points()));
         }
 
         return total;
@@ -80,9 +80,9 @@ public class InternalProbabilityCalculator {
     }
 
     private ProbabilityTriple applyShift(ProbabilityTriple base, ProbabilityShift shift) {
-        double home = base.get(Outcome.HOME_WIN) + shift.getHomeDelta();
-        double draw = base.get(Outcome.DRAW) + shift.getDrawDelta();
-        double away = base.get(Outcome.AWAY_WIN) + shift.getAwayDelta();
+        double home = base.get(Outcome.HOME_WIN) + shift.homeDelta();
+        double draw = base.get(Outcome.DRAW) + shift.drawDelta();
+        double away = base.get(Outcome.AWAY_WIN) + shift.awayDelta();
 
         home = Math.max(home, ModelConstants.MIN_PROBABILITY_COMPONENT);
         draw = Math.max(draw, ModelConstants.MIN_PROBABILITY_COMPONENT);

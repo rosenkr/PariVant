@@ -1,6 +1,9 @@
 package ar.ss.betting.persistence.entity;
 
 import jakarta.persistence.*;
+import lombok.AccessLevel;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
 import org.hibernate.annotations.JdbcTypeCode;
 import org.hibernate.type.SqlTypes;
 
@@ -14,6 +17,8 @@ import java.time.LocalDateTime;
                 @Index(name = "idx_model_run_generated_at", columnList = "generated_at")
         }
 )
+@Getter
+@NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class ModelRunEntity {
 
     @Id
@@ -54,9 +59,6 @@ public class ModelRunEntity {
     @Column(name = "trigger", nullable = false, length = 64)
     private String trigger;
 
-    protected ModelRunEntity() {
-    }
-
     public ModelRunEntity(RoundEntity round,
                           String modelName,
                           LocalDateTime generatedAt,
@@ -77,49 +79,5 @@ public class ModelRunEntity {
         this.basePicksJson = basePicksJson;
         this.internalProbabilitiesJson = internalProbabilitiesJson;
         this.trigger = trigger;
-    }
-
-    public Long getId() {
-        return id;
-    }
-
-    public RoundEntity getRound() {
-        return round;
-    }
-
-    public String getModelName() {
-        return modelName;
-    }
-
-    public LocalDateTime getGeneratedAt() {
-        return generatedAt;
-    }
-
-    public int getBudgetInSek() {
-        return budgetInSek;
-    }
-
-    public int getTotalCostInSek() {
-        return totalCostInSek;
-    }
-
-    public int getHalfGuardsCount() {
-        return halfGuardsCount;
-    }
-
-    public String getSelectionsJson() {
-        return selectionsJson;
-    }
-
-    public String getBasePicksJson() {
-        return basePicksJson;
-    }
-
-    public String getInternalProbabilitiesJson() {
-        return internalProbabilitiesJson;
-    }
-
-    public String getTrigger() {
-        return trigger;
     }
 }

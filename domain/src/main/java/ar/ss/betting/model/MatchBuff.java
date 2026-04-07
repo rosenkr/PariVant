@@ -4,10 +4,7 @@ import ar.ss.betting.domain.Outcome;
 
 import java.util.Objects;
 
-public class MatchBuff {
-
-    private final Outcome targetOutcome;
-    private final int points;
+public record MatchBuff(Outcome targetOutcome, int points) {
 
     public MatchBuff(Outcome targetOutcome, int points) {
         this.targetOutcome = Objects.requireNonNull(targetOutcome, "targetOutcome cannot be null");
@@ -20,13 +17,5 @@ public class MatchBuff {
         }
 
         this.points = points;
-    }
-
-    public Outcome getTargetOutcome() {
-        return targetOutcome;
-    }
-
-    public int getPoints() {
-        return points;
     }
 }

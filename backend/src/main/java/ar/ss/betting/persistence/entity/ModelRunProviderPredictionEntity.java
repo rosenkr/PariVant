@@ -1,6 +1,9 @@
 package ar.ss.betting.persistence.entity;
 
 import jakarta.persistence.*;
+import lombok.AccessLevel;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
 
 import java.time.LocalDateTime;
 import java.util.Objects;
@@ -15,6 +18,8 @@ import java.util.Objects;
                 )
         }
 )
+@Getter
+@NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class ModelRunProviderPredictionEntity {
 
     @Id
@@ -70,10 +75,6 @@ public class ModelRunProviderPredictionEntity {
     @Column(name = "created_at", nullable = false)
     private LocalDateTime createdAt;
 
-    protected ModelRunProviderPredictionEntity() {
-        // JPA
-    }
-
     public ModelRunProviderPredictionEntity(ModelRunEntity modelRun,
                                             int matchNumber,
                                             String providerName,
@@ -127,73 +128,5 @@ public class ModelRunProviderPredictionEntity {
         }
         String trimmed = value.trim();
         return trimmed.isEmpty() ? null : trimmed;
-    }
-
-    public Long getId() {
-        return id;
-    }
-
-    public ModelRunEntity getModelRun() {
-        return modelRun;
-    }
-
-    public int getMatchNumber() {
-        return matchNumber;
-    }
-
-    public String getProviderName() {
-        return providerName;
-    }
-
-    public String getStatus() {
-        return status;
-    }
-
-    public String getMessage() {
-        return message;
-    }
-
-    public String getRequestedHomeTeamName() {
-        return requestedHomeTeamName;
-    }
-
-    public String getRequestedAwayTeamName() {
-        return requestedAwayTeamName;
-    }
-
-    public String getResolvedHomeTeamName() {
-        return resolvedHomeTeamName;
-    }
-
-    public String getResolvedAwayTeamName() {
-        return resolvedAwayTeamName;
-    }
-
-    public LocalDateTime getKickoff() {
-        return kickoff;
-    }
-
-    public String getKickoffRaw() {
-        return kickoffRaw;
-    }
-
-    public Double getProbabilityHome() {
-        return probabilityHome;
-    }
-
-    public Double getProbabilityDraw() {
-        return probabilityDraw;
-    }
-
-    public Double getProbabilityAway() {
-        return probabilityAway;
-    }
-
-    public LocalDateTime getFetchedAt() {
-        return fetchedAt;
-    }
-
-    public LocalDateTime getCreatedAt() {
-        return createdAt;
     }
 }

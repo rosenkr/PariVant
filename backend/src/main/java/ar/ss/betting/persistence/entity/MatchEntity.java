@@ -2,6 +2,9 @@ package ar.ss.betting.persistence.entity;
 
 import ar.ss.betting.domain.MatchStatus;
 import jakarta.persistence.*;
+import lombok.AccessLevel;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
 
 import java.time.LocalDateTime;
 import java.util.Objects;
@@ -14,6 +17,8 @@ import java.util.Objects;
                 columnNames = {"round_id", "match_number"}
         )
 )
+@Getter
+@NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class MatchEntity {
 
     @Id
@@ -45,10 +50,6 @@ public class MatchEntity {
     @Enumerated(EnumType.STRING)
     @Column(name = "status", nullable = false, length = 32)
     private MatchStatus status;
-
-    protected MatchEntity() {
-        // JPA
-    }
 
     public MatchEntity(int matchNumber,
                        LocalDateTime startDate,
@@ -110,41 +111,5 @@ public class MatchEntity {
             throw new IllegalArgumentException("awayScore cannot be negative");
         }
         this.awayScore = awayScore;
-    }
-
-    public Long getId() {
-        return id;
-    }
-
-    public RoundEntity getRound() {
-        return round;
-    }
-
-    public int getMatchNumber() {
-        return matchNumber;
-    }
-
-    public LocalDateTime getStartDate() {
-        return startDate;
-    }
-
-    public String getHomeTeamName() {
-        return homeTeamName;
-    }
-
-    public String getAwayTeamName() {
-        return awayTeamName;
-    }
-
-    public int getHomeScore() {
-        return homeScore;
-    }
-
-    public int getAwayScore() {
-        return awayScore;
-    }
-
-    public MatchStatus getStatus() {
-        return status;
     }
 }

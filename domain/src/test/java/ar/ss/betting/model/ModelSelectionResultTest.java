@@ -36,17 +36,17 @@ class ModelSelectionResultTest {
                 0
         );
 
-        assertEquals("EnsembleModel", result.getModelName());
-        assertEquals(generatedAt, result.getGeneratedAt());
-        assertEquals(Outcome.HOME_WIN, result.getBasePicks().get(1));
-        assertEquals(Outcome.DRAW, result.getBasePicks().get(2));
-        assertEquals(Set.of(Outcome.HOME_WIN), result.getSelections().get(1));
-        assertEquals(Set.of(Outcome.DRAW, Outcome.AWAY_WIN), result.getSelections().get(2));
-        assertEquals(0.60, result.getInternalProbabilities().get(1).get(Outcome.HOME_WIN), 1e-9);
-        assertEquals(0.50, result.getInternalProbabilities().get(2).get(Outcome.AWAY_WIN), 1e-9);
-        assertEquals(2, result.getTotalCostInSek());
-        assertEquals(1, result.getHalfGuardsCount());
-        assertEquals(0, result.getFullGuardsCount());
+        assertEquals("EnsembleModel", result.modelName());
+        assertEquals(generatedAt, result.generatedAt());
+        assertEquals(Outcome.HOME_WIN, result.basePicks().get(1));
+        assertEquals(Outcome.DRAW, result.basePicks().get(2));
+        assertEquals(Set.of(Outcome.HOME_WIN), result.selections().get(1));
+        assertEquals(Set.of(Outcome.DRAW, Outcome.AWAY_WIN), result.selections().get(2));
+        assertEquals(0.60, result.internalProbabilities().get(1).get(Outcome.HOME_WIN), 1e-9);
+        assertEquals(0.50, result.internalProbabilities().get(2).get(Outcome.AWAY_WIN), 1e-9);
+        assertEquals(2, result.totalCostInSek());
+        assertEquals(1, result.halfGuardsCount());
+        assertEquals(0, result.fullGuardsCount());
     }
 
     @Test
@@ -102,7 +102,7 @@ class ModelSelectionResultTest {
         );
 
         assertThrows(UnsupportedOperationException.class, () ->
-                result.getBasePicks().put(2, Outcome.DRAW));
+                result.basePicks().put(2, Outcome.DRAW));
     }
 
     @Test
@@ -119,7 +119,7 @@ class ModelSelectionResultTest {
         );
 
         assertThrows(UnsupportedOperationException.class, () ->
-                result.getSelections().put(2, Set.of(Outcome.DRAW)));
+                result.selections().put(2, Set.of(Outcome.DRAW)));
     }
 
     @Test
@@ -136,6 +136,6 @@ class ModelSelectionResultTest {
         );
 
         assertThrows(UnsupportedOperationException.class, () ->
-                result.getInternalProbabilities().put(2, ProbabilityTriple.fromProbabilities(0.20, 0.30, 0.50)));
+                result.internalProbabilities().put(2, ProbabilityTriple.fromProbabilities(0.20, 0.30, 0.50)));
     }
 }

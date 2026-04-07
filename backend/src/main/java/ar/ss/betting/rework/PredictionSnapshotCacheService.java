@@ -2,6 +2,7 @@ package ar.ss.betting.rework;
 
 import ar.ss.betting.predictionproviders.service.PredictionQueryService;
 import ar.ss.betting.predictionproviders.service.model.ProviderRawPredictionSnapshot;
+import lombok.Getter;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 
@@ -14,6 +15,7 @@ public class PredictionSnapshotCacheService {
 
     private final PredictionQueryService predictionQueryService;
 
+    @Getter
     private volatile CachedPredictionSnapshot latestSnapshot =
             new CachedPredictionSnapshot(Instant.EPOCH, List.of());
 
@@ -25,10 +27,6 @@ public class PredictionSnapshotCacheService {
     public void refresh() {
         List<ProviderRawPredictionSnapshot> snapshots = predictionQueryService.fetchProviderSnapshots();
         latestSnapshot = new CachedPredictionSnapshot(Instant.now(), List.copyOf(snapshots));
-    }
-
-    public CachedPredictionSnapshot getLatestSnapshot() {
-        return latestSnapshot;
     }
 
     public record CachedPredictionSnapshot(

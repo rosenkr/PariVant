@@ -1,9 +1,16 @@
 package ar.ss.betting.persistence.entity;
 
 import jakarta.persistence.*;
+import lombok.AccessLevel;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
 
 @Entity
 @Table(name = "match_context")
+@Getter
+@Setter
+@NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class MatchContextEntity {
 
     @Id
@@ -39,9 +46,6 @@ public class MatchContextEntity {
 
     @Column(name = "market_fallback_reason")
     private String marketFallbackReason;
-
-    protected MatchContextEntity() {
-    }
 
     public MatchContextEntity(Long roundId,
                               int matchNumber,
@@ -84,90 +88,6 @@ public class MatchContextEntity {
         this.publicDraw = publicDraw;
         this.publicAway = publicAway;
         this.marketFallbackUsed = marketFallbackUsed;
-        this.marketFallbackReason = marketFallbackReason;
-    }
-
-    public Long getId() {
-        return id;
-    }
-
-    public Long getRoundId() {
-        return roundId;
-    }
-
-    public int getMatchNumber() {
-        return matchNumber;
-    }
-
-    public double getMarketHome() {
-        return marketHome;
-    }
-
-    public double getMarketDraw() {
-        return marketDraw;
-    }
-
-    public double getMarketAway() {
-        return marketAway;
-    }
-
-    public double getPublicHome() {
-        return publicHome;
-    }
-
-    public double getPublicDraw() {
-        return publicDraw;
-    }
-
-    public double getPublicAway() {
-        return publicAway;
-    }
-
-    public boolean isMarketFallbackUsed() {
-        return marketFallbackUsed;
-    }
-
-    public String getMarketFallbackReason() {
-        return marketFallbackReason;
-    }
-
-    public void setRoundId(Long roundId) {
-        this.roundId = roundId;
-    }
-
-    public void setMatchNumber(int matchNumber) {
-        this.matchNumber = matchNumber;
-    }
-
-    public void setMarketHome(double marketHome) {
-        this.marketHome = marketHome;
-    }
-
-    public void setMarketDraw(double marketDraw) {
-        this.marketDraw = marketDraw;
-    }
-
-    public void setMarketAway(double marketAway) {
-        this.marketAway = marketAway;
-    }
-
-    public void setPublicHome(double publicHome) {
-        this.publicHome = publicHome;
-    }
-
-    public void setPublicDraw(double publicDraw) {
-        this.publicDraw = publicDraw;
-    }
-
-    public void setPublicAway(double publicAway) {
-        this.publicAway = publicAway;
-    }
-
-    public void setMarketFallbackUsed(boolean marketFallbackUsed) {
-        this.marketFallbackUsed = marketFallbackUsed;
-    }
-
-    public void setMarketFallbackReason(String marketFallbackReason) {
         this.marketFallbackReason = marketFallbackReason;
     }
 }

@@ -5,19 +5,16 @@ import java.util.Objects;
 
 /**
  * Base model input for one match.
- *
+ * <p>
  * Contains only:
  * - market probabilities
  * - public probabilities
  * - zero or more provider probability triples
- *
+ * <p>
  * Recent-form-based inputs have been removed from the model.
  */
-public class MatchContext {
-
-    private final ProbabilityTriple marketProbabilities;
-    private final ProbabilityTriple publicProbabilities;
-    private final List<ProbabilityTriple> providerProbabilities;
+public record MatchContext(ProbabilityTriple marketProbabilities, ProbabilityTriple publicProbabilities,
+                           List<ProbabilityTriple> providerProbabilities) {
 
     public MatchContext(ProbabilityTriple marketProbabilities,
                         ProbabilityTriple publicProbabilities,
@@ -32,17 +29,5 @@ public class MatchContext {
         for (ProbabilityTriple providerProbability : this.providerProbabilities) {
             Objects.requireNonNull(providerProbability, "providerProbabilities cannot contain null entries");
         }
-    }
-
-    public ProbabilityTriple getMarketProbabilities() {
-        return marketProbabilities;
-    }
-
-    public ProbabilityTriple getPublicProbabilities() {
-        return publicProbabilities;
-    }
-
-    public List<ProbabilityTriple> getProviderProbabilities() {
-        return providerProbabilities;
     }
 }

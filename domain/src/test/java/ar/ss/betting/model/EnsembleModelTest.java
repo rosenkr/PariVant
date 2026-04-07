@@ -52,7 +52,7 @@ class EnsembleModelTest {
 
         ModelSelectionResult result = model.generateSelection(round, input, 100);
 
-        assertTrue(result.getTotalCostInSek() <= 100);
+        assertTrue(result.totalCostInSek() <= 100);
     }
 
     @Test
@@ -63,10 +63,10 @@ class EnsembleModelTest {
 
         ModelSelectionResult result = model.generateSelection(round, input, 100);
 
-        assertEquals(8, result.getInternalProbabilities().size());
+        assertEquals(8, result.internalProbabilities().size());
 
         for (int i = 1; i <= 8; i++) {
-            ProbabilityTriple probs = result.getInternalProbabilities().get(i);
+            ProbabilityTriple probs = result.internalProbabilities().get(i);
             double sum = probs.get(Outcome.HOME_WIN) + probs.get(Outcome.DRAW) + probs.get(Outcome.AWAY_WIN);
             assertEquals(1.0, sum, 1e-9);
         }
@@ -96,9 +96,9 @@ class EnsembleModelTest {
         GameModel model = new EnsembleModel();
         ModelSelectionResult result = model.generateSelection(round, new ModelInput(ctx), 1);
 
-        assertEquals(Set.of(Outcome.AWAY_WIN), result.getSelections().get(1));
+        assertEquals(Set.of(Outcome.AWAY_WIN), result.selections().get(1));
 
-        ProbabilityTriple internal = result.getInternalProbabilities().get(1);
+        ProbabilityTriple internal = result.internalProbabilities().get(1);
         assertEquals((0.45 + 0.20) / 2.0, internal.get(Outcome.HOME_WIN), 1e-9);
         assertEquals((0.30 + 0.20) / 2.0, internal.get(Outcome.DRAW), 1e-9);
         assertEquals((0.25 + 0.60) / 2.0, internal.get(Outcome.AWAY_WIN), 1e-9);
@@ -133,7 +133,7 @@ class EnsembleModelTest {
         GameModel model = new EnsembleModel();
         ModelSelectionResult result = model.generateSelection(round, new ModelInput(contexts, interventions), 1);
 
-        ProbabilityTriple adjusted = result.getInternalProbabilities().get(1);
+        ProbabilityTriple adjusted = result.internalProbabilities().get(1);
         assertEquals(0.54, adjusted.get(Outcome.HOME_WIN), 1e-9);
         assertEquals(0.22, adjusted.get(Outcome.DRAW), 1e-9);
         assertEquals(0.24, adjusted.get(Outcome.AWAY_WIN), 1e-9);
@@ -168,12 +168,12 @@ class EnsembleModelTest {
         GameModel model = new EnsembleModel();
         ModelSelectionResult result = model.generateSelection(round, new ModelInput(contexts, interventions), 1);
 
-        ProbabilityTriple adjusted = result.getInternalProbabilities().get(1);
+        ProbabilityTriple adjusted = result.internalProbabilities().get(1);
         assertEquals(0.385, adjusted.get(Outcome.HOME_WIN), 1e-9);
         assertEquals(0.295, adjusted.get(Outcome.DRAW), 1e-9);
         assertEquals(0.32, adjusted.get(Outcome.AWAY_WIN), 1e-9);
 
-        assertEquals(Set.of(Outcome.AWAY_WIN), result.getSelections().get(1));
+        assertEquals(Set.of(Outcome.AWAY_WIN), result.selections().get(1));
     }
 
     @Test

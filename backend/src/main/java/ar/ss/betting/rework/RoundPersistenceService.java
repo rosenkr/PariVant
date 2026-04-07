@@ -92,11 +92,11 @@ public class RoundPersistenceService {
 
         ModelRunEntity runEntity = new ModelRunEntity(
                 roundEntity,
-                result.getModelName(),
-                result.getGeneratedAt(),
+                result.modelName(),
+                result.generatedAt(),
                 budgetInSek,
-                result.getTotalCostInSek(),
-                result.getHalfGuardsCount(),
+                result.totalCostInSek(),
+                result.halfGuardsCount(),
                 selectionsJson,
                 basePicksJson,
                 internalProbabilitiesJson,
@@ -111,7 +111,7 @@ public class RoundPersistenceService {
     }
 
     private Map<String, List<String>> toSelectionsDtoShape(ModelSelectionResult result) {
-        return result.getSelections().entrySet().stream()
+        return result.selections().entrySet().stream()
                 .collect(Collectors.toMap(
                         e -> String.valueOf(e.getKey()),
                         e -> e.getValue().stream().map(Enum::name).toList(),
@@ -121,7 +121,7 @@ public class RoundPersistenceService {
     }
 
     private Map<String, String> toBasePicksDtoShape(ModelSelectionResult result) {
-        return result.getBasePicks().entrySet().stream()
+        return result.basePicks().entrySet().stream()
                 .collect(Collectors.toMap(
                         e -> String.valueOf(e.getKey()),
                         e -> e.getValue().name(),
@@ -208,7 +208,7 @@ public class RoundPersistenceService {
     private Map<String, ProbabilityTripleDtoShape> toInternalProbabilitiesDtoShape(ModelSelectionResult result) {
         Map<String, ProbabilityTripleDtoShape> out = new TreeMap<>();
 
-        for (Map.Entry<Integer, ProbabilityTriple> e : result.getInternalProbabilities().entrySet()) {
+        for (Map.Entry<Integer, ProbabilityTriple> e : result.internalProbabilities().entrySet()) {
             ProbabilityTriple triple = e.getValue();
             out.put(
                     String.valueOf(e.getKey()),

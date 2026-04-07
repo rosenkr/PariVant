@@ -34,6 +34,13 @@ public class ApiExceptionHandler {
                 .body(new ApiError(Instant.now().toString(), 400, "Database constraint violated"));
     }
 
+    @ExceptionHandler(java.time.format.DateTimeParseException.class)
+    public ResponseEntity<ApiError> handleDateTimeParse(java.time.format.DateTimeParseException ex) {
+        return ResponseEntity
+                .status(HttpStatus.BAD_REQUEST)
+                .body(new ApiError(Instant.now().toString(), 400, "Invalid date-time format"));
+    }
+
     /**
      * IMPORTANT: SSE endpoints (text/event-stream) cannot reliably serialize our ApiError as JSON once the
      * response is committed as event-stream. If an exception occurs in that context, return plain text.

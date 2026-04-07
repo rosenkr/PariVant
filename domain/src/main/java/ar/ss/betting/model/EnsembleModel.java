@@ -48,7 +48,7 @@ public class EnsembleModel implements GameModel {
 
             Outcome basePick = baseOutcomeSelector.chooseBaseOutcome(
                     internal,
-                    context.getPublicProbabilities()
+                    context.publicProbabilities()
             );
             basePicks.put(matchNumber, basePick);
         }

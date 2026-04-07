@@ -119,13 +119,13 @@ public class ModelDtoMapper {
 
     public ModelSelectionResponseDto toResponseDto(ModelSelectionResult result) {
         Map<Integer, List<String>> selections = new TreeMap<>();
-        for (Map.Entry<Integer, Set<Outcome>> e : result.getSelections().entrySet()) {
+        for (Map.Entry<Integer, Set<Outcome>> e : result.selections().entrySet()) {
             List<String> outcomes = e.getValue().stream().map(Enum::name).toList();
             selections.put(e.getKey(), outcomes);
         }
 
         Map<Integer, ModelSelectionResponseDto.ProbabilityTripleDto> internalProbabilities = new TreeMap<>();
-        result.getInternalProbabilities().forEach((matchNumber, triple) ->
+        result.internalProbabilities().forEach((matchNumber, triple) ->
                 internalProbabilities.put(matchNumber, new ModelSelectionResponseDto.ProbabilityTripleDto(
                         triple.get(Outcome.HOME_WIN),
                         triple.get(Outcome.DRAW),
@@ -134,10 +134,10 @@ public class ModelDtoMapper {
         );
 
         return new ModelSelectionResponseDto(
-                result.getModelName(),
-                result.getGeneratedAt().toString(),
-                result.getTotalCostInSek(),
-                result.getHalfGuardsCount(),
+                result.modelName(),
+                result.generatedAt().toString(),
+                result.totalCostInSek(),
+                result.halfGuardsCount(),
                 selections,
                 internalProbabilities
         );

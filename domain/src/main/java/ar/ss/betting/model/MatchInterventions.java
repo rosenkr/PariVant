@@ -31,7 +31,7 @@ public class MatchInterventions {
     }
 
     public int totalBuffPoints() {
-        return getBuff().map(MatchBuff::getPoints).orElse(0);
+        return getBuff().map(MatchBuff::points).orElse(0);
     }
 
     public boolean isEmpty() {

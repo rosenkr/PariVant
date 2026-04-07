@@ -20,9 +20,9 @@ public class MatchResolver {
 
     public <T extends MatchIdentityCandidate> Optional<T> resolve(RequestedMatchIdentity requestedMatch,
                                                                   List<T> candidates) {
-        String requestedHome = teamNameNormalizer.normalize(requestedMatch.getHomeTeam());
-        String requestedAway = teamNameNormalizer.normalize(requestedMatch.getAwayTeam());
-        OffsetDateTime requestedStartTime = requestedMatch.getStartTime();
+        String requestedHome = teamNameNormalizer.normalize(requestedMatch.homeTeam());
+        String requestedAway = teamNameNormalizer.normalize(requestedMatch.awayTeam());
+        OffsetDateTime requestedStartTime = requestedMatch.startTime();
 
         return candidates.stream()
                 .filter(candidate -> sameTeams(requestedHome, requestedAway, candidate))
