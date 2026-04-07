@@ -52,6 +52,13 @@ public class TeamNameNormalizer {
 
         aliases.put("charlton athletic", "charlton");
         aliases.put("preston north end", "preston");
+
+        aliases.put("swansea city", "swansea");
+        aliases.put("leicester city", "leicester");
+        aliases.put("brighton and hove albion", "brighton");
+        aliases.put("sheffield united", "sheffield u");
+        aliases.put("blackburn rovers", "blackburn");
+        aliases.put("stoke city", "stoke");
     }
 
     public String normalize(String teamName) {

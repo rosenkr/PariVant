@@ -35,6 +35,8 @@ Auth (MVP) work:
 cleanup:
 0. keep adding team names to match resolver - check 11elo for german matches, bzzoiro,
       -use the exporting tool once a day
+2. bugfix: aliases.put("paris saint germain", "paris saint germain"); inferred from api-football "Paris Saint Germain vs Liverpool" matched to truth "Paris Saint-Germain|Liverpool"
+   - team name normalizer strips "-" from db which is bad
 1. see over JsonUtils/ApiFootballClient/ApiExceptionHandler
 2. Lombokize everything to reduce boilerplate in persistence code
 3. Clean up Instant/OffsetDatetime/LocalDateTime drift across whole project
@@ -47,6 +49,7 @@ ui refinements:
 1. add gradients/animations
 2. use 11elo icons and navbar layout + about page + toggle dark/light mode + footer
 3. Add highlighter to navbar on-hover like systemvetardagen.se
+
 
 wishes:
 *Information panel: more non-model "live" info to influence bettor
