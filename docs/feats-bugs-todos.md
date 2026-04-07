@@ -2,10 +2,12 @@
 feats/bugs/todos
 
 General:
-0. if has only 1 round, do not show the "Round 1" pill. 
-0. refine 1x2 (base pick by model as darker orange, cover picks current light orange, pink border for either 1x2 on live score depending on fetched score)
-1. default if no stryktipset to show eur, if no eur, show topptips, if no topptips, show stryk
-3. add more/other ingestion (relating to tipzer) so can have multiple upcoming rounds for a type (especially topptipset but also happens for europatipset)
+0. refine 1x2 pills in a match view:
+    -base pick by model as darker orange, cover picks remain current light orange
+    -pink border for the score (static pink when match not started at DRAW), 
+        but as soon as livescore poller connects, add gradient to the live score, it will move between 1x2 as teams score
+
+2. add more/other ingestion (relating to tipzer) so can have multiple upcoming rounds for a type (especially topptipset but also happens for europatipset)
    - for example web scraping other websites or even SS.
 4. rework value as KL divergenece for value calculation (or renyi with R = risk aversion = alpha param in Renyi = 1 for neutral risk)
     -currently may be crude way of using subtraction
@@ -14,7 +16,7 @@ General:
 6. create name PariVant on social media, buy host name, enter forums for swedish bettors, or skugga. For example flashback. User research.
     - Write down pain points, wishes, etc with the betting experience or svenskaspel. 
     - Sites?: flashback, sweclockers, reddit, ???
-
+7. Rework pink to bright cyan (for dark mode). Put it under a theme or colors folder to avoid hardcoding colors
 
 
 Auth (MVP) work:

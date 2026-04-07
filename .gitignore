@@ -15,3 +15,12 @@ effective-pom.xml
 
 # local zips
 *.zip
+
+
+# dev work, for adding entries to name normalizer with the export tool
+11elo_output.txt
+api_football_output.txt
+bzzoiro_output.txt
+clubelo_output.txt
+suggested_aliases.txt
+truth.txt

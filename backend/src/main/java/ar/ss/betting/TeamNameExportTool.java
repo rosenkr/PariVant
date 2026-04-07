@@ -331,7 +331,7 @@ public class TeamNameExportTool {
         String rawNorm = normalize(rawName);
         String truthNorm = normalize(truthName);
 
-        if (rawNorm.equals(truthNorm)) {
+        if (rawName.equalsIgnoreCase(truthName)) {
             return;
         }
 
@@ -346,6 +346,45 @@ public class TeamNameExportTool {
                         + " \"" + providerMatch.home + " vs " + providerMatch.away + "\""
                         + " matched to truth \"" + truthMatch.home + "|" + truthMatch.away + "\""
         );
+    }
+
+    private static double subsetTokenContainmentScore(Set<String> a, Set<String> b) {
+        if (a.isEmpty() || b.isEmpty()) {
+            return 0.0;
+        }
+
+        Set<String> smaller = a.size() <= b.size() ? a : b;
+        Set<String> larger = a.size() <= b.size() ? b : a;
+
+        int matches = 0;
+        for (String token : smaller) {
+            if (larger.contains(token)) {
+                matches++;
+            }
+        }
+
+        if (matches == 0) {
+            return 0.0;
+        }
+
+        // If every token in the shorter name exists in the longer name,
+        // treat that as a very strong match.
+        if (matches == smaller.size()) {
+            return 0.92;
+        }
+
+        return (double) matches / smaller.size();
+    }
+
+    private static boolean isFullTokenSubset(Set<String> a, Set<String> b) {
+        if (a.isEmpty() || b.isEmpty()) {
+            return false;
+        }
+
+        Set<String> smaller = a.size() <= b.size() ? a : b;
+        Set<String> larger = a.size() <= b.size() ? b : a;
+
+        return larger.containsAll(smaller);
     }
 
     private static BestTruthMatch findBestTruthMatch(ProviderMatch providerMatch, List<TruthMatch> truthMatches) {
@@ -412,6 +451,10 @@ public class TeamNameExportTool {
         Set<String> ta = tokenSet(na);
         Set<String> tb = tokenSet(nb);
 
+        if (isMeaningfulSubsetMatch(ta, tb)) {
+            return 0.92;
+        }
+
         double tokenOverlap = tokenOverlapScore(ta, tb);
         double containment = containmentScore(na, nb);
         double edit = normalizedLevenshteinSimilarity(na, nb);
@@ -424,7 +467,23 @@ public class TeamNameExportTool {
 
         return best;
     }
+    private static boolean isMeaningfulSubsetMatch(Set<String> a, Set<String> b) {
+        if (!isFullTokenSubset(a, b)) {
+            return false;
+        }
 
+        Set<String> smaller = a.size() <= b.size() ? a : b;
+        if (smaller.size() >= 2) {
+            return true;
+        }
+
+        String only = smaller.iterator().next();
+        return only.length() >= 5
+                && !only.equals("city")
+                && !only.equals("united")
+                && !only.equals("real")
+                && !only.equals("sporting");
+    }
     private static boolean looksLikeAbbreviationMatch(Set<String> ta, Set<String> tb, String na, String nb) {
         if (ta.isEmpty() || tb.isEmpty()) {
             return false;

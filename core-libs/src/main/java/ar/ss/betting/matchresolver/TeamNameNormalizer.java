@@ -49,6 +49,9 @@ public class TeamNameNormalizer {
         aliases.put("aek", "aek aten");
         aliases.put("celta", "celta de vigo");
         aliases.put("argentinos jrs", "argentinos juniors");
+
+        aliases.put("charlton athletic", "charlton");
+        aliases.put("preston north end", "preston");
     }
 
     public String normalize(String teamName) {
