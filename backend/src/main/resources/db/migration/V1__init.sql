@@ -2,8 +2,8 @@ CREATE TABLE IF NOT EXISTS round (
     id BIGSERIAL PRIMARY KEY,
     round_type VARCHAR(32) NOT NULL,
     status VARCHAR(32) NOT NULL,
-    start_date TIMESTAMP NOT NULL,
-    created_at TIMESTAMP NOT NULL DEFAULT now(),
+    start_date TIMESTAMPTZ NOT NULL,
+    created_at TIMESTAMPTZ NOT NULL DEFAULT now(),
     CONSTRAINT uq_round_round_type_start_date UNIQUE (round_type, start_date)
 );
 
@@ -11,7 +11,7 @@ CREATE TABLE IF NOT EXISTS match (
     id BIGSERIAL PRIMARY KEY,
     round_id BIGINT NOT NULL REFERENCES round(id) ON DELETE CASCADE,
     match_number INT NOT NULL,
-    start_date TIMESTAMP NOT NULL,
+    start_date TIMESTAMPTZ NOT NULL,
     home_team_name VARCHAR(80) NOT NULL,
     away_team_name VARCHAR(80) NOT NULL,
     home_score INT NOT NULL DEFAULT 0,
@@ -33,7 +33,7 @@ CREATE TABLE IF NOT EXISTS match_context (
     public_draw DOUBLE PRECISION NOT NULL,
     public_away DOUBLE PRECISION NOT NULL,
 
-    created_at TIMESTAMP NOT NULL DEFAULT now(),
+    created_at TIMESTAMPTZ NOT NULL DEFAULT now(),
     market_fallback_used BOOLEAN NOT NULL DEFAULT FALSE,
     market_fallback_reason VARCHAR(255),
     CONSTRAINT uq_match_context_round_match UNIQUE (round_id, match_number)
@@ -43,7 +43,7 @@ CREATE TABLE IF NOT EXISTS model_run (
     id BIGSERIAL PRIMARY KEY,
     round_id BIGINT NOT NULL REFERENCES round(id) ON DELETE CASCADE,
     model_name VARCHAR(64) NOT NULL,
-    generated_at TIMESTAMP NOT NULL,
+    generated_at TIMESTAMPTZ NOT NULL,
     budget_in_sek INT NOT NULL,
     total_cost_in_sek INT NOT NULL,
     half_guards_count INT NOT NULL,
@@ -68,15 +68,15 @@ CREATE TABLE IF NOT EXISTS model_run_provider_prediction (
     resolved_home_team_name VARCHAR(80),
     resolved_away_team_name VARCHAR(80),
 
-    kickoff TIMESTAMP,
+    kickoff TIMESTAMPTZ,
     kickoff_raw VARCHAR(64),
 
     probability_home DOUBLE PRECISION,
     probability_draw DOUBLE PRECISION,
     probability_away DOUBLE PRECISION,
 
-    fetched_at TIMESTAMP,
-    created_at TIMESTAMP NOT NULL DEFAULT now(),
+    fetched_at TIMESTAMPTZ,
+    created_at TIMESTAMPTZ NOT NULL DEFAULT now(),
 
     CONSTRAINT uq_model_run_match_provider
         UNIQUE (model_run_id, match_number, provider_name)

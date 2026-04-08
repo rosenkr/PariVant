@@ -6,7 +6,7 @@ import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
-import java.time.LocalDateTime;
+import java.time.Instant;
 import java.util.Objects;
 
 @Entity
@@ -33,7 +33,7 @@ public class MatchEntity {
     private int matchNumber;
 
     @Column(name = "start_date", nullable = false)
-    private LocalDateTime startDate;
+    private Instant startTime;
 
     @Column(name = "home_team_name", nullable = false, length = 80)
     private String homeTeamName;
@@ -52,14 +52,14 @@ public class MatchEntity {
     private MatchStatus status;
 
     public MatchEntity(int matchNumber,
-                       LocalDateTime startDate,
+                       Instant startTime,
                        String homeTeamName,
                        String awayTeamName) {
-        this(matchNumber, startDate, homeTeamName, awayTeamName, 0, 0, MatchStatus.UPCOMING);
+        this(matchNumber, startTime, homeTeamName, awayTeamName, 0, 0, MatchStatus.UPCOMING);
     }
 
     public MatchEntity(int matchNumber,
-                       LocalDateTime startDate,
+                       Instant startTime,
                        String homeTeamName,
                        String awayTeamName,
                        int homeScore,
@@ -76,7 +76,7 @@ public class MatchEntity {
         }
 
         this.matchNumber = matchNumber;
-        this.startDate = Objects.requireNonNull(startDate, "startDate cannot be null");
+        this.startTime = Objects.requireNonNull(startTime, "startTime cannot be null");
         this.homeTeamName = requireNonBlank(homeTeamName, "homeTeamName");
         this.awayTeamName = requireNonBlank(awayTeamName, "awayTeamName");
         this.homeScore = homeScore;

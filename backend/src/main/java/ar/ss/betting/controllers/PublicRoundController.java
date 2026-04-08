@@ -1,4 +1,4 @@
-package ar.ss.betting.rework;
+package ar.ss.betting.controllers;
 
 import ar.ss.betting.domain.RoundStatus;
 import ar.ss.betting.domain.RoundType;
@@ -11,7 +11,7 @@ import ar.ss.betting.persistence.repo.RoundRepository;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-import java.time.LocalDateTime;
+import java.time.Instant;
 import java.util.*;
 
 @RestController
@@ -41,10 +41,10 @@ public class PublicRoundController {
 
         List<RoundEntity> rounds;
         if (roundTypeParam == null || roundTypeParam.isBlank()) {
-            rounds = roundRepository.findByStatusOrderByStartDateAsc(status);
+            rounds = roundRepository.findByStatusOrderByStartTimeAsc(status);
         } else {
             RoundType roundType = RoundType.valueOf(roundTypeParam);
-            rounds = roundRepository.findByRoundTypeAndStatusOrderByStartDateAsc(roundType, status);
+            rounds = roundRepository.findByRoundTypeAndStatusOrderByStartTimeAsc(roundType, status);
         }
 
         List<RoundView> response = rounds.stream()
@@ -75,7 +75,7 @@ public class PublicRoundController {
         return new RoundView(
                 round.getId(),
                 round.getRoundType().name(),
-                round.getStartDate(),
+                round.getStartTime(),
                 matches
         );
     }
@@ -103,7 +103,7 @@ public class PublicRoundController {
 
         return new MatchView(
                 match.getMatchNumber(),
-                match.getStartDate(),
+                match.getStartTime(),
                 match.getHomeTeamName(),
                 match.getAwayTeamName(),
                 market,
@@ -116,7 +116,7 @@ public class PublicRoundController {
     public record RoundView(
             long id,
             String roundType,
-            LocalDateTime startDate,
+            Instant startTime,
             List<MatchView> matches
     ) { }
 
@@ -128,7 +128,7 @@ public class PublicRoundController {
 
     public record MatchView(
             int matchNumber,
-            LocalDateTime startDate,
+            Instant startTime,
             String homeTeamName,
             String awayTeamName,
             TripleView market,

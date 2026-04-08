@@ -9,7 +9,7 @@ import ar.ss.betting.rework.RoundApiService;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-import java.time.LocalDateTime;
+import java.time.Instant;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -110,7 +110,7 @@ public class PublicModelRunController {
     public record RoundProviderPredictionsResponse(
             long roundId,
             Long modelRunId,
-            LocalDateTime generatedAt,
+            Instant generatedAt,
             List<MatchProviderPredictionsView> matches
     ) { }
 }

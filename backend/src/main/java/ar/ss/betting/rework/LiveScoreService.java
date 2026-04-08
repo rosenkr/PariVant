@@ -1,25 +1,26 @@
 package ar.ss.betting.rework;
-import java.util.Objects;
+
 import ar.ss.betting.domain.MatchStatus;
 import ar.ss.betting.domain.RoundStatus;
+import ar.ss.betting.matchresolver.MatchIdentityCandidate;
+import ar.ss.betting.matchresolver.MatchResolver;
+import ar.ss.betting.matchresolver.RequestedMatchIdentity;
 import ar.ss.betting.persistence.entity.MatchEntity;
 import ar.ss.betting.persistence.entity.RoundEntity;
 import ar.ss.betting.persistence.repo.MatchRepository;
 import ar.ss.betting.persistence.repo.RoundRepository;
 import jakarta.transaction.Transactional;
-import ar.ss.betting.matchresolver.MatchIdentityCandidate;
-import ar.ss.betting.matchresolver.MatchResolver;
-import ar.ss.betting.matchresolver.RequestedMatchIdentity;
 import org.springframework.http.MediaType;
 import org.springframework.stereotype.Service;
 import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
 
-import java.io.IOException;
 import java.time.Instant;
-import java.time.LocalDateTime;
-import java.time.OffsetDateTime;
-import java.time.ZoneOffset;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Locale;
+import java.util.Map;
+import java.util.Objects;
+import java.util.Optional;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.CopyOnWriteArrayList;
 
@@ -28,6 +29,7 @@ public class LiveScoreService {
 
     private static final long EMITTER_TIMEOUT_MS = 5 * 60 * 1000L; // 5 minutes
     private static final long ROUND_FINISH_FALLBACK_MINUTES = 150;
+
     private final MatchRepository matchRepository;
     private final RoundRepository roundRepository;
     private final MatchResolver matchResolver;
@@ -59,16 +61,16 @@ public class LiveScoreService {
 
     @Transactional
     public void syncStatusesFromTime() {
-        LocalDateTime now = LocalDateTime.now();
+        Instant now = Instant.now();
 
         List<RoundEntity> roundsToStart =
-                roundRepository.findByStatusAndStartDateLessThanEqual(RoundStatus.UPCOMING, now);
+                roundRepository.findByStatusAndStartTimeLessThanEqual(RoundStatus.UPCOMING, now);
         for (RoundEntity round : roundsToStart) {
             round.setStatus(RoundStatus.RUNNING);
         }
 
         List<MatchEntity> matchesToStart =
-                matchRepository.findByStatusAndStartDateLessThanEqual(MatchStatus.UPCOMING, now);
+                matchRepository.findByStatusAndStartTimeLessThanEqual(MatchStatus.UPCOMING, now);
         for (MatchEntity match : matchesToStart) {
             match.setStatus(MatchStatus.RUNNING);
         }
@@ -87,7 +89,7 @@ public class LiveScoreService {
         }
 
         List<MatchEntity> runningMatches =
-                matchRepository.findByStatusAndStartDateLessThanEqual(MatchStatus.RUNNING, LocalDateTime.now());
+                matchRepository.findByStatusAndStartTimeLessThanEqual(MatchStatus.RUNNING, Instant.now());
 
         List<LiveFixtureCandidate> candidates = latestFixtures.stream()
                 .map(LiveFixtureCandidate::new)
@@ -111,18 +113,16 @@ public class LiveScoreService {
             String status = fixture.statusShort();
             if (status != null) {
                 String upper = status.trim().toUpperCase(Locale.ROOT);
-                if (upper.equals("FT") || upper.equals("AET") || upper.equals("PEN")) {
-                    match.setStatus(MatchStatus.FINISHED);
-                } else if (upper.equals("PST")) {
-                    match.setStatus(MatchStatus.POSTPONED);
-                } else if (upper.equals("CANC") || upper.equals("ABD") || upper.equals("AWD") || upper.equals("WO")) {
-                    match.setStatus(MatchStatus.CANCELLED);
-                } else {
-                    match.setStatus(MatchStatus.RUNNING);
+                switch (upper) {
+                    case "FT", "AET", "PEN" -> match.setStatus(MatchStatus.FINISHED);
+                    case "PST" -> match.setStatus(MatchStatus.POSTPONED);
+                    case "CANC", "ABD", "AWD", "WO" -> match.setStatus(MatchStatus.CANCELLED);
+                    default -> match.setStatus(MatchStatus.RUNNING);
                 }
             }
         }
-        finalizeRunningRounds(LocalDateTime.now());
+
+        finalizeRunningRounds(Instant.now());
     }
 
     public void broadcastAllSubscribedRounds() {
@@ -149,8 +149,6 @@ public class LiveScoreService {
             emitter.send(SseEmitter.event()
                     .name("snapshot")
                     .data(snapshot, MediaType.APPLICATION_JSON));
-        } catch (IOException | IllegalStateException ex) {
-            removeAndComplete(roundId, emitter, true);
         } catch (Exception ex) {
             removeAndComplete(roundId, emitter, true);
         }
@@ -199,17 +197,10 @@ public class LiveScoreService {
         RequestedMatchIdentity requested = new RequestedMatchIdentity(
                 match.getHomeTeamName(),
                 match.getAwayTeamName(),
-                toOffset(match.getStartDate())
+                match.getStartTime()
         );
 
         return matchResolver.resolve(requested, candidates);
-    }
-
-    private OffsetDateTime toOffset(LocalDateTime localDateTime) {
-        if (localDateTime == null) {
-            return null;
-        }
-        return localDateTime.atOffset(ZoneOffset.UTC);
     }
 
     private void removeAndComplete(long roundId, SseEmitter emitter, boolean callComplete) {
@@ -228,7 +219,7 @@ public class LiveScoreService {
         }
     }
 
-    private void finalizeRunningRounds(LocalDateTime now) {
+    private void finalizeRunningRounds(Instant now) {
         List<RoundEntity> runningRounds = roundRepository.findByStatus(RoundStatus.RUNNING);
 
         for (RoundEntity round : runningRounds) {
@@ -259,14 +250,14 @@ public class LiveScoreService {
                 continue;
             }
 
-            LocalDateTime latestKickoff = matches.stream()
-                    .map(MatchEntity::getStartDate)
+            Instant latestKickoff = matches.stream()
+                    .map(MatchEntity::getStartTime)
                     .filter(Objects::nonNull)
-                    .max(LocalDateTime::compareTo)
+                    .max(Instant::compareTo)
                     .orElse(null);
 
             if (latestKickoff != null &&
-                    !now.isBefore(latestKickoff.plusMinutes(ROUND_FINISH_FALLBACK_MINUTES))) {
+                    !now.isBefore(latestKickoff.plusSeconds(ROUND_FINISH_FALLBACK_MINUTES * 60))) {
                 round.setStatus(RoundStatus.ENDED);
             }
         }
@@ -284,7 +275,7 @@ public class LiveScoreService {
         }
 
         @Override
-        public OffsetDateTime getKickoff() {
+        public Instant getKickoff() {
             return null;
         }
     }

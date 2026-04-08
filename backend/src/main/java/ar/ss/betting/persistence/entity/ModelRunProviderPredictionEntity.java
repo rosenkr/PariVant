@@ -5,7 +5,7 @@ import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
-import java.time.LocalDateTime;
+import java.time.Instant;
 import java.util.Objects;
 
 @Entity
@@ -55,7 +55,7 @@ public class ModelRunProviderPredictionEntity {
     private String resolvedAwayTeamName;
 
     @Column(name = "kickoff")
-    private LocalDateTime kickoff;
+    private Instant kickoff;
 
     @Column(name = "kickoff_raw", length = 64)
     private String kickoffRaw;
@@ -70,10 +70,10 @@ public class ModelRunProviderPredictionEntity {
     private Double probabilityAway;
 
     @Column(name = "fetched_at")
-    private LocalDateTime fetchedAt;
+    private Instant fetchedAt;
 
     @Column(name = "created_at", nullable = false)
-    private LocalDateTime createdAt;
+    private Instant createdAt;
 
     public ModelRunProviderPredictionEntity(ModelRunEntity modelRun,
                                             int matchNumber,
@@ -84,13 +84,13 @@ public class ModelRunProviderPredictionEntity {
                                             String requestedAwayTeamName,
                                             String resolvedHomeTeamName,
                                             String resolvedAwayTeamName,
-                                            LocalDateTime kickoff,
+                                            Instant kickoff,
                                             String kickoffRaw,
                                             Double probabilityHome,
                                             Double probabilityDraw,
                                             Double probabilityAway,
-                                            LocalDateTime fetchedAt,
-                                            LocalDateTime createdAt) {
+                                            Instant fetchedAt,
+                                            Instant createdAt) {
 
         this.modelRun = Objects.requireNonNull(modelRun, "modelRun cannot be null");
 

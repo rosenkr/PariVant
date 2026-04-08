@@ -27,10 +27,13 @@ import ar.ss.betting.predictionproviders.service.model.ProviderRawPredictionSnap
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 
-import java.time.LocalDateTime;
-import java.time.OffsetDateTime;
-import java.time.ZoneOffset;
-import java.util.*;
+import java.time.Instant;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Objects;
 
 @Service
 public class ModelRunScheduler {
@@ -73,10 +76,10 @@ public class ModelRunScheduler {
 
     @Scheduled(fixedDelay = 60_000)
     public void tick() {
-        LocalDateTime now = LocalDateTime.now();
-        LocalDateTime horizon = now.plusHours(LOOKAHEAD_HOURS);
+        Instant now = Instant.now();
+        Instant horizon = now.plusSeconds(LOOKAHEAD_HOURS * 3600L);
 
-        List<RoundEntity> upcoming = roundRepository.findByStatusInAndStartDateBetweenOrderByStartDateAsc(
+        List<RoundEntity> upcoming = roundRepository.findByStatusInAndStartTimeBetweenOrderByStartTimeAsc(
                 List.of(RoundStatus.UPCOMING, RoundStatus.RUNNING),
                 now,
                 horizon
@@ -112,12 +115,12 @@ public class ModelRunScheduler {
     private void ensureOpenedRuns(RoundEntity roundEntity,
                                   Round round,
                                   List<MatchPredictionResult> roundPredictionResults,
-                                  LocalDateTime now) {
-        LocalDateTime start = roundEntity.getStartDate();
+                                  Instant now) {
+        Instant start = roundEntity.getStartTime();
 
         boolean allowed =
                 now.isBefore(start) ||
-                        (!now.isBefore(start) && now.isBefore(start.plusMinutes(OPENED_GRACE_MINUTES_AFTER_START)));
+                        (!now.isBefore(start) && now.isBefore(start.plusSeconds(OPENED_GRACE_MINUTES_AFTER_START * 60L)));
 
         if (!allowed) {
             return;
@@ -134,9 +137,9 @@ public class ModelRunScheduler {
     private void ensureTMinus15Runs(RoundEntity roundEntity,
                                     Round round,
                                     List<MatchPredictionResult> roundPredictionResults,
-                                    LocalDateTime now) {
-        LocalDateTime start = roundEntity.getStartDate();
-        boolean inWindow = now.isAfter(start.minusMinutes(T_MINUS_15_MINUTES)) && now.isBefore(start);
+                                    Instant now) {
+        Instant start = roundEntity.getStartTime();
+        boolean inWindow = now.isAfter(start.minusSeconds(T_MINUS_15_MINUTES * 60L)) && now.isBefore(start);
         if (!inWindow) {
             return;
         }
@@ -172,13 +175,13 @@ public class ModelRunScheduler {
         for (MatchEntity m : matchEntities) {
             matches.add(new Match(
                     m.getMatchNumber(),
-                    m.getStartDate(),
+                    m.getStartTime(),
                     new Team(m.getHomeTeamName()),
                     new Team(m.getAwayTeamName())
             ));
         }
 
-        return new Round(roundEntity.getStartDate(), roundEntity.getRoundType(), matches);
+        return new Round(roundEntity.getStartTime(), roundEntity.getRoundType(), matches);
     }
 
     private ModelInput loadInputFromDbOrDefault(long roundId,
@@ -230,7 +233,7 @@ public class ModelRunScheduler {
                     toScopedClientMatchId(roundId, match.getMatchNumber()),
                     match.getHomeTeam().getName(),
                     match.getAwayTeam().getName(),
-                    toUtcOffset(match.getStartTime())
+                    match.getStartTime()
             ));
         }
 
@@ -337,13 +340,6 @@ public class ModelRunScheduler {
         } catch (NumberFormatException e) {
             throw new IllegalArgumentException("Invalid clientMatchId match number: " + clientMatchId, e);
         }
-    }
-
-    private OffsetDateTime toUtcOffset(LocalDateTime value) {
-        if (value == null) {
-            return null;
-        }
-        return value.atOffset(ZoneOffset.UTC);
     }
 
     private record ScopedClientMatchId(long roundId, int matchNumber) { }

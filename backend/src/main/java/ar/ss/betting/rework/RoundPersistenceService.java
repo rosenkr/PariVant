@@ -7,24 +7,24 @@ import ar.ss.betting.model.ModelSelectionResult;
 import ar.ss.betting.model.ProbabilityTriple;
 import ar.ss.betting.persistence.entity.MatchEntity;
 import ar.ss.betting.persistence.entity.ModelRunEntity;
+import ar.ss.betting.persistence.entity.ModelRunProviderPredictionEntity;
 import ar.ss.betting.persistence.entity.RoundEntity;
+import ar.ss.betting.persistence.repo.ModelRunProviderPredictionRepository;
 import ar.ss.betting.persistence.repo.ModelRunRepository;
 import ar.ss.betting.persistence.repo.RoundRepository;
-import ar.ss.betting.predictionproviders.service.model.MatchPredictionResult;
-import jakarta.transaction.Transactional;
-import org.springframework.stereotype.Service;
-import ar.ss.betting.persistence.entity.ModelRunProviderPredictionEntity;
-import ar.ss.betting.persistence.repo.ModelRunProviderPredictionRepository;
 import ar.ss.betting.predictionproviders.domain.MatchPrediction;
 import ar.ss.betting.predictionproviders.domain.ProviderProbabilityTriple;
+import ar.ss.betting.predictionproviders.service.model.MatchPredictionResult;
 import ar.ss.betting.predictionproviders.service.model.ProviderPredictionResult;
+import jakarta.transaction.Transactional;
+import org.springframework.stereotype.Service;
 
 import java.time.Instant;
-import java.time.OffsetDateTime;
-
-import java.time.LocalDateTime;
-import java.time.ZoneOffset;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
+import java.util.Objects;
+import java.util.TreeMap;
 import java.util.stream.Collectors;
 
 @Service
@@ -49,7 +49,7 @@ public class RoundPersistenceService {
         RoundEntity entity = new RoundEntity(
                 round.getRoundType(),
                 round.getStatus(),
-                round.getStartDate()
+                round.getStartTime()
         );
 
         for (Match m : round.getMatches()) {
@@ -172,13 +172,13 @@ public class RoundPersistenceService {
                 matchResult.getRequestedAwayTeam(),
                 prediction != null ? prediction.getHomeTeam() : null,
                 prediction != null ? prediction.getAwayTeam() : null,
-                toLocalDateTime(prediction != null ? prediction.getKickoff() : null),
+                prediction != null ? prediction.getKickoff() : null,
                 prediction != null ? prediction.getKickoffRaw() : null,
                 probabilities != null ? probabilities.getHomeWin() : null,
                 probabilities != null ? probabilities.getDraw() : null,
                 probabilities != null ? probabilities.getAwayWin() : null,
-                toLocalDateTime(prediction != null ? prediction.getFetchedAt() : null),
-                LocalDateTime.now()
+                prediction != null ? prediction.getFetchedAt() : null,
+                Instant.now()
         );
     }
 
@@ -201,10 +201,6 @@ public class RoundPersistenceService {
         }
     }
 
-    private LocalDateTime toLocalDateTime(OffsetDateTime value) {
-        return value == null ? null : value.toLocalDateTime();
-    }
-
     private Map<String, ProbabilityTripleDtoShape> toInternalProbabilitiesDtoShape(ModelSelectionResult result) {
         Map<String, ProbabilityTripleDtoShape> out = new TreeMap<>();
 
@@ -223,10 +219,6 @@ public class RoundPersistenceService {
         return out;
     }
 
-    private LocalDateTime toLocalDateTime(Instant value) {
-        return value == null ? null : LocalDateTime.ofInstant(value, ZoneOffset.UTC);
-    }
-
     public record ProbabilityTripleDtoShape(
             double homeWin,
             double draw,
@@ -235,5 +227,5 @@ public class RoundPersistenceService {
 
     public record SavedRound(long id) { }
 
-    public record SavedModelRun(long id, LocalDateTime generatedAt) { }
+    public record SavedModelRun(long id, Instant generatedAt) { }
 }

@@ -22,10 +22,12 @@ import ar.ss.betting.predictionproviders.service.model.ProviderPredictionStatus;
 import ar.ss.betting.predictionproviders.service.model.ProviderRawPredictionSnapshot;
 import org.springframework.stereotype.Service;
 
-import java.time.LocalDateTime;
-import java.time.OffsetDateTime;
-import java.time.ZoneOffset;
-import java.util.*;
+import java.time.Instant;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Objects;
 
 @Service
 public class RoundApiService {
@@ -55,24 +57,24 @@ public class RoundApiService {
     }
 
     public long createRound(RoundType roundType,
-                            LocalDateTime roundStartDate,
+                            Instant roundStartTime,
                             List<ModelSelectionRequestDto.MatchDto> matches) {
 
         Objects.requireNonNull(roundType, "roundType");
-        Objects.requireNonNull(roundStartDate, "roundStartDate");
+        Objects.requireNonNull(roundStartTime, "roundStartTime");
         Objects.requireNonNull(matches, "matches");
 
         List<Match> domainMatches = new ArrayList<>(matches.size());
         for (ModelSelectionRequestDto.MatchDto m : matches) {
             domainMatches.add(new Match(
                     m.matchNumber(),
-                    LocalDateTime.parse(m.startDate()),
+                    Instant.parse(m.startDate()),
                     new Team(m.homeTeamName()),
                     new Team(m.awayTeamName())
             ));
         }
 
-        Round round = new Round(roundStartDate, roundType, domainMatches);
+        Round round = new Round(roundStartTime, roundType, domainMatches);
         return roundPersistenceService.saveRound(round).id();
     }
 
@@ -135,7 +137,7 @@ public class RoundApiService {
     public List<ModelRunView> getLatestPresetModelRuns(long roundId) {
         List<ModelRunEntity> runs = modelRunRepository.findByRoundIdOrderByGeneratedAtDesc(roundId);
 
-        Map<Integer, ModelRunEntity> latestByBudget = new LinkedHashMap<>();
+        Map<Integer, ModelRunEntity> latestByBudget = new HashMap<>();
         for (Integer b : PRESET_BUDGETS) {
             for (ModelRunEntity r : runs) {
                 if (r.getBudgetInSek() == b) {
@@ -165,14 +167,14 @@ public class RoundApiService {
         for (MatchEntity m : matchEntities) {
             matches.add(new Match(
                     m.getMatchNumber(),
-                    m.getStartDate(),
+                    m.getStartTime(),
                     new Team(m.getHomeTeamName()),
                     new Team(m.getAwayTeamName())
             ));
         }
 
         return new Round(
-                roundEntity.getStartDate(),
+                roundEntity.getStartTime(),
                 roundEntity.getRoundType(),
                 matches
         );
@@ -186,7 +188,7 @@ public class RoundApiService {
                     String.valueOf(match.getMatchNumber()),
                     match.getHomeTeam().getName(),
                     match.getAwayTeam().getName(),
-                    toUtcOffset(match.getStartTime())
+                    match.getStartTime()
             ));
         }
 
@@ -248,13 +250,6 @@ public class RoundApiService {
         } catch (NumberFormatException e) {
             throw new IllegalArgumentException("Prediction response clientMatchId is not numeric: " + clientMatchId, e);
         }
-    }
-
-    private OffsetDateTime toUtcOffset(LocalDateTime value) {
-        if (value == null) {
-            return null;
-        }
-        return value.atOffset(ZoneOffset.UTC);
     }
 
     private Map<Integer, MatchContext> toMatchContexts(
@@ -366,13 +361,13 @@ public class RoundApiService {
     public record CreatedModelRun(
             long id,
             int budgetInSek,
-            LocalDateTime generatedAt
+            Instant generatedAt
     ) { }
 
     public record ModelRunView(
             long id,
             String modelName,
-            LocalDateTime generatedAt,
+            Instant generatedAt,
             int budgetInSek,
             int totalCostInSek,
             int halfGuardsCount,

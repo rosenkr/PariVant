@@ -7,7 +7,7 @@ import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
-import java.time.LocalDateTime;
+import java.time.Instant;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -32,20 +32,20 @@ public class RoundEntity {
     private RoundStatus status;
 
     @Column(name = "start_date", nullable = false)
-    private LocalDateTime startDate;
+    private Instant startTime;
 
     @OneToMany(mappedBy = "round", cascade = CascadeType.ALL, orphanRemoval = true)
     @OrderBy("matchNumber ASC")
     private List<MatchEntity> matches = new ArrayList<>();
 
-    public RoundEntity(RoundType roundType, LocalDateTime startDate) {
-        this(roundType, RoundStatus.UPCOMING, startDate);
+    public RoundEntity(RoundType roundType, Instant startTime) {
+        this(roundType, RoundStatus.UPCOMING, startTime);
     }
 
-    public RoundEntity(RoundType roundType, RoundStatus status, LocalDateTime startDate) {
+    public RoundEntity(RoundType roundType, RoundStatus status, Instant startTime) {
         this.roundType = Objects.requireNonNull(roundType, "roundType cannot be null");
         this.status = Objects.requireNonNull(status, "status cannot be null");
-        this.startDate = Objects.requireNonNull(startDate, "startDate cannot be null");
+        this.startTime = Objects.requireNonNull(startTime, "startTime cannot be null");
     }
 
     public void addMatch(MatchEntity match) {
@@ -62,6 +62,7 @@ public class RoundEntity {
     public void setStatus(RoundStatus status) {
         this.status = Objects.requireNonNull(status, "status cannot be null");
     }
+
     public List<MatchEntity> getMatches() {
         return Collections.unmodifiableList(matches);
     }

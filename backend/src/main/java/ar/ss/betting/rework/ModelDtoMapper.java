@@ -1,6 +1,10 @@
 package ar.ss.betting.rework;
 
-import ar.ss.betting.domain.*;
+import ar.ss.betting.domain.Match;
+import ar.ss.betting.domain.Outcome;
+import ar.ss.betting.domain.Round;
+import ar.ss.betting.domain.RoundType;
+import ar.ss.betting.domain.Team;
 import ar.ss.betting.model.MatchBuff;
 import ar.ss.betting.model.MatchContext;
 import ar.ss.betting.model.MatchInterventions;
@@ -12,8 +16,13 @@ import ar.ss.betting.model.Side;
 import ar.ss.betting.model.TagType;
 import org.springframework.stereotype.Component;
 
-import java.time.LocalDateTime;
-import java.util.*;
+import java.time.Instant;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.TreeMap;
 
 /**
  * Maps API DTOs to domain/model objects and back.
@@ -40,7 +49,7 @@ public class ModelDtoMapper {
         }
 
         RoundType roundType = RoundType.valueOf(req.roundType());
-        LocalDateTime roundStart = LocalDateTime.parse(req.roundStartDate());
+        Instant roundStartTime = Instant.parse(req.roundStartDate());
 
         List<Match> matches = new ArrayList<>();
         for (ModelSelectionRequestDto.MatchDto m : req.matches()) {
@@ -59,13 +68,13 @@ public class ModelDtoMapper {
 
             matches.add(new Match(
                     m.matchNumber(),
-                    LocalDateTime.parse(m.startDate()),
+                    Instant.parse(m.startDate()),
                     new Team(m.homeTeamName()),
                     new Team(m.awayTeamName())
             ));
         }
 
-        Round round = new Round(roundStart, roundType, matches);
+        Round round = new Round(roundStartTime, roundType, matches);
 
         Map<Integer, MatchContext> contexts = new HashMap<>();
         for (Map.Entry<Integer, ModelSelectionRequestDto.MatchContextDto> e : req.contexts().entrySet()) {

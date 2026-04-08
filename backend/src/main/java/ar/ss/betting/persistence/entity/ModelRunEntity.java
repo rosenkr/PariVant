@@ -7,7 +7,7 @@ import lombok.NoArgsConstructor;
 import org.hibernate.annotations.JdbcTypeCode;
 import org.hibernate.type.SqlTypes;
 
-import java.time.LocalDateTime;
+import java.time.Instant;
 
 @Entity
 @Table(
@@ -33,7 +33,7 @@ public class ModelRunEntity {
     private String modelName;
 
     @Column(name = "generated_at", nullable = false)
-    private LocalDateTime generatedAt;
+    private Instant generatedAt;
 
     @Column(name = "budget_in_sek", nullable = false)
     private int budgetInSek;
@@ -61,7 +61,7 @@ public class ModelRunEntity {
 
     public ModelRunEntity(RoundEntity round,
                           String modelName,
-                          LocalDateTime generatedAt,
+                          Instant generatedAt,
                           int budgetInSek,
                           int totalCostInSek,
                           int halfGuardsCount,

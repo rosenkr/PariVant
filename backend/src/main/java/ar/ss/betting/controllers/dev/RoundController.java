@@ -6,7 +6,7 @@ import ar.ss.betting.rework.RoundApiService;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-import java.time.LocalDateTime;
+import java.time.Instant;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -25,7 +25,7 @@ public class RoundController {
     public ResponseEntity<CreateRoundResponse> createRound(@RequestBody CreateRoundRequest request) {
         long id = roundApiService.createRound(
                 RoundType.valueOf(request.roundType()),
-                LocalDateTime.parse(request.roundStartDate()),
+                Instant.parse(request.roundStartDate()),
                 request.matches()
         );
         return ResponseEntity.ok(new CreateRoundResponse(id));

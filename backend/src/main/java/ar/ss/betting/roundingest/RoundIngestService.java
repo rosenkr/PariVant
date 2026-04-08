@@ -10,8 +10,7 @@ import ar.ss.betting.persistence.repo.RoundRepository;
 import jakarta.transaction.Transactional;
 import org.springframework.stereotype.Service;
 
-import java.time.LocalDateTime;
-import java.time.ZoneOffset;
+import java.time.Instant;
 import java.util.Objects;
 
 @Service
@@ -30,27 +29,27 @@ public class RoundIngestService {
     public PersistResult persistIfNew(ar.ss.betting.roundingest.IngestedRound ingestedRound) {
         Objects.requireNonNull(ingestedRound, "ingestedRound");
 
-        LocalDateTime roundStart = toUtcLocalDateTime(ingestedRound.roundStart());
+        Instant roundStartTime = ingestedRound.roundStart();
 
-        boolean exists = roundRepository.existsByRoundTypeAndStartDate(
+        boolean exists = roundRepository.existsByRoundTypeAndStartTime(
                 ingestedRound.roundType(),
-                roundStart
+                roundStartTime
         );
 
         if (exists) {
-            return PersistResult.duplicate(ingestedRound.roundType(), roundStart);
+            return PersistResult.duplicate(ingestedRound.roundType(), roundStartTime);
         }
 
         RoundEntity roundEntity = new RoundEntity(
                 ingestedRound.roundType(),
                 RoundStatus.UPCOMING,
-                roundStart
+                roundStartTime
         );
 
         for (ar.ss.betting.roundingest.IngestedMatch m : ingestedRound.matches()) {
             MatchEntity matchEntity = new MatchEntity(
                     m.matchNumber(),
-                    toUtcLocalDateTime(m.kickoff()),
+                    m.kickoff(),
                     m.homeTeamName(),
                     m.awayTeamName()
             );
@@ -77,27 +76,23 @@ public class RoundIngestService {
 
         return PersistResult.created(
                 ingestedRound.roundType(),
-                roundStart,
+                roundStartTime,
                 savedRound.getId()
         );
-    }
-
-    private LocalDateTime toUtcLocalDateTime(java.time.OffsetDateTime value) {
-        return value.atZoneSameInstant(ZoneOffset.UTC).toLocalDateTime();
     }
 
     public record PersistResult(
             String status,
             RoundType roundType,
-            LocalDateTime roundStartDate,
+            Instant roundStartTime,
             Long roundId
     ) {
-        public static PersistResult created(RoundType roundType, LocalDateTime start, long roundId) {
-            return new PersistResult("CREATED", roundType, start, roundId);
+        public static PersistResult created(RoundType roundType, Instant startTime, long roundId) {
+            return new PersistResult("CREATED", roundType, startTime, roundId);
         }
 
-        public static PersistResult duplicate(RoundType roundType, LocalDateTime start) {
-            return new PersistResult("DUPLICATE", roundType, start, null);
+        public static PersistResult duplicate(RoundType roundType, Instant startTime) {
+            return new PersistResult("DUPLICATE", roundType, startTime, null);
         }
     }
 }

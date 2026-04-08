@@ -5,7 +5,9 @@ import org.slf4j.LoggerFactory;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 
+import java.time.Clock;
 import java.time.LocalTime;
+import java.time.ZoneId;
 import java.util.List;
 import java.util.Objects;
 
@@ -14,16 +16,14 @@ import java.util.Objects;
  *
  * Schedule:
  * - every 10 minutes
- * - only between 12:00 and 00:00 (local server time)
- *
- * NOTE: We poll regardless of SSE subscriber count (per your current preference),
- * but still limit to the time window to stay within quota.
+ * - only between 12:00 and 00:00 Sweden time
  */
 @Service
 public class LiveScorePoller {
 
     private static final Logger log = LoggerFactory.getLogger(LiveScorePoller.class);
 
+    private static final ZoneId SWEDEN_ZONE = ZoneId.of("Europe/Stockholm");
     private static final LocalTime WINDOW_START = LocalTime.of(12, 0);
 
     @SuppressWarnings("unused")
@@ -31,16 +31,19 @@ public class LiveScorePoller {
 
     private final ApiFootballClient apiFootballClient;
     private final LiveScoreService liveScoreService;
+    private final Clock clock;
 
     public LiveScorePoller(ApiFootballClient apiFootballClient,
-                           LiveScoreService liveScoreService) {
+                           LiveScoreService liveScoreService,
+                           Clock clock) {
         this.apiFootballClient = Objects.requireNonNull(apiFootballClient);
         this.liveScoreService = Objects.requireNonNull(liveScoreService);
+        this.clock = Objects.requireNonNull(clock);
     }
 
     @Scheduled(fixedDelay = 600_000) // 10 minutes
     public void tick() {
-        LocalTime now = LocalTime.now();
+        LocalTime now = LocalTime.now(clock.withZone(SWEDEN_ZONE));
         if (!withinWindow(now)) {
             return;
         }
