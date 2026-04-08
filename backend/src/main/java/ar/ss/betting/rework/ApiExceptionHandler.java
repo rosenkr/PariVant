@@ -8,37 +8,45 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.http.converter.HttpMessageNotReadableException;
 import org.springframework.web.bind.annotation.*;
 
+import java.time.Clock;
 import java.time.Instant;
+import java.util.Objects;
 
 @RestControllerAdvice
 public class ApiExceptionHandler {
+
+    private final Clock clock;
+
+    public ApiExceptionHandler(Clock clock) {
+        this.clock = Objects.requireNonNull(clock);
+    }
 
     @ExceptionHandler(IllegalArgumentException.class)
     public ResponseEntity<ApiError> handleIllegalArgument(IllegalArgumentException ex) {
         return ResponseEntity
                 .status(HttpStatus.BAD_REQUEST)
-                .body(new ApiError(Instant.now().toString(), 400, ex.getMessage()));
+                .body(new ApiError(Instant.now(clock).toString(), 400, ex.getMessage()));
     }
 
     @ExceptionHandler(HttpMessageNotReadableException.class)
     public ResponseEntity<ApiError> handleUnreadableJson(HttpMessageNotReadableException ex) {
         return ResponseEntity
                 .status(HttpStatus.BAD_REQUEST)
-                .body(new ApiError(Instant.now().toString(), 400, "Malformed JSON request body"));
+                .body(new ApiError(Instant.now(clock).toString(), 400, "Malformed JSON request body"));
     }
 
     @ExceptionHandler(DataIntegrityViolationException.class)
     public ResponseEntity<ApiError> handleDataIntegrity(DataIntegrityViolationException ex) {
         return ResponseEntity
                 .status(HttpStatus.BAD_REQUEST)
-                .body(new ApiError(Instant.now().toString(), 400, "Database constraint violated"));
+                .body(new ApiError(Instant.now(clock).toString(), 400, "Database constraint violated"));
     }
 
     @ExceptionHandler(java.time.format.DateTimeParseException.class)
     public ResponseEntity<ApiError> handleDateTimeParse(java.time.format.DateTimeParseException ex) {
         return ResponseEntity
                 .status(HttpStatus.BAD_REQUEST)
-                .body(new ApiError(Instant.now().toString(), 400, "Invalid date-time format"));
+                .body(new ApiError(Instant.now(clock).toString(), 400, "Invalid date-time format"));
     }
 
     /**
@@ -57,7 +65,7 @@ public class ApiExceptionHandler {
 
         return ResponseEntity
                 .status(HttpStatus.INTERNAL_SERVER_ERROR)
-                .body(new ApiError(Instant.now().toString(), 500,
+                .body(new ApiError(Instant.now(clock).toString(), 500,
                         "Internal error: " + ex.getClass().getSimpleName()));
     }
 

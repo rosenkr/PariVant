@@ -6,6 +6,8 @@ import ar.ss.betting.model.ModelInput;
 import ar.ss.betting.model.ModelSelectionResult;
 import org.springframework.stereotype.Service;
 
+import java.time.Clock;
+import java.time.Instant;
 import java.util.Objects;
 
 /**
@@ -19,9 +21,11 @@ import java.util.Objects;
 public class ModelService {
 
     private final ModelDtoMapper mapper;
+    private final Clock clock;
 
-    public ModelService(ModelDtoMapper mapper) {
+    public ModelService(ModelDtoMapper mapper, Clock clock) {
         this.mapper = Objects.requireNonNull(mapper);
+        this.clock = Objects.requireNonNull(clock);
     }
 
     public ModelSelectionResponseDto runModel(ModelSelectionRequestDto request) {
@@ -31,8 +35,9 @@ public class ModelService {
 
         EnsembleModel model = new EnsembleModel();
 
+        Instant generatedAt = Instant.now(clock);
         ModelSelectionResult result =
-                model.generateSelection(domain.round(), domain.modelInput(), domain.budgetInSek());
+                model.generateSelection(domain.round(), domain.modelInput(), domain.budgetInSek(), generatedAt);
 
         return mapper.toResponseDto(result);
     }

@@ -1,10 +1,13 @@
 package ar.ss.betting.model;
 
-import ar.ss.betting.domain.*;
+import ar.ss.betting.domain.Match;
+import ar.ss.betting.domain.Outcome;
+import ar.ss.betting.domain.Round;
+import ar.ss.betting.domain.RoundType;
+import ar.ss.betting.domain.Team;
 import org.junit.jupiter.api.Test;
 
 import java.time.Instant;
-import java.time.LocalDateTime;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -16,19 +19,21 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 
 class EnsembleModelTest {
 
+    private static final Instant TEST_TIME = Instant.parse("2026-03-20T12:00:00Z");
+
     private Round createTopptipsetRound8Matches() {
         return new Round(
-                Instant.now(),
+                TEST_TIME,
                 RoundType.TOPPTIPSET,
                 List.of(
-                        new Match(1, Instant.now(), new Team("A"), new Team("B")),
-                        new Match(2, Instant.now(), new Team("C"), new Team("D")),
-                        new Match(3, Instant.now(), new Team("E"), new Team("F")),
-                        new Match(4, Instant.now(), new Team("G"), new Team("H")),
-                        new Match(5, Instant.now(), new Team("I"), new Team("J")),
-                        new Match(6, Instant.now(), new Team("K"), new Team("L")),
-                        new Match(7, Instant.now(), new Team("M"), new Team("N")),
-                        new Match(8, Instant.now(), new Team("O"), new Team("P"))
+                        new Match(1, TEST_TIME, new Team("A"), new Team("B")),
+                        new Match(2, TEST_TIME, new Team("C"), new Team("D")),
+                        new Match(3, TEST_TIME, new Team("E"), new Team("F")),
+                        new Match(4, TEST_TIME, new Team("G"), new Team("H")),
+                        new Match(5, TEST_TIME, new Team("I"), new Team("J")),
+                        new Match(6, TEST_TIME, new Team("K"), new Team("L")),
+                        new Match(7, TEST_TIME, new Team("M"), new Team("N")),
+                        new Match(8, TEST_TIME, new Team("O"), new Team("P"))
                 )
         );
     }
@@ -51,7 +56,7 @@ class EnsembleModelTest {
         ModelInput input = createNeutralModelInputForRound(round);
         GameModel model = new EnsembleModel();
 
-        ModelSelectionResult result = model.generateSelection(round, input, 100);
+        ModelSelectionResult result = model.generateSelection(round, input, 100, TEST_TIME);
 
         assertTrue(result.totalCostInSek() <= 100);
     }
@@ -62,7 +67,7 @@ class EnsembleModelTest {
         ModelInput input = createNeutralModelInputForRound(round);
         GameModel model = new EnsembleModel();
 
-        ModelSelectionResult result = model.generateSelection(round, input, 100);
+        ModelSelectionResult result = model.generateSelection(round, input, 100, TEST_TIME);
 
         assertEquals(8, result.internalProbabilities().size());
 
@@ -95,7 +100,7 @@ class EnsembleModelTest {
         ));
 
         GameModel model = new EnsembleModel();
-        ModelSelectionResult result = model.generateSelection(round, new ModelInput(ctx), 1);
+        ModelSelectionResult result = model.generateSelection(round, new ModelInput(ctx), 1, TEST_TIME);
 
         assertEquals(Set.of(Outcome.AWAY_WIN), result.selections().get(1));
 
@@ -132,7 +137,7 @@ class EnsembleModelTest {
         ));
 
         GameModel model = new EnsembleModel();
-        ModelSelectionResult result = model.generateSelection(round, new ModelInput(contexts, interventions), 1);
+        ModelSelectionResult result = model.generateSelection(round, new ModelInput(contexts, interventions), 1, TEST_TIME);
 
         ProbabilityTriple adjusted = result.internalProbabilities().get(1);
         assertEquals(0.54, adjusted.get(Outcome.HOME_WIN), 1e-9);
@@ -167,7 +172,7 @@ class EnsembleModelTest {
         ));
 
         GameModel model = new EnsembleModel();
-        ModelSelectionResult result = model.generateSelection(round, new ModelInput(contexts, interventions), 1);
+        ModelSelectionResult result = model.generateSelection(round, new ModelInput(contexts, interventions), 1, TEST_TIME);
 
         ProbabilityTriple adjusted = result.internalProbabilities().get(1);
         assertEquals(0.385, adjusted.get(Outcome.HOME_WIN), 1e-9);
@@ -208,7 +213,7 @@ class EnsembleModelTest {
 
         assertThrows(
                 IllegalArgumentException.class,
-                () -> model.generateSelection(round, new ModelInput(contexts, interventions), 1)
+                () -> model.generateSelection(round, new ModelInput(contexts, interventions), 1, TEST_TIME)
         );
     }
 }

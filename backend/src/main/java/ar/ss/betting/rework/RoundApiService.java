@@ -22,6 +22,7 @@ import ar.ss.betting.predictionproviders.service.model.ProviderPredictionStatus;
 import ar.ss.betting.predictionproviders.service.model.ProviderRawPredictionSnapshot;
 import org.springframework.stereotype.Service;
 
+import java.time.Clock;
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -41,19 +42,22 @@ public class RoundApiService {
     private final ModelRunRepository modelRunRepository;
     private final PredictionQueryService predictionQueryService;
     private final PredictionResolutionService predictionResolutionService;
+    private final Clock clock;
 
     public RoundApiService(RoundPersistenceService roundPersistenceService,
                            RoundRepository gameRoundRepository,
                            MatchRepository matchRepository,
                            ModelRunRepository modelRunRepository,
                            PredictionQueryService predictionQueryService,
-                           PredictionResolutionService predictionResolutionService) {
+                           PredictionResolutionService predictionResolutionService,
+                           Clock clock) {
         this.roundPersistenceService = Objects.requireNonNull(roundPersistenceService);
         this.gameRoundRepository = Objects.requireNonNull(gameRoundRepository);
         this.matchRepository = Objects.requireNonNull(matchRepository);
         this.modelRunRepository = Objects.requireNonNull(modelRunRepository);
         this.predictionQueryService = Objects.requireNonNull(predictionQueryService);
         this.predictionResolutionService = Objects.requireNonNull(predictionResolutionService);
+        this.clock = Objects.requireNonNull(clock);
     }
 
     public long createRound(RoundType roundType,
@@ -114,7 +118,8 @@ public class RoundApiService {
             );
 
             EnsembleModel model = new EnsembleModel();
-            ModelSelectionResult result = model.generateSelection(round, modelInput, presetBudget);
+            Instant generatedAt = Instant.now(clock);
+            ModelSelectionResult result = model.generateSelection(round, modelInput, presetBudget, generatedAt);
 
             RoundPersistenceService.SavedModelRun saved = roundPersistenceService.saveModelRun(
                     roundId,

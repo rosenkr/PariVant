@@ -27,6 +27,7 @@ import ar.ss.betting.predictionproviders.service.model.ProviderRawPredictionSnap
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 
+import java.time.Clock;
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -50,6 +51,7 @@ public class ModelRunScheduler {
     private static final ProbabilityTriple DEFAULT_MARKET = ProbabilityTriple.fromProbabilities(0.5, 0.25, 0.25);
     private static final ProbabilityTriple DEFAULT_PUBLIC = ProbabilityTriple.fromProbabilities(0.5, 0.25, 0.25);
 
+    private final Clock clock;
     private final RoundRepository roundRepository;
     private final MatchRepository matchRepository;
     private final MatchContextRepository matchContextRepository;
@@ -64,7 +66,8 @@ public class ModelRunScheduler {
                              ModelRunRepository modelRunRepository,
                              RoundPersistenceService roundPersistenceService,
                              PredictionSnapshotCacheService predictionSnapshotCacheService,
-                             PredictionResolutionService predictionResolutionService) {
+                             PredictionResolutionService predictionResolutionService,
+                             Clock clock) {
         this.roundRepository = Objects.requireNonNull(roundRepository);
         this.matchRepository = Objects.requireNonNull(matchRepository);
         this.matchContextRepository = Objects.requireNonNull(matchContextRepository);
@@ -72,11 +75,12 @@ public class ModelRunScheduler {
         this.roundPersistenceService = Objects.requireNonNull(roundPersistenceService);
         this.predictionSnapshotCacheService = Objects.requireNonNull(predictionSnapshotCacheService);
         this.predictionResolutionService = Objects.requireNonNull(predictionResolutionService);
+        this.clock = Objects.requireNonNull(clock);
     }
 
     @Scheduled(fixedDelay = 60_000)
     public void tick() {
-        Instant now = Instant.now();
+        Instant now = Instant.now(clock);
         Instant horizon = now.plusSeconds(LOOKAHEAD_HOURS * 3600L);
 
         List<RoundEntity> upcoming = roundRepository.findByStatusInAndStartTimeBetweenOrderByStartTimeAsc(
@@ -160,7 +164,8 @@ public class ModelRunScheduler {
         ModelInput input = loadInputFromDbOrDefault(roundId, round, roundPredictionResults);
 
         EnsembleModel model = new EnsembleModel();
-        ModelSelectionResult result = model.generateSelection(round, input, budget);
+        Instant generatedAt = Instant.now(clock);
+        ModelSelectionResult result = model.generateSelection(round, input, budget, generatedAt);
 
         roundPersistenceService.saveModelRun(roundId, budget, trigger, result, roundPredictionResults);
     }

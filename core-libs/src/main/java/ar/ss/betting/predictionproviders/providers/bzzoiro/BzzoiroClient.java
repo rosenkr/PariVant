@@ -10,9 +10,11 @@ import java.net.URI;
 import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
+import java.time.Clock;
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 
 @Slf4j
 @Component
@@ -24,14 +26,16 @@ public class BzzoiroClient {
     private final HttpClient httpClient;
     private final ObjectMapper objectMapper;
     private final String apiKey;
-
+    private final Clock clock;
     public BzzoiroClient(
             ObjectMapper objectMapper,
-            @Value("${BZZOIRO_KEY:}") String apiKey
+            @Value("${BZZOIRO_KEY:}") String apiKey,
+            Clock clock
     ) {
         this.httpClient = HttpClient.newHttpClient();
         this.objectMapper = objectMapper;
         this.apiKey = apiKey;
+        this.clock = Objects.requireNonNull(clock);
     }
 
     public BzzoiroResponse fetchUpcomingPredictions() {
@@ -39,7 +43,7 @@ public class BzzoiroClient {
             throw new IllegalStateException("Missing BZZOIRO_KEY environment variable");
         }
 
-        Instant fetchedAt = Instant.now();
+        Instant fetchedAt = Instant.now(clock);
         List<BzzoiroResponse.BzzoiroPredictionRow> allRows = new ArrayList<>();
 
         String nextUrl = UPCOMING_PREDICTIONS_URL;

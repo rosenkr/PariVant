@@ -10,9 +10,11 @@ import java.net.URI;
 import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
+import java.time.Clock;
 import java.time.Instant;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Objects;
 
 @Slf4j
 @Component
@@ -23,14 +25,16 @@ public class _11eloClient {
     private final HttpClient httpClient;
     private final ObjectMapper objectMapper;
     private final String apiKey;
-
+    private final Clock clock;
     public _11eloClient(
             ObjectMapper objectMapper,
-            @Value("${ELEVEN_ELO_KEY:}") String apiKey
+            @Value("${ELEVEN_ELO_KEY:}") String apiKey,
+            Clock clock
     ) {
         this.httpClient = HttpClient.newHttpClient();
         this.objectMapper = objectMapper;
         this.apiKey = apiKey;
+        this.clock = Objects.requireNonNull(clock);
     }
 
     public _11eloResponse fetchUpcomingMatches() {
@@ -38,7 +42,7 @@ public class _11eloClient {
             throw new IllegalStateException("Missing ELEVEN_ELO_KEY environment variable");
         }
 
-        Instant fetchedAt = Instant.now();
+        Instant fetchedAt = Instant.now(clock);
         String body = downloadJson();
         List<_11eloMatchRow> matches = parseJson(body);
 

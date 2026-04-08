@@ -12,9 +12,11 @@ import java.net.URI;
 import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
+import java.time.Clock;
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 
 @Slf4j
 @Component
@@ -23,9 +25,14 @@ public class ClubEloClient {
     private static final String FIXTURES_URL = "http://api.clubelo.com/Fixtures";
 
     private final HttpClient httpClient = HttpClient.newHttpClient();
+    private final Clock clock;
+
+    public ClubEloClient(Clock clock) {
+        this.clock = Objects.requireNonNull(clock);
+    }
 
     public ClubEloResponse fetchFixtures() {
-        Instant fetchedAt = Instant.now();
+        Instant fetchedAt = Instant.now(clock);
 
         String csvBody = downloadCsv();
         List<ClubEloFixtureRow> rows = parseCsv(csvBody);

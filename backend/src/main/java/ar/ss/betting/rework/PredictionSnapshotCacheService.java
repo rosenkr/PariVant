@@ -6,6 +6,7 @@ import lombok.Getter;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 
+import java.time.Clock;
 import java.time.Instant;
 import java.util.List;
 import java.util.Objects;
@@ -14,19 +15,21 @@ import java.util.Objects;
 public class PredictionSnapshotCacheService {
 
     private final PredictionQueryService predictionQueryService;
+    private final Clock clock;
 
     @Getter
     private volatile CachedPredictionSnapshot latestSnapshot =
             new CachedPredictionSnapshot(Instant.EPOCH, List.of());
 
-    public PredictionSnapshotCacheService(PredictionQueryService predictionQueryService) {
+    public PredictionSnapshotCacheService(PredictionQueryService predictionQueryService, Clock clock) {
         this.predictionQueryService = Objects.requireNonNull(predictionQueryService);
+        this.clock = Objects.requireNonNull(clock);
     }
 
     @Scheduled(fixedDelay = 600_000)
     public void refresh() {
         List<ProviderRawPredictionSnapshot> snapshots = predictionQueryService.fetchProviderSnapshots();
-        latestSnapshot = new CachedPredictionSnapshot(Instant.now(), List.copyOf(snapshots));
+        latestSnapshot = new CachedPredictionSnapshot(Instant.now(clock), List.copyOf(snapshots));
     }
 
     public record CachedPredictionSnapshot(

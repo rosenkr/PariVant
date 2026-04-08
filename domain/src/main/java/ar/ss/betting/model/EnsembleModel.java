@@ -5,7 +5,6 @@ import ar.ss.betting.domain.Outcome;
 import ar.ss.betting.domain.Round;
 
 import java.time.Instant;
-import java.time.LocalDateTime;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -22,9 +21,11 @@ public class EnsembleModel implements GameModel {
     @Override
     public ModelSelectionResult generateSelection(Round round,
                                                   ModelInput modelInput,
-                                                  int maxBudgetInSek) {
+                                                  int maxBudgetInSek,
+                                                  Instant generatedAt) {
         Objects.requireNonNull(round, "round cannot be null");
         Objects.requireNonNull(modelInput, "modelInput cannot be null");
+        Objects.requireNonNull(generatedAt, "generatedAt cannot be null");
 
         if (maxBudgetInSek <= 0) {
             throw new IllegalArgumentException("Budget must be positive");
@@ -84,7 +85,7 @@ public class EnsembleModel implements GameModel {
 
         return new ModelSelectionResult(
                 "EnsembleModel",
-                Instant.now(),
+                generatedAt,
                 freezeBasePicks(basePicks),
                 freezeSelections(selections),
                 freezeInternalProbabilities(internalProbabilities),

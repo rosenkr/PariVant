@@ -14,6 +14,7 @@ import org.springframework.http.MediaType;
 import org.springframework.stereotype.Service;
 import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
 
+import java.time.Clock;
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
@@ -33,16 +34,19 @@ public class LiveScoreService {
     private final MatchRepository matchRepository;
     private final RoundRepository roundRepository;
     private final MatchResolver matchResolver;
+    private final Clock clock;
 
     private final Map<Long, CopyOnWriteArrayList<SseEmitter>> emittersByRound = new ConcurrentHashMap<>();
     private volatile List<ApiFootballClient.LiveFixture> latestFixtures = List.of();
 
     public LiveScoreService(MatchRepository matchRepository,
                             RoundRepository roundRepository,
-                            MatchResolver matchResolver) {
+                            MatchResolver matchResolver,
+                            Clock clock) {
         this.matchRepository = Objects.requireNonNull(matchRepository);
         this.roundRepository = Objects.requireNonNull(roundRepository);
         this.matchResolver = Objects.requireNonNull(matchResolver);
+        this.clock = Objects.requireNonNull(clock);
     }
 
     public SseEmitter subscribe(long roundId) {
@@ -61,7 +65,7 @@ public class LiveScoreService {
 
     @Transactional
     public void syncStatusesFromTime() {
-        Instant now = Instant.now();
+        Instant now = Instant.now(clock);
 
         List<RoundEntity> roundsToStart =
                 roundRepository.findByStatusAndStartTimeLessThanEqual(RoundStatus.UPCOMING, now);
@@ -89,7 +93,7 @@ public class LiveScoreService {
         }
 
         List<MatchEntity> runningMatches =
-                matchRepository.findByStatusAndStartTimeLessThanEqual(MatchStatus.RUNNING, Instant.now());
+                matchRepository.findByStatusAndStartTimeLessThanEqual(MatchStatus.RUNNING, Instant.now(clock));
 
         List<LiveFixtureCandidate> candidates = latestFixtures.stream()
                 .map(LiveFixtureCandidate::new)
@@ -122,7 +126,7 @@ public class LiveScoreService {
             }
         }
 
-        finalizeRunningRounds(Instant.now());
+        finalizeRunningRounds(Instant.now(clock));
     }
 
     public void broadcastAllSubscribedRounds() {
@@ -189,7 +193,7 @@ public class LiveScoreService {
             ));
         }
 
-        return new LiveRoundSnapshot(roundId, Instant.now().toString(), updates);
+        return new LiveRoundSnapshot(roundId, Instant.now(clock).toString(), updates);
     }
 
     private Optional<LiveFixtureCandidate> resolveFixture(MatchEntity match,

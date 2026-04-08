@@ -19,6 +19,7 @@ import ar.ss.betting.predictionproviders.service.model.ProviderPredictionResult;
 import jakarta.transaction.Transactional;
 import org.springframework.stereotype.Service;
 
+import java.time.Clock;
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
@@ -33,13 +34,15 @@ public class RoundPersistenceService {
     private final RoundRepository gameRoundRepository;
     private final ModelRunRepository modelRunRepository;
     private final ModelRunProviderPredictionRepository modelRunProviderPredictionRepository;
-
+    private final Clock clock;
     public RoundPersistenceService(RoundRepository gameRoundRepository,
                                    ModelRunRepository modelRunRepository,
-                                   ModelRunProviderPredictionRepository modelRunProviderPredictionRepository) {
+                                   ModelRunProviderPredictionRepository modelRunProviderPredictionRepository,
+                                   Clock clock) {
         this.gameRoundRepository = Objects.requireNonNull(gameRoundRepository);
         this.modelRunRepository = Objects.requireNonNull(modelRunRepository);
         this.modelRunProviderPredictionRepository = Objects.requireNonNull(modelRunProviderPredictionRepository);
+        this.clock = Objects.requireNonNull(clock);
     }
 
     @Transactional
@@ -178,7 +181,7 @@ public class RoundPersistenceService {
                 probabilities != null ? probabilities.getDraw() : null,
                 probabilities != null ? probabilities.getAwayWin() : null,
                 prediction != null ? prediction.getFetchedAt() : null,
-                Instant.now()
+                Instant.now(clock)
         );
     }
 
