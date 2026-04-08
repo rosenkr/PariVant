@@ -4,6 +4,7 @@ import ar.ss.betting.predictionproviders.domain.MatchPrediction;
 import ar.ss.betting.predictionproviders.domain.ProviderProbabilityTriple;
 import org.springframework.stereotype.Component;
 
+import java.time.Instant;
 import java.time.OffsetDateTime;
 import java.time.format.DateTimeParseException;
 import java.util.List;
@@ -43,13 +44,13 @@ public class _11eloMapper {
         );
     }
 
-    private OffsetDateTime parseKickoff(String rawDate) {
+    private Instant parseKickoff(String rawDate) {
         if (rawDate == null || rawDate.isBlank()) {
             return null;
         }
 
         try {
-            return OffsetDateTime.parse(rawDate);
+            return OffsetDateTime.parse(rawDate).toInstant();
         } catch (DateTimeParseException e) {
             return null;
         }

@@ -55,7 +55,7 @@ public class RoundPersistenceService {
         for (Match m : round.getMatches()) {
             MatchEntity matchEntity = new MatchEntity(
                     m.getMatchNumber(),
-                    m.getStartDate(),
+                    m.getStartTime(),
                     m.getHomeTeam().getName(),
                     m.getAwayTeam().getName()
             );

@@ -6,7 +6,7 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
-import java.time.OffsetDateTime;
+import java.time.Instant;
 
 @Data
 @NoArgsConstructor
@@ -22,5 +22,5 @@ public class PredictionMatchRequest {
     private String awayTeam;
 
     @NotNull
-    private OffsetDateTime startTime;
+    private Instant startTime;
 }

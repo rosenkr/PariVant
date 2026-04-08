@@ -3,6 +3,7 @@ package ar.ss.betting.model;
 import ar.ss.betting.domain.Outcome;
 import org.junit.jupiter.api.Test;
 
+import java.time.Instant;
 import java.time.LocalDateTime;
 import java.util.Map;
 import java.util.Set;
@@ -14,7 +15,7 @@ class ModelSelectionResultTest {
 
     @Test
     void shouldExposeConstructorValues() {
-        LocalDateTime generatedAt = LocalDateTime.of(2026, 3, 20, 12, 0);
+        Instant generatedAt = Instant.parse("2026-03-20T12:00:00Z");
 
         ModelSelectionResult result = new ModelSelectionResult(
                 "EnsembleModel",
@@ -53,7 +54,7 @@ class ModelSelectionResultTest {
     void shouldRejectNonPositiveTotalCost() {
         assertThrows(IllegalArgumentException.class, () -> new ModelSelectionResult(
                 "EnsembleModel",
-                LocalDateTime.now(),
+                Instant.now(),
                 Map.of(1, Outcome.HOME_WIN),
                 Map.of(1, Set.of(Outcome.HOME_WIN)),
                 Map.of(),
@@ -67,7 +68,7 @@ class ModelSelectionResultTest {
     void shouldRejectNegativeGuardCounts() {
         assertThrows(IllegalArgumentException.class, () -> new ModelSelectionResult(
                 "EnsembleModel",
-                LocalDateTime.now(),
+                Instant.now(),
                 Map.of(1, Outcome.HOME_WIN),
                 Map.of(1, Set.of(Outcome.HOME_WIN)),
                 Map.of(),
@@ -78,7 +79,7 @@ class ModelSelectionResultTest {
 
         assertThrows(IllegalArgumentException.class, () -> new ModelSelectionResult(
                 "EnsembleModel",
-                LocalDateTime.now(),
+                Instant.now(),
                 Map.of(1, Outcome.HOME_WIN),
                 Map.of(1, Set.of(Outcome.HOME_WIN)),
                 Map.of(),
@@ -92,7 +93,7 @@ class ModelSelectionResultTest {
     void shouldReturnAnUnmodifiableBasePicksMap() {
         ModelSelectionResult result = new ModelSelectionResult(
                 "EnsembleModel",
-                LocalDateTime.now(),
+                Instant.now(),
                 Map.of(1, Outcome.HOME_WIN),
                 Map.of(1, Set.of(Outcome.HOME_WIN)),
                 Map.of(),
@@ -109,7 +110,7 @@ class ModelSelectionResultTest {
     void shouldReturnAnUnmodifiableSelectionsMap() {
         ModelSelectionResult result = new ModelSelectionResult(
                 "EnsembleModel",
-                LocalDateTime.now(),
+                Instant.now(),
                 Map.of(1, Outcome.HOME_WIN),
                 Map.of(1, Set.of(Outcome.HOME_WIN)),
                 Map.of(),
@@ -126,7 +127,7 @@ class ModelSelectionResultTest {
     void shouldReturnAnUnmodifiableInternalProbabilitiesMap() {
         ModelSelectionResult result = new ModelSelectionResult(
                 "EnsembleModel",
-                LocalDateTime.now(),
+                Instant.now(),
                 Map.of(1, Outcome.HOME_WIN),
                 Map.of(1, Set.of(Outcome.HOME_WIN)),
                 Map.of(1, ProbabilityTriple.fromProbabilities(0.60, 0.25, 0.15)),

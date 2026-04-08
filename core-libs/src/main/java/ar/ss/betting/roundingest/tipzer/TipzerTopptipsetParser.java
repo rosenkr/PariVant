@@ -7,6 +7,7 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.springframework.stereotype.Component;
 
+import java.time.Instant;
 import java.time.OffsetDateTime;
 import java.util.ArrayList;
 import java.util.List;
@@ -46,7 +47,7 @@ public class TipzerTopptipsetParser {
             throw new IllegalArgumentException("Could not find a Topptipset draw with 8 events");
         }
 
-        OffsetDateTime roundStart = inferRoundStart(draw);
+        Instant roundStart = inferRoundStart(draw);
         JsonNode events = draw.get("events");
 
         List<IngestedMatch> matches = new ArrayList<>(events.size());
@@ -55,7 +56,7 @@ public class TipzerTopptipsetParser {
             int matchNumber = i + 1;
             JsonNode e = events.get(i);
 
-            OffsetDateTime kickoff = OffsetDateTime.parse(requireText(e, "sportEventStart"));
+            Instant kickoff = OffsetDateTime.parse(requireText(e, "sportEventStart")).toInstant();
 
             String home;
             String away;
@@ -100,15 +101,15 @@ public class TipzerTopptipsetParser {
         return new IngestedRound(RoundType.TOPPTIPSET, roundStart, matches);
     }
 
-    private OffsetDateTime inferRoundStart(JsonNode draw) {
+    private Instant inferRoundStart(JsonNode draw) {
         JsonNode events = draw.get("events");
         if (events == null || !events.isArray() || events.isEmpty()) {
             throw new IllegalArgumentException("Draw has no events");
         }
 
-        OffsetDateTime minKickoff = null;
+        Instant minKickoff = null;
         for (JsonNode e : events) {
-            OffsetDateTime kickoff = OffsetDateTime.parse(requireText(e, "sportEventStart"));
+            Instant kickoff = OffsetDateTime.parse(requireText(e, "sportEventStart")).toInstant();
             if (minKickoff == null || kickoff.isBefore(minKickoff)) {
                 minKickoff = kickoff;
             }
@@ -118,7 +119,7 @@ public class TipzerTopptipsetParser {
             throw new IllegalArgumentException("Could not infer round start");
         }
 
-        return minKickoff.minusMinutes(1);
+        return minKickoff.minusSeconds(60);
     }
 
     private Triple extractTriplePercent(JsonNode node, String label) {

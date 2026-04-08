@@ -74,7 +74,6 @@ public class ClubEloClient {
                         .home(get(record, "Home"))
                         .away(get(record, "Away"))
                         .date(getOptional(record, "Date"))
-
                         .gdMinusMoreThan5(getDouble(record, "GD<-5"))
                         .gdMinus5(getDouble(record, "GD=-5"))
                         .gdMinus4(getDouble(record, "GD=-4"))

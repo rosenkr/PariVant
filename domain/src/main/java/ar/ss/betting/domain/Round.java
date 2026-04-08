@@ -1,27 +1,30 @@
 package ar.ss.betting.domain;
 
-import java.time.LocalDateTime;
-import java.util.*;
+import java.time.Instant;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Objects;
+import java.util.Set;
 
 /**
  * A betting round consisting of a fixed number of matches determined by RoundType.
  */
 public class Round {
 
-    private final LocalDateTime startDate;
+    private final Instant startTime;
     private final RoundType roundType;
     private final RoundStatus status;
     private final List<Match> matches;
 
-    public Round(LocalDateTime startDate, RoundType roundType, List<Match> matches) {
-        this(startDate, roundType, RoundStatus.UPCOMING, matches);
+    public Round(Instant startTime, RoundType roundType, List<Match> matches) {
+        this(startTime, roundType, RoundStatus.UPCOMING, matches);
     }
 
-    public Round(LocalDateTime startDate,
+    public Round(Instant startTime,
                  RoundType roundType,
                  RoundStatus status,
                  List<Match> matches) {
-        this.startDate = Objects.requireNonNull(startDate, "startDate cannot be null");
+        this.startTime = Objects.requireNonNull(startTime, "startTime cannot be null");
         this.roundType = Objects.requireNonNull(roundType, "roundType cannot be null");
         this.status = Objects.requireNonNull(status, "status cannot be null");
         this.matches = List.copyOf(Objects.requireNonNull(matches, "matches cannot be null"));
@@ -32,8 +35,8 @@ public class Round {
         validateTeamsAppearAtMostOnce();
     }
 
-    public LocalDateTime getStartDate() {
-        return startDate;
+    public Instant getStartTime() {
+        return startTime;
     }
 
     public RoundType getRoundType() {

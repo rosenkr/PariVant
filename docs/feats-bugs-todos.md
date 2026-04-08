@@ -4,7 +4,7 @@ V1:
    - comparisos use if (roundStart.isBefore(Instant.now(clock))) { ... } with Clock
    - response to frontend as OffsetDateTime.ofInstant(instant, ZoneOffset.UTC)
    - frontend display depending on Locale
-0. see over ApiFootballClient
+1. Rework time to use Clock (Like instant.now in ensemblemodel)
 1. UI Rework V1
 2. "Rework value as KL divergence for value calculation "
 3. Impl Auth V1, first see https://www.youtube.com/watch?v=eYCOzPx3ht8
@@ -69,6 +69,9 @@ Control of already implemented code behavior:
 
 --------------------------------------------------------------------------------------------------------
 Other:
+0. run static tests and java/spring boot tools to check the codebase for bugs/imports/ weird stuff
+0. Test the app with various testing tools (above unit testing)
+0. Add standardized logging system over the whole code
 1. Investigate Docker Compose https://www.youtube.com/watch?v=kOryO5I_w14, https://www.youtube.com/watch?v=Q5evuP3OnPY
 2. Add more ingestion for rounds (Tipzer only gives 1 per type, best would be to scrape off source SS or the other website if has)
 3. Buy domain name PariVant.se? deploy on railway (PariVant) (separate frontend/backend servers?)

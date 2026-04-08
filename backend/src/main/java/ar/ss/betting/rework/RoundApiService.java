@@ -186,7 +186,7 @@ public class RoundApiService {
                     String.valueOf(match.getMatchNumber()),
                     match.getHomeTeam().getName(),
                     match.getAwayTeam().getName(),
-                    toUtcOffset(match.getStartDate())
+                    toUtcOffset(match.getStartTime())
             ));
         }
 

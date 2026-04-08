@@ -1,6 +1,6 @@
 package ar.ss.betting.domain;
 
-import java.time.LocalDateTime;
+import java.time.Instant;
 import java.util.Objects;
 
 /**
@@ -9,7 +9,7 @@ import java.util.Objects;
 public class Match {
 
     private final int matchNumber;
-    private final LocalDateTime startDate;
+    private final Instant startTime;
     private final Team homeTeam;
     private final Team awayTeam;
     private final int homeScore;
@@ -17,14 +17,14 @@ public class Match {
     private final MatchStatus status;
 
     public Match(int matchNumber,
-                 LocalDateTime startDate,
+                 Instant startTime,
                  Team homeTeam,
                  Team awayTeam) {
-        this(matchNumber, startDate, homeTeam, awayTeam, 0, 0, MatchStatus.UPCOMING);
+        this(matchNumber, startTime, homeTeam, awayTeam, 0, 0, MatchStatus.UPCOMING);
     }
 
     public Match(int matchNumber,
-                 LocalDateTime startDate,
+                 Instant startTime,
                  Team homeTeam,
                  Team awayTeam,
                  int homeScore,
@@ -42,7 +42,7 @@ public class Match {
         }
 
         this.matchNumber = matchNumber;
-        this.startDate = Objects.requireNonNull(startDate, "Start date cannot be null");
+        this.startTime = Objects.requireNonNull(startTime, "startTime cannot be null");
         this.homeTeam = Objects.requireNonNull(homeTeam, "Home team cannot be null");
         this.awayTeam = Objects.requireNonNull(awayTeam, "Away team cannot be null");
         this.status = Objects.requireNonNull(status, "Status cannot be null");
@@ -58,8 +58,8 @@ public class Match {
         return matchNumber;
     }
 
-    public LocalDateTime getStartDate() {
-        return startDate;
+    public Instant getStartTime() {
+        return startTime;
     }
 
     public Team getHomeTeam() {

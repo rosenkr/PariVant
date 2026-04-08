@@ -4,6 +4,7 @@ import ar.ss.betting.domain.Match;
 import ar.ss.betting.domain.Outcome;
 import ar.ss.betting.domain.Round;
 
+import java.time.Instant;
 import java.time.LocalDateTime;
 import java.util.*;
 import java.util.stream.Collectors;
@@ -83,7 +84,7 @@ public class EnsembleModel implements GameModel {
 
         return new ModelSelectionResult(
                 "EnsembleModel",
-                LocalDateTime.now(),
+                Instant.now(),
                 freezeBasePicks(basePicks),
                 freezeSelections(selections),
                 freezeInternalProbabilities(internalProbabilities),

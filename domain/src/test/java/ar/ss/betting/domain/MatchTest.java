@@ -2,6 +2,7 @@ package ar.ss.betting.domain;
 
 import org.junit.jupiter.api.Test;
 
+import java.time.Instant;
 import java.time.LocalDateTime;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -12,7 +13,7 @@ class MatchTest {
     void shouldDefaultScoreAndStatus() {
         Match match = new Match(
                 1,
-                LocalDateTime.now(),
+                Instant.now(),
                 new Team("A"),
                 new Team("B")
         );
@@ -26,7 +27,7 @@ class MatchTest {
     void shouldSupportExplicitScoreAndStatus() {
         Match match = new Match(
                 1,
-                LocalDateTime.now(),
+                Instant.now(),
                 new Team("A"),
                 new Team("B"),
                 2,
@@ -44,18 +45,18 @@ class MatchTest {
         Team t1 = new Team("A");
 
         assertThrows(IllegalArgumentException.class, () ->
-                new Match(1, LocalDateTime.now(), t1, t1)
+                new Match(1, Instant.now(), t1, t1)
         );
     }
 
     @Test
     void shouldThrowIfScoresAreNegative() {
         assertThrows(IllegalArgumentException.class, () ->
-                new Match(1, LocalDateTime.now(), new Team("A"), new Team("B"), -1, 0, MatchStatus.RUNNING)
+                new Match(1, Instant.now(), new Team("A"), new Team("B"), -1, 0, MatchStatus.RUNNING)
         );
 
         assertThrows(IllegalArgumentException.class, () ->
-                new Match(1, LocalDateTime.now(), new Team("A"), new Team("B"), 0, -1, MatchStatus.RUNNING)
+                new Match(1, Instant.now(), new Team("A"), new Team("B"), 0, -1, MatchStatus.RUNNING)
         );
     }
 }

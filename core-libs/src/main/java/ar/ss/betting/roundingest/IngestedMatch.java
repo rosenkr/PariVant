@@ -1,11 +1,11 @@
 package ar.ss.betting.roundingest;
 
-import java.time.OffsetDateTime;
+import java.time.Instant;
 import java.util.Objects;
 
 public record IngestedMatch(
         int matchNumber,
-        OffsetDateTime kickoff,
+        Instant kickoff,
         String homeTeamName,
         String awayTeamName,
         ProbabilityTriple market,
@@ -37,7 +37,7 @@ public record IngestedMatch(
 
     public IngestedMatch(
             int matchNumber,
-            OffsetDateTime kickoff,
+            Instant kickoff,
             String homeTeamName,
             String awayTeamName,
             ProbabilityTriple market,

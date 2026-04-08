@@ -3,6 +3,7 @@ package ar.ss.betting.model;
 import ar.ss.betting.domain.*;
 import org.junit.jupiter.api.Test;
 
+import java.time.Instant;
 import java.time.LocalDateTime;
 import java.util.HashMap;
 import java.util.List;
@@ -17,17 +18,17 @@ class EnsembleModelTest {
 
     private Round createTopptipsetRound8Matches() {
         return new Round(
-                LocalDateTime.now(),
+                Instant.now(),
                 RoundType.TOPPTIPSET,
                 List.of(
-                        new Match(1, LocalDateTime.now(), new Team("A"), new Team("B")),
-                        new Match(2, LocalDateTime.now(), new Team("C"), new Team("D")),
-                        new Match(3, LocalDateTime.now(), new Team("E"), new Team("F")),
-                        new Match(4, LocalDateTime.now(), new Team("G"), new Team("H")),
-                        new Match(5, LocalDateTime.now(), new Team("I"), new Team("J")),
-                        new Match(6, LocalDateTime.now(), new Team("K"), new Team("L")),
-                        new Match(7, LocalDateTime.now(), new Team("M"), new Team("N")),
-                        new Match(8, LocalDateTime.now(), new Team("O"), new Team("P"))
+                        new Match(1, Instant.now(), new Team("A"), new Team("B")),
+                        new Match(2, Instant.now(), new Team("C"), new Team("D")),
+                        new Match(3, Instant.now(), new Team("E"), new Team("F")),
+                        new Match(4, Instant.now(), new Team("G"), new Team("H")),
+                        new Match(5, Instant.now(), new Team("I"), new Team("J")),
+                        new Match(6, Instant.now(), new Team("K"), new Team("L")),
+                        new Match(7, Instant.now(), new Team("M"), new Team("N")),
+                        new Match(8, Instant.now(), new Team("O"), new Team("P"))
                 )
         );
     }

@@ -5,7 +5,6 @@ import lombok.Builder;
 import lombok.Value;
 
 import java.time.Instant;
-import java.time.OffsetDateTime;
 
 @Value
 @Builder
@@ -13,7 +12,7 @@ public class MatchPrediction implements MatchIdentityCandidate {
     String provider;
     String homeTeam;
     String awayTeam;
-    OffsetDateTime kickoff;
+    Instant kickoff;
     String kickoffRaw;
     ProviderProbabilityTriple probabilities;
     Instant fetchedAt;

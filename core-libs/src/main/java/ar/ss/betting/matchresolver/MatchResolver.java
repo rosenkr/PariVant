@@ -2,7 +2,7 @@ package ar.ss.betting.matchresolver;
 import org.springframework.stereotype.Component;
 
 import java.time.Duration;
-import java.time.OffsetDateTime;
+import java.time.Instant;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Optional;
@@ -22,7 +22,7 @@ public class MatchResolver {
                                                                   List<T> candidates) {
         String requestedHome = teamNameNormalizer.normalize(requestedMatch.homeTeam());
         String requestedAway = teamNameNormalizer.normalize(requestedMatch.awayTeam());
-        OffsetDateTime requestedStartTime = requestedMatch.startTime();
+        Instant requestedStartTime = requestedMatch.startTime();
 
         return candidates.stream()
                 .filter(candidate -> sameTeams(requestedHome, requestedAway, candidate))
@@ -40,7 +40,7 @@ public class MatchResolver {
         return requestedHome.equals(candidateHome) && requestedAway.equals(candidateAway);
     }
 
-    private boolean withinTolerance(OffsetDateTime requestedStartTime, OffsetDateTime candidateKickoff) {
+    private boolean withinTolerance(Instant requestedStartTime, Instant candidateKickoff) {
         // For now, if either side lacks kickoff data, allow team-name match to decide.
         if (requestedStartTime == null || candidateKickoff == null) {
             return true;
@@ -50,7 +50,7 @@ public class MatchResolver {
                 .compareTo(MAX_KICKOFF_DIFFERENCE) <= 0;
     }
 
-    private long absoluteSecondsBetweenOrZero(OffsetDateTime a, OffsetDateTime b) {
+    private long absoluteSecondsBetweenOrZero(Instant a, Instant b) {
         if (a == null || b == null) {
             return 0L;
         }

@@ -2,13 +2,13 @@ package ar.ss.betting.roundingest;
 
 import ar.ss.betting.domain.RoundType;
 
-import java.time.OffsetDateTime;
+import java.time.Instant;
 import java.util.List;
 import java.util.Objects;
 
 public record IngestedRound(
         RoundType roundType,
-        OffsetDateTime roundStart,
+        Instant roundStart,
         List<IngestedMatch> matches
 ) {
     public IngestedRound {

@@ -3,7 +3,7 @@ package ar.ss.betting.predictionproviders.service.model;
 import lombok.Builder;
 import lombok.Value;
 
-import java.time.OffsetDateTime;
+import java.time.Instant;
 import java.util.List;
 
 @Value
@@ -12,6 +12,6 @@ public class MatchPredictionResult {
     String clientMatchId;
     String requestedHomeTeam;
     String requestedAwayTeam;
-    OffsetDateTime requestedStartTime;
+    Instant requestedStartTime;
     List<ProviderPredictionResult> providers;
 }

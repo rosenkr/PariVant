@@ -4,9 +4,9 @@ import ar.ss.betting.predictionproviders.domain.MatchPrediction;
 import ar.ss.betting.predictionproviders.domain.ProviderProbabilityTriple;
 import org.springframework.stereotype.Component;
 
-
-import java.time.*;
-import java.time.format.DateTimeFormatter;
+import java.time.Instant;
+import java.time.LocalDate;
+import java.time.ZoneOffset;
 import java.time.format.DateTimeParseException;
 import java.util.List;
 
@@ -49,36 +49,18 @@ public class ClubEloMapper {
         return ProviderProbabilityTriple.of(homeWin, draw, awayWin);
     }
 
-    private OffsetDateTime parseKickoff(String rawDate) {
+    private Instant parseKickoff(String rawDate) {
         if (rawDate == null || rawDate.isBlank()) {
             return null;
         }
 
-        List<DateTimeFormatter> formatters = List.of(
-                DateTimeFormatter.ISO_OFFSET_DATE_TIME,
-                DateTimeFormatter.ISO_LOCAL_DATE_TIME,
-                DateTimeFormatter.ISO_LOCAL_DATE
-        );
-
-        for (DateTimeFormatter formatter : formatters) {
-            try {
-                if (formatter == DateTimeFormatter.ISO_OFFSET_DATE_TIME) {
-                    return OffsetDateTime.parse(rawDate, formatter);
-                }
-
-                if (formatter == DateTimeFormatter.ISO_LOCAL_DATE_TIME) {
-                    return LocalDateTime.parse(rawDate, formatter).atOffset(ZoneOffset.UTC);
-                }
-
-                if (formatter == DateTimeFormatter.ISO_LOCAL_DATE) {
-                    return LocalDate.parse(rawDate, formatter)
-                            .atStartOfDay()
-                            .atOffset(ZoneOffset.UTC);
-                }
-            } catch (DateTimeParseException ignored) {
-            }
+        try {
+            return LocalDate.parse(rawDate)
+                    .atTime(12, 0)
+                    .atOffset(ZoneOffset.UTC)
+                    .toInstant();
+        } catch (DateTimeParseException e) {
+            return null;
         }
-
-        return null;
     }
 }

@@ -230,7 +230,7 @@ public class ModelRunScheduler {
                     toScopedClientMatchId(roundId, match.getMatchNumber()),
                     match.getHomeTeam().getName(),
                     match.getAwayTeam().getName(),
-                    toUtcOffset(match.getStartDate())
+                    toUtcOffset(match.getStartTime())
             ));
         }
 

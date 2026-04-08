@@ -2,19 +2,20 @@ package ar.ss.betting.model;
 
 import ar.ss.betting.domain.Outcome;
 
+import java.time.Instant;
 import java.time.LocalDateTime;
 import java.util.Collections;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
 
-public record ModelSelectionResult(String modelName, LocalDateTime generatedAt, Map<Integer, Outcome> basePicks,
+public record ModelSelectionResult(String modelName, Instant generatedAt, Map<Integer, Outcome> basePicks,
                                    Map<Integer, Set<Outcome>> selections,
                                    Map<Integer, ProbabilityTriple> internalProbabilities, int totalCostInSek,
                                    int halfGuardsCount, int fullGuardsCount) {
 
     public ModelSelectionResult(String modelName,
-                                LocalDateTime generatedAt,
+                                Instant generatedAt,
                                 Map<Integer, Outcome> basePicks,
                                 Map<Integer, Set<Outcome>> selections,
                                 Map<Integer, ProbabilityTriple> internalProbabilities,

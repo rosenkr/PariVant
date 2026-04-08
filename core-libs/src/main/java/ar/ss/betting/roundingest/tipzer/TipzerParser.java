@@ -7,6 +7,7 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.springframework.stereotype.Component;
 
+import java.time.Instant;
 import java.time.OffsetDateTime;
 import java.util.ArrayList;
 import java.util.List;
@@ -45,7 +46,7 @@ public class TipzerParser {
                 throw new IllegalArgumentException("lagen.json expected 14 items (13 matches + roundStart string)");
             }
 
-            OffsetDateTime roundStart = OffsetDateTime.parse(teamsRoot.get(MATCH_COUNT).asText());
+            Instant roundStart = OffsetDateTime.parse(teamsRoot.get(MATCH_COUNT).asText()).toInstant();
 
             List<TipzerMatchRow> matchesFromTeams = new ArrayList<>(MATCH_COUNT);
             for (int i = 0; i < MATCH_COUNT; i++) {
@@ -59,7 +60,7 @@ public class TipzerParser {
 
                 String home = row.get(0).asText();
                 String away = row.get(1).asText();
-                OffsetDateTime kickoff = OffsetDateTime.parse(row.get(2).asText());
+                Instant kickoff = OffsetDateTime.parse(row.get(2).asText()).toInstant();
 
                 matchesFromTeams.add(new TipzerMatchRow(home, away, kickoff));
             }
@@ -159,7 +160,7 @@ public class TipzerParser {
     private record TipzerMatchRow(
             String home,
             String away,
-            OffsetDateTime kickoff
+            Instant kickoff
     ) { }
 
     private record TipzerTriple(
