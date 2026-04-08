@@ -1,7 +1,9 @@
 V1:
-0. Lombokize everything to reduce boilerplate in persistence code https://www.youtube.com/watch?v=iCdK8SalG6E, https://www.youtube.com/watch?v=4dwlS39xO4A
-      -or add records according to guidelines in https://www.youtube.com/watch?v=4dwlS39xO4A
-    Records: 
+0. add Instant/LocalDateTime/OffsetDateTime usage
+   - goal: backend uses Instant, external data parsed to ODT then parsed to Instant, 
+   - comparisos use if (roundStart.isBefore(Instant.now(clock))) { ... } with Clock
+   - response to frontend as OffsetDateTime.ofInstant(instant, ZoneOffset.UTC)
+   - frontend display depending on Locale
 0. see over ApiFootballClient
 1. UI Rework V1
 2. "Rework value as KL divergence for value calculation "
