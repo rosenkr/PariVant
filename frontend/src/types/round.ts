@@ -10,7 +10,7 @@ export type TripleView = {
 
 export type MatchView = {
   matchNumber: number;
-  startDate: string;
+  startTime: string;
   homeTeamName: string;
   awayTeamName: string;
   market: TripleView | null;
@@ -22,6 +22,6 @@ export type MatchView = {
 export type RoundView = {
   id: number;
   roundType: RoundType;
-  startDate: string;
+  startTime: string;
   matches: MatchView[];
 };

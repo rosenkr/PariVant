@@ -105,12 +105,12 @@ function sortRoundsForStatus(
   if (status === "ENDED") {
     return copy.sort(
       (a, b) =>
-        new Date(b.startDate).getTime() - new Date(a.startDate).getTime(),
+        new Date(b.startTime).getTime() - new Date(a.startTime).getTime(),
     );
   }
 
   return copy.sort(
-    (a, b) => new Date(a.startDate).getTime() - new Date(b.startDate).getTime(),
+    (a, b) => new Date(a.startTime).getTime() - new Date(b.startTime).getTime(),
   );
 }
 
@@ -335,7 +335,7 @@ export default function HomePage() {
           setBudget={setBudget}
           roundId={activeRound?.id}
           roundStatus={activeRound ? selectedStatus : undefined}
-          start={activeRound?.startDate}
+          start={activeRound?.startTime}
         />
 
         {sortedRounds.length > 1 && (
@@ -462,7 +462,7 @@ export default function HomePage() {
                         index={m.matchNumber}
                         home={m.homeTeamName}
                         away={m.awayTeamName}
-                        kickoff={m.startDate}
+                        kickoff={m.startTime}
                         selected={sel}
                         basePick={basePick}
                         live={liveUpdate}
