@@ -68,11 +68,11 @@ export type AppColors = {
 const darkMode: AppColors = {
   surface: {
     background: "#4f5558",
-    page: "#5a6164",
+    page: "#3f4548",
     paper: "#676f73",
     panel: "#727b80",
     raised: "#7d878c",
-    footer: "#3f4548",
+    footer: "#2F3436",
   },
   border: {
     subtle: "rgba(165, 243, 252, 0.16)",

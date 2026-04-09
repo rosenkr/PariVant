@@ -1,5 +1,4 @@
 V1:
-0. clean github from secrets and make public
 1. make current darkmode darker like footer, then make footer even darker
 1. UI Rework V1
 2. "Rework value as KL divergence for value calculation "
@@ -10,7 +9,6 @@ V1:
 --------------------------------------------------------------------------------------------------------
 
 UI REWORK V1:
-main navbar more separated outwards from center
 2. add a temporary About page placeholder, remove the placeholding "Rounds" one. Also add "My Page"
 3. add a footer like 11elo 
 4. Add very light tint on hover for matches in the round view.

@@ -36,19 +36,21 @@ export function TopNav() {
 
   return (
     <AppBar position="sticky" elevation={0}>
-      <Container maxWidth="lg">
+      <Container maxWidth="xl">
         <Toolbar
           disableGutters
           sx={{
             minHeight: 72,
-            gap: 2,
+            display: "grid",
+            gridTemplateColumns: "1fr auto 1fr",
+            alignItems: "center",
+            columnGap: 2,
           }}
         >
           <Box
             sx={{
-              flexBasis: { xs: "auto", md: 240 },
-              flexShrink: 0,
               minWidth: 0,
+              justifySelf: "start",
             }}
           >
             <Typography
@@ -66,10 +68,9 @@ export function TopNav() {
 
           <Box
             sx={{
-              flex: 1,
+              minWidth: 0,
               display: "flex",
               justifyContent: "center",
-              minWidth: 0,
             }}
           >
             <Tabs
@@ -108,17 +109,19 @@ export function TopNav() {
 
           <Box
             sx={{
-              flexBasis: { xs: "auto", md: 240 },
-              flexShrink: 0,
+              justifySelf: "end",
               display: "flex",
-              justifyContent: "flex-end",
               alignItems: "center",
             }}
           >
-            <Tooltip title={isDark ? "Switch to light mode" : "Switch to dark mode"}>
+            <Tooltip
+              title={isDark ? "Switch to light mode" : "Switch to dark mode"}
+            >
               <IconButton
                 onClick={toggleMode}
-                aria-label={isDark ? "Switch to light mode" : "Switch to dark mode"}
+                aria-label={
+                  isDark ? "Switch to light mode" : "Switch to dark mode"
+                }
                 sx={(theme) => {
                   const toggleColors = isDark
                     ? theme.appColors.modeToggle.sun

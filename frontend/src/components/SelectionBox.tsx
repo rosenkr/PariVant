@@ -49,43 +49,46 @@ export function SelectionBox({
         sx={(theme) => {
           const isSelected = tone !== "none";
           const isBase = tone === "base";
+          const isLiveBorder = scoreBorder === "live";
+          const isStaticBorder = scoreBorder === "static";
 
-          const borderColor =
-            scoreBorder === "none"
-              ? theme.appColors.border.strong
-              : theme.appColors.live.border;
-
-          const liveBorderSx =
-            scoreBorder === "live"
-              ? {
-                  backgroundImage: `linear-gradient(
+          const liveBorderSx = isLiveBorder
+            ? {
+                backgroundImage: `linear-gradient(
                     120deg,
                     ${theme.appColors.live.border},
                     ${theme.appColors.live.primary},
                     ${theme.appColors.live.border}
                   )`,
-                  backgroundSize: "220% 220%",
-                  animation: "scoreBorderShift 2.2s linear infinite",
-                  "@keyframes scoreBorderShift": {
-                    "0%": { backgroundPosition: "0% 50%" },
-                    "100%": { backgroundPosition: "200% 50%" },
-                  },
-                  padding: "1.5px",
-                  boxShadow: `0 0 0 1px ${theme.appColors.live.soft}, 0 0 18px ${theme.appColors.live.glow}`,
-                }
-              : null;
+                backgroundSize: "220% 220%",
+                animation: "scoreBorderShift 2.2s linear infinite",
+                "@keyframes scoreBorderShift": {
+                  "0%": { backgroundPosition: "0% 50%" },
+                  "100%": { backgroundPosition: "200% 50%" },
+                },
+                padding: "1.5px",
+                boxShadow: `0 0 0 1px ${theme.appColors.live.soft}, 0 0 18px ${theme.appColors.live.glow}`,
+              }
+            : null;
+
+          const staticBorderColor = theme.appColors.live.border;
+          const idleBorderColor = theme.appColors.border.strong;
 
           const selectedBackgroundColor = isSelected
             ? isBase
               ? theme.appColors.pick.base
               : theme.appColors.pick.coverage
-            : "transparent";
+            : isLiveBorder
+              ? theme.appColors.surface.paper
+              : "transparent";
 
-          const selectedHoverBackgroundColor = isSelected
+          const hoverBackgroundColor = isSelected
             ? isBase
               ? theme.appColors.pick.base
               : theme.appColors.pick.coverage
-            : theme.appColors.accent.soft;
+            : isLiveBorder
+              ? theme.appColors.surface.paper
+              : theme.appColors.accent.soft;
 
           const selectedInset = isSelected
             ? isBase
@@ -99,7 +102,7 @@ export function SelectionBox({
             borderRadius: "50%",
             cursor: onClick ? "pointer" : "default",
             userSelect: "none",
-            transition: "all 140ms ease",
+            transition: "transform 140ms ease, box-shadow 140ms ease",
             ...(liveBorderSx ?? {}),
             "& > .selection-box-inner": {
               width: "100%",
@@ -107,15 +110,19 @@ export function SelectionBox({
               borderRadius: "50%",
               display: "grid",
               placeItems: "center",
-              border:
-                scoreBorder === "live" ? "none" : `1px solid ${borderColor}`,
+              border: isLiveBorder
+                ? "none"
+                : `1px solid ${
+                    isStaticBorder ? staticBorderColor : idleBorderColor
+                  }`,
               backgroundColor: selectedBackgroundColor,
               boxShadow: selectedInset,
-              transition: "all 140ms ease",
+              transition:
+                "transform 140ms ease, background-color 140ms ease, border-color 140ms ease",
             },
             "&:hover > .selection-box-inner": {
               transform: onClick ? "translateY(-1px)" : "none",
-              backgroundColor: selectedHoverBackgroundColor,
+              backgroundColor: hoverBackgroundColor,
             },
             "& .selection-box-label": {
               fontSize: 14,

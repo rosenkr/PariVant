@@ -98,7 +98,7 @@ export function MatchRow({
   return (
     <Box
       onClick={onClick}
-      sx={{
+      sx={(theme) => ({
         px: 2,
         py: 1.1,
         display: "grid",
@@ -107,12 +107,14 @@ export function MatchRow({
         alignItems: "center",
         cursor: "pointer",
         borderLeft: "3px solid",
-        borderLeftColor: isActive ? "secondary.main" : "transparent",
+        borderLeftColor: isActive
+          ? theme.appColors.accent.primary
+          : "transparent",
         transition: "background-color 140ms ease, border-color 140ms ease",
         "&:hover": {
-          backgroundColor: "rgba(255,255,255,0.045)",
+          backgroundColor: theme.appColors.accent.soft,
         },
-      }}
+      })}
     >
       <Typography sx={{ fontWeight: 800, opacity: 0.9 }}>{index}</Typography>
 
@@ -132,15 +134,17 @@ export function MatchRow({
       >
         {hasLiveScore && live && (
           <Box
-            sx={{
+            sx={(theme) => ({
               px: 1,
               py: 0.5,
-              borderRadius: 1,
-              backgroundColor: "rgba(0,0,0,0.35)",
+              borderRadius: 1.2,
               minWidth: 56,
               textAlign: "center",
               lineHeight: 1.05,
-            }}
+              backgroundColor: theme.appColors.surface.raised,
+              border: `1px solid ${theme.appColors.live.soft}`,
+              boxShadow: `0 0 0 1px ${theme.appColors.live.soft}, 0 0 14px ${theme.appColors.live.glow}`,
+            })}
           >
             <Typography variant="caption" sx={{ fontWeight: 900 }}>
               {live.homeGoals}–{live.awayGoals}
@@ -163,7 +167,7 @@ export function MatchRow({
           disabledTooltipTitle={selectionDisabledHintText}
         />
         <SelectionBox
-          label="1"
+          label="X"
           tone={toneForOutcome(selected, basePick, "DRAW")}
           scoreBorder={scoreBorderForOutcome(kickoff, live, "DRAW")}
           onClick={onSelectionClick}
@@ -171,7 +175,7 @@ export function MatchRow({
           disabledTooltipTitle={selectionDisabledHintText}
         />
         <SelectionBox
-          label="1"
+          label="2"
           tone={toneForOutcome(selected, basePick, "AWAY_WIN")}
           scoreBorder={scoreBorderForOutcome(kickoff, live, "AWAY_WIN")}
           onClick={onSelectionClick}
