@@ -20,6 +20,7 @@ import { useThemeMode } from "../../hooks/useThemeMode";
 import LanguageRoundedIcon from "@mui/icons-material/LanguageRounded";
 import AccountCircleRoundedIcon from "@mui/icons-material/AccountCircleRounded";
 import { useState } from "react";
+import InfoOutlinedIcon from "@mui/icons-material/InfoOutlined";
 
 type NavItem = { label: string; path: string };
 
@@ -141,14 +142,21 @@ export function TopNav() {
                 },
                 "& .MuiTab-root": {
                   minHeight: 48,
+                  minWidth: 0,
                   textTransform: "none",
                   fontWeight: 700,
-                  color: theme.appColors.text.secondary,
+                  color: theme.appColors.nav.item.color,
                   px: { xs: 1.25, sm: 2 },
                   borderRadius: 999,
+                  transition: "background-color 160ms ease, color 160ms ease",
+                  "&:hover": {
+                    color: theme.appColors.nav.item.hoverColor,
+                    backgroundColor: theme.appColors.nav.item.hoverBackground,
+                  },
                 },
                 "& .Mui-selected": {
-                  color: theme.appColors.text.primary,
+                  color: `${theme.appColors.nav.item.activeColor} !important`,
+                  backgroundColor: theme.appColors.nav.item.activeBackground,
                 },
                 "& .MuiTabs-indicator": {
                   height: 3,
@@ -158,7 +166,16 @@ export function TopNav() {
               })}
             >
               {NAV.map((n) => (
-                <Tab key={n.path} label={n.label} />
+                <Tab
+                  key={n.path}
+                  icon={
+                    n.label === "About" ? (
+                      <InfoOutlinedIcon sx={{ fontSize: 18 }} />
+                    ) : undefined
+                  }
+                  iconPosition="start"
+                  label={n.label}
+                />
               ))}
             </Tabs>
           </Box>

@@ -63,6 +63,15 @@ export type AppColors = {
     error: string;
     info: string;
   };
+  nav: {
+    item: {
+      color: string;
+      activeColor: string;
+      hoverColor: string;
+      hoverBackground: string;
+      activeBackground: string;
+    };
+  };
 };
 
 const darkMode: AppColors = {
@@ -128,6 +137,15 @@ const darkMode: AppColors = {
     error: "#f87171",
     info: "#67e8f9",
   },
+  nav: {
+    item: {
+      color: "#d9e0e3",
+      activeColor: "#f5f7f8",
+      hoverColor: "#f5f7f8",
+      hoverBackground: "rgba(103, 232, 249, 0.10)",
+      activeBackground: "rgba(103, 232, 249, 0.14)",
+    },
+  },
 };
 
 const lightMode: AppColors = {
@@ -192,6 +210,15 @@ const lightMode: AppColors = {
     warning: "#b45309",
     error: "#b91c1c",
     info: "#166534",
+  },
+  nav: {
+    item: {
+      color: "#2f3a37",
+      activeColor: "#101514",
+      hoverColor: "#101514",
+      hoverBackground: "rgba(22, 101, 52, 0.08)",
+      activeBackground: "rgba(22, 101, 52, 0.12)",
+    },
   },
 };
 

@@ -1,5 +1,4 @@
 V1:
-1. make current darkmode darker like footer, then make footer even darker
 1. UI Rework V1
 2. "Rework value as KL divergence for value calculation "
 3. Impl Auth V1, first see https://www.youtube.com/watch?v=eYCOzPx3ht8
@@ -9,12 +8,10 @@ V1:
 --------------------------------------------------------------------------------------------------------
 
 UI REWORK V1:
-2. add a temporary About page placeholder, remove the placeholding "Rounds" one. Also add "My Page"
-3. add a footer like 11elo 
+4. login icon on the right side of navbar (to prep for auth My page stuff)
 4. Add very light tint on hover for matches in the round view.
 5. Add on-hover to navbar for good UX. Only changes color of the text and potentially the background of 
         the immediate container it is in, but doesnt increase font size
-6. merge home into icon, add icon instesd of text SvenskaSpel
 --------------------------------------------------------------------------------------------------------
 
 AUTH V1:
@@ -70,3 +67,5 @@ Other:
 11. introduce differernt runtime environments dev/test/staging/prod? flavors?
 12. add extensive logging in the code (dev env)?
 13. do we want to present only swedish-time for matches? 
+14. fix parivant icon (works bad depending on background)
+15. inspire UX colors dark blue from https://felixastner.com/articles/enhancing-mui-theming-with-typescript
