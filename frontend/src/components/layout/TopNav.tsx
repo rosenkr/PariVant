@@ -9,11 +9,17 @@ import {
   Toolbar,
   Tooltip,
   Typography,
+  FormControl,
+  MenuItem,
+  Select,
 } from "@mui/material";
 import LightModeRoundedIcon from "@mui/icons-material/LightModeRounded";
 import DarkModeRoundedIcon from "@mui/icons-material/DarkModeRounded";
 import { useLocation, useNavigate } from "react-router-dom";
 import { useThemeMode } from "../../hooks/useThemeMode";
+import LanguageRoundedIcon from "@mui/icons-material/LanguageRounded";
+import AccountCircleRoundedIcon from "@mui/icons-material/AccountCircleRounded";
+import { useState } from "react";
 
 type NavItem = { label: string; path: string };
 
@@ -31,6 +37,8 @@ export function TopNav() {
 
   const value = currentTabIndex(location.pathname);
   const isDark = mode === "dark";
+  // todo add real state management for language
+  const [language, setLanguage] = useState<"English" | "Svenska">("English");
 
   return (
     <AppBar position="sticky" elevation={0}>
@@ -164,40 +172,106 @@ export function TopNav() {
               alignItems: "center",
             }}
           >
-            <Tooltip
-              title={isDark ? "Switch to light mode" : "Switch to dark mode"}
-            >
-              <IconButton
-                onClick={toggleMode}
-                aria-label={
-                  isDark ? "Switch to light mode" : "Switch to dark mode"
-                }
-                sx={(theme) => {
-                  const toggleColors = isDark
-                    ? theme.appColors.modeToggle.sun
-                    : theme.appColors.modeToggle.moon;
-
-                  return {
+            <Stack direction="row" spacing={1} alignItems="center">
+              <Tooltip title="Log in">
+                <IconButton
+                  aria-label="Log in"
+                  sx={(theme) => ({
                     width: 40,
                     height: 40,
                     borderRadius: 1.5,
-                    border: `1px solid ${toggleColors.border}`,
-                    backgroundColor: toggleColors.background,
-                    color: toggleColors.color,
+                    color: theme.appColors.text.secondary,
                     "&:hover": {
-                      backgroundColor: toggleColors.hoverBackground,
-                      borderColor: toggleColors.hoverBorder,
+                      borderColor: theme.appColors.border.strong,
+                      backgroundColor: theme.appColors.accent.soft,
                     },
-                  };
-                }}
+                  })}
+                >
+                  <AccountCircleRoundedIcon fontSize="medium" />
+                </IconButton>
+              </Tooltip>
+
+              <FormControl size="small">
+                <Select
+                  value={language}
+                  onChange={(e) =>
+                    setLanguage(e.target.value as "English" | "Svenska")
+                  }
+                  variant="outlined"
+                  displayEmpty
+                  startAdornment={
+                    <LanguageRoundedIcon
+                      sx={(theme) => ({
+                        mr: 1,
+                        fontSize: 18,
+                        color: theme.appColors.text.secondary,
+                      })}
+                    />
+                  }
+                  sx={(theme) => ({
+                    minWidth: 138,
+                    height: 40,
+                    borderRadius: 1.5,
+                    color: theme.appColors.text.primary,
+                    fontWeight: 600,
+                    "& .MuiOutlinedInput-notchedOutline": {
+                      border: "none",
+                    },
+                    "&:hover .MuiOutlinedInput-notchedOutline": {
+                      border: "none",
+                    },
+                    "&.Mui-focused .MuiOutlinedInput-notchedOutline": {
+                      border: "none",
+                    },
+                    ".MuiSelect-select": {
+                      display: "flex",
+                      alignItems: "center",
+                      py: 1,
+                    },
+                    ".MuiSvgIcon-root": {
+                      color: theme.appColors.text.secondary,
+                    },
+                  })}
+                >
+                  <MenuItem value="English">English</MenuItem>
+                  <MenuItem value="Svenska">Svenska</MenuItem>
+                </Select>
+              </FormControl>
+
+              <Tooltip
+                title={isDark ? "Switch to light mode" : "Switch to dark mode"}
               >
-                {isDark ? (
-                  <LightModeRoundedIcon fontSize="small" />
-                ) : (
-                  <DarkModeRoundedIcon fontSize="small" />
-                )}
-              </IconButton>
-            </Tooltip>
+                <IconButton
+                  onClick={toggleMode}
+                  aria-label={
+                    isDark ? "Switch to light mode" : "Switch to dark mode"
+                  }
+                  sx={(theme) => {
+                    const toggleColors = isDark
+                      ? theme.appColors.modeToggle.sun
+                      : theme.appColors.modeToggle.moon;
+
+                    return {
+                      width: 40,
+                      height: 40,
+                      borderRadius: 1.5,
+
+                      color: toggleColors.color,
+                      "&:hover": {
+                        backgroundColor: toggleColors.hoverBackground,
+                        borderColor: toggleColors.hoverBorder,
+                      },
+                    };
+                  }}
+                >
+                  {isDark ? (
+                    <LightModeRoundedIcon fontSize="small" />
+                  ) : (
+                    <DarkModeRoundedIcon fontSize="small" />
+                  )}
+                </IconButton>
+              </Tooltip>
+            </Stack>
           </Box>
         </Toolbar>
       </Container>
