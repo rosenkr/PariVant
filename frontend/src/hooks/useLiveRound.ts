@@ -28,11 +28,11 @@ export function useLiveRound(roundId: number | null, enabled: boolean) {
       try {
         const parsed = JSON.parse(ev.data) as LiveRoundSnapshot;
         setState({ status: "live", snapshot: parsed });
-      } catch (e) {
+      } catch {
         setState({ status: "error", message: "Failed to parse live snapshot JSON." });
       }
     };
-
+    
     es.addEventListener("snapshot", onSnapshot as EventListener);
 
     es.onerror = () => {

@@ -1,14 +1,4 @@
-import {
-  Box,
-  Button,
-  Dialog,
-  DialogActions,
-  DialogContent,
-  DialogTitle,
-  Paper,
-  Stack,
-  Typography,
-} from "@mui/material";
+import { Box, Paper, Stack, Typography } from "@mui/material";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { Page } from "../components/layout/Page";
 import { RoundHeader } from "../components/RoundHeader";
@@ -22,7 +12,11 @@ import { useLiveRound } from "../hooks/useLiveRound";
 import { useRoundProviderPredictions } from "../hooks/useRoundProviderPredictions";
 
 import type { LiveMatchUpdate } from "../types/live";
-import type { ModelRunView, Outcome } from "../types/modelRun";
+import type {
+  ModelRunView,
+  Outcome,
+  ProbabilityTripleDtoShape,
+} from "../types/modelRun";
 import type {
   MatchProviderPredictionsView,
   ProviderPredictionView,
@@ -31,11 +25,6 @@ import type { RoundStatus, RoundType, RoundView } from "../types/round";
 
 type BudgetValue = 32 | 64 | 128 | 256;
 
-type ProbabilityTripleDtoShape = {
-  homeWin: number;
-  draw: number;
-  awayWin: number;
-};
 
 function parseSelections(run: ModelRunView): Record<string, Outcome[]> {
   if (run.selections) return run.selections;
@@ -54,9 +43,7 @@ function parseSelections(run: ModelRunView): Record<string, Outcome[]> {
   return {};
 }
 
-function parseBasePicks(
-  run: ModelRunView | null
-): Record<string, Outcome> {
+function parseBasePicks(run: ModelRunView | null): Record<string, Outcome> {
   if (!run) return {};
 
   if (run.basePicks) return run.basePicks;
@@ -158,7 +145,7 @@ export default function HomePage() {
   const [selectedStatus, setSelectedStatus] = useState<RoundStatus>("UPCOMING");
   const [roundType, setRoundType] = useState<RoundType>("STRYKTIPSET");
   const [budget, setBudget] = useState<BudgetValue>(64);
-  const [loginDialogOpen, setLoginDialogOpen] = useState(false);
+
   const [selectedMatchNumber, setSelectedMatchNumber] = useState<number | null>(
     null,
   );
@@ -240,7 +227,7 @@ export default function HomePage() {
 
   const basePicksByMatch = useMemo(
     () => parseBasePicks(selectedRun),
-    [selectedRun]
+    [selectedRun],
   );
 
   const internalProbabilitiesByMatch = useMemo(
@@ -275,8 +262,9 @@ export default function HomePage() {
 
   const providerPredictionResult = providerPredictionsQuery.data;
   const providerMatches = useMemo(() => {
-    if (!providerPredictionResult || providerPredictionResult.kind !== "ok")
+    if (!providerPredictionResult || providerPredictionResult.kind !== "ok") {
       return [];
+    }
     return providerPredictionResult.data.matches;
   }, [providerPredictionResult]);
 
@@ -291,8 +279,6 @@ export default function HomePage() {
       internalProbabilitiesByMatch[String(selectedMatch.matchNumber)] ?? null
     );
   }, [internalProbabilitiesByMatch, selectedMatch]);
-
-  const onBoxClick = () => setLoginDialogOpen(true);
 
   const isRunning = roundStatus === "RUNNING";
   const enableLive = roundId != null && roundStatus === "RUNNING";
@@ -316,11 +302,11 @@ export default function HomePage() {
     <Page maxWidth="xl">
       <Stack spacing={2}>
         <Paper
-          sx={{
-            backgroundColor: "rgba(255,255,255,0.04)",
-            borderColor: "rgba(255,45,142,0.18)",
+          sx={(theme) => ({
+            backgroundColor: theme.appColors.accent.soft,
+            borderColor: theme.appColors.border.muted,
             overflow: "hidden",
-          }}
+          })}
         >
           <RoundStatusTabs
             value={selectedStatus}
@@ -355,31 +341,29 @@ export default function HomePage() {
           }}
         >
           <Paper
-            sx={{
+            sx={(theme) => ({
               overflow: "hidden",
-              backgroundColor: "rgba(255,255,255,0.04)",
-              borderColor: "rgba(255,45,142,0.25)",
+              backgroundColor: theme.appColors.accent.soft,
+              borderColor: isRunning
+                ? theme.appColors.live.border
+                : theme.appColors.border.muted,
               ...(isRunning
                 ? {
-                    borderColor: "rgba(255,45,142,0.65)",
-                    animation: "pinkPulse 7.5s ease-in-out infinite",
-                    "@keyframes pinkPulse": {
+                    animation: "livePanelPulse 7.5s ease-in-out infinite",
+                    "@keyframes livePanelPulse": {
                       "0%": {
-                        boxShadow:
-                          "0 0 0 1px rgba(255,45,142,0.28), 0 0 24px rgba(255,45,142,0.18)",
+                        boxShadow: `0 0 0 1px ${theme.appColors.live.soft}, 0 0 24px ${theme.appColors.live.glow}`,
                       },
                       "50%": {
-                        boxShadow:
-                          "0 0 0 1px rgba(255,45,142,0.42), 0 0 36px rgba(255,45,142,0.32)",
+                        boxShadow: `0 0 0 1px ${theme.appColors.live.border}, 0 0 36px ${theme.appColors.live.glow}`,
                       },
                       "100%": {
-                        boxShadow:
-                          "0 0 0 1px rgba(255,45,142,0.28), 0 0 24px rgba(255,45,142,0.18)",
+                        boxShadow: `0 0 0 1px ${theme.appColors.live.soft}, 0 0 24px ${theme.appColors.live.glow}`,
                       },
                     },
                   }
                 : null),
-            }}
+            })}
           >
             {roundsQuery.isLoading && (
               <Box sx={{ p: 2 }}>
@@ -410,14 +394,14 @@ export default function HomePage() {
             {activeRound && selectedRun && (
               <Box>
                 <Box
-                  sx={{
+                  sx={(theme) => ({
                     px: 2,
-                    py: 1.0,
+                    py: 1,
                     display: "flex",
                     justifyContent: "space-between",
                     alignItems: "center",
-                    borderBottom: "1px solid rgba(255,255,255,0.08)",
-                  }}
+                    borderBottom: `1px solid ${theme.appColors.border.subtle}`,
+                  })}
                 >
                   <Typography sx={{ fontWeight: 800 }}>
                     Model picks ({budget} SEK, trigger {selectedRun.trigger})
@@ -446,17 +430,20 @@ export default function HomePage() {
                   const key = String(m.matchNumber);
                   const sel = selectionsByMatch[key] ?? [];
                   const basePick = basePicksByMatch[key] ?? null;
-                  const liveUpdate = liveByMatchNumber.get(m.matchNumber) ?? null;
+                  const liveUpdate =
+                    liveByMatchNumber.get(m.matchNumber) ?? null;
 
                   return (
                     <Box
                       key={m.matchNumber}
-                      sx={{
+                      sx={(theme) => ({
                         backgroundColor:
                           idx % 2 === 0
-                            ? "rgba(255,255,255,0.02)"
-                            : "rgba(0,0,0,0.10)",
-                      }}
+                            ? theme.appColors.accent.soft
+                            : theme.palette.mode === "dark"
+                              ? "rgba(0,0,0,0.10)"
+                              : "rgba(0,0,0,0.03)",
+                      })}
                     >
                       <MatchRow
                         index={m.matchNumber}
@@ -468,9 +455,10 @@ export default function HomePage() {
                         live={liveUpdate}
                         isActive={selectedMatchNumber === m.matchNumber}
                         onClick={() => setSelectedMatchNumber(m.matchNumber)}
-                        onSelectionClick={onBoxClick}
                         marketFallbackUsed={m.marketFallbackUsed}
                         marketFallbackReason={m.marketFallbackReason}
+                        showSelectionDisabledHintOnHover
+                        selectionDisabledHintText="Selections can’t be changed from the home page."
                       />
                     </Box>
                   );
@@ -496,21 +484,6 @@ export default function HomePage() {
             providerQueryState={providerPredictionsQuery}
           />
         </Box>
-
-        <Dialog
-          open={loginDialogOpen}
-          onClose={() => setLoginDialogOpen(false)}
-        >
-          <DialogTitle>Log in required</DialogTitle>
-          <DialogContent>
-            <Typography>
-              Log in to make and save your own selections.
-            </Typography>
-          </DialogContent>
-          <DialogActions>
-            <Button onClick={() => setLoginDialogOpen(false)}>Close</Button>
-          </DialogActions>
-        </Dialog>
       </Stack>
     </Page>
   );

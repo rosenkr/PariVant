@@ -1,4 +1,4 @@
-import { Box, Stack, Tooltip, Typography } from "@mui/material";
+import { Box, Stack, Typography } from "@mui/material";
 import { SelectionBox } from "./SelectionBox";
 import type { Outcome } from "../types/modelRun";
 import type { LiveMatchUpdate } from "../types/live";
@@ -17,6 +17,8 @@ type Props = {
   onSelectionClick?: () => void;
   marketFallbackUsed?: boolean;
   marketFallbackReason?: string | null;
+  showSelectionDisabledHintOnHover?: boolean;
+  selectionDisabledHintText?: string;
 };
 
 type ScoreBorderTone = "none" | "static" | "live";
@@ -24,7 +26,7 @@ type ScoreBorderTone = "none" | "static" | "live";
 function toneForOutcome(
   selected: Outcome[],
   basePick: Outcome | null | undefined,
-  outcome: Outcome
+  outcome: Outcome,
 ): "none" | "base" | "coverage" {
   if (!selected.includes(outcome)) return "none";
   return basePick === outcome ? "base" : "coverage";
@@ -43,14 +45,9 @@ function liveStatusLabel(live: LiveMatchUpdate): string | null {
   return live.status;
 }
 
-function fallbackMessage(reason?: string | null): string {
-  if (reason === "TIPZER_MARKET_ODDS_ALL_ZERO_USED_SVF") {
-    return "Market odds not available, using public percentages as fallback.";
-  }
-  return reason ?? "Market data fallback was used.";
-}
-
-function currentScoreOutcome(live: LiveMatchUpdate | null | undefined): Outcome | null {
+function currentScoreOutcome(
+  live: LiveMatchUpdate | null | undefined,
+): Outcome | null {
   if (!live || live.homeGoals == null || live.awayGoals == null) return null;
 
   if (live.homeGoals > live.awayGoals) return "HOME_WIN";
@@ -61,7 +58,7 @@ function currentScoreOutcome(live: LiveMatchUpdate | null | undefined): Outcome 
 function scoreBorderForOutcome(
   kickoff: string,
   live: LiveMatchUpdate | null | undefined,
-  outcome: Outcome
+  outcome: Outcome,
 ): ScoreBorderTone {
   const kickoffDate = parseLocalDateTime(kickoff);
   const started = kickoffDate != null && kickoffDate.getTime() <= Date.now();
@@ -85,8 +82,8 @@ export function MatchRow({
   isActive,
   onClick,
   onSelectionClick,
-  marketFallbackUsed = false,
-  marketFallbackReason = null,
+  showSelectionDisabledHintOnHover = false,
+  selectionDisabledHintText = "Selections can’t be changed from the home page.",
 }: Props) {
   const kickoffText = formatTimeOnly(kickoff) ?? kickoff;
 
@@ -128,30 +125,11 @@ export function MatchRow({
         </Typography>
       </Box>
 
-      <Stack direction="row" spacing={1} sx={{ justifyContent: "flex-end", alignItems: "center" }}>
-        {marketFallbackUsed && (
-          <Tooltip title={fallbackMessage(marketFallbackReason)} arrow>
-            <Box
-              sx={{
-                width: 22,
-                height: 22,
-                borderRadius: "50%",
-                display: "grid",
-                placeItems: "center",
-                fontSize: 13,
-                fontWeight: 900,
-                color: "#fff",
-                backgroundColor: "error.main",
-                boxShadow: "0 0 0 1px rgba(255,255,255,0.08)",
-                flexShrink: 0,
-              }}
-              onClick={(e) => e.stopPropagation()}
-            >
-              !
-            </Box>
-          </Tooltip>
-        )}
-
+      <Stack
+        direction="row"
+        spacing={1}
+        sx={{ justifyContent: "flex-end", alignItems: "center" }}
+      >
         {hasLiveScore && live && (
           <Box
             sx={{
@@ -167,7 +145,10 @@ export function MatchRow({
             <Typography variant="caption" sx={{ fontWeight: 900 }}>
               {live.homeGoals}–{live.awayGoals}
             </Typography>
-            <Typography variant="caption" sx={{ opacity: 0.8, display: "block" }}>
+            <Typography
+              variant="caption"
+              sx={{ opacity: 0.8, display: "block" }}
+            >
               {status ?? ""}
             </Typography>
           </Box>
@@ -178,18 +159,24 @@ export function MatchRow({
           tone={toneForOutcome(selected, basePick, "HOME_WIN")}
           scoreBorder={scoreBorderForOutcome(kickoff, live, "HOME_WIN")}
           onClick={onSelectionClick}
+          showDisabledTooltipOnHover={showSelectionDisabledHintOnHover}
+          disabledTooltipTitle={selectionDisabledHintText}
         />
         <SelectionBox
-          label="X"
+          label="1"
           tone={toneForOutcome(selected, basePick, "DRAW")}
           scoreBorder={scoreBorderForOutcome(kickoff, live, "DRAW")}
           onClick={onSelectionClick}
+          showDisabledTooltipOnHover={showSelectionDisabledHintOnHover}
+          disabledTooltipTitle={selectionDisabledHintText}
         />
         <SelectionBox
-          label="2"
+          label="1"
           tone={toneForOutcome(selected, basePick, "AWAY_WIN")}
           scoreBorder={scoreBorderForOutcome(kickoff, live, "AWAY_WIN")}
           onClick={onSelectionClick}
+          showDisabledTooltipOnHover={showSelectionDisabledHintOnHover}
+          disabledTooltipTitle={selectionDisabledHintText}
         />
       </Stack>
     </Box>

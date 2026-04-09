@@ -24,3 +24,8 @@ export type ModelRunView = {
   basePicks?: Record<string, Outcome>;
   internalProbabilities?: Record<string, ProbabilityTripleDtoShape>;
 };
+
+export type GetModelRunsResult =
+  | { kind: "ok"; data: ModelRunView[] }
+  | { kind: "server-error"; status: number; message: string }
+  | { kind: "network-error"; message: string };

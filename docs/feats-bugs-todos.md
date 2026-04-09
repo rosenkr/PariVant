@@ -1,4 +1,6 @@
 V1:
+0. clean github from secrets and make public
+1. make current darkmode darker like footer, then make footer even darker
 1. UI Rework V1
 2. "Rework value as KL divergence for value calculation "
 3. Impl Auth V1, first see https://www.youtube.com/watch?v=eYCOzPx3ht8
@@ -8,24 +10,13 @@ V1:
 --------------------------------------------------------------------------------------------------------
 
 UI REWORK V1:
-0.
-    -app init with default dark mode, top navbar will need toggle button (see below)
-    - dark mode = variations of nardo gray for backgrounds + variations of cyan for borders, on-hovers, white-ish text
-    - bright mode = similarly but white-gray + dark green (the same dark green as currently have spread in codebase). black-ish text
-    - Currently have hardcoded pink in many places. Even the orange colors for picks. All of these should be in
-    - a theme or colors folder MUI-style. Want to avoid hardcoded inline colors.
-    - probably will need separate definition for lightMode/darkMode
-1. Inspiration from 11elo & Systemvetardagen
-    - Compress navbar layour & center it instead of having it on the right. 3 parts:
-        - on the left side alone: Placeholder icon (to be a larger version of my homemade SVG currently used in browser favicon. Clicking this leads to home page
-        - in the middle: all the main navigation (currently only Home & Rounds, to be reworked)
-        - on the right: EN/SV language selection + bright/dark mode toggler. See 11elo for icons
+main navbar more separated outwards from center
 2. add a temporary About page placeholder, remove the placeholding "Rounds" one. Also add "My Page"
 3. add a footer like 11elo 
 4. Add very light tint on hover for matches in the round view.
 5. Add on-hover to navbar for good UX. Only changes color of the text and potentially the background of 
         the immediate container it is in, but doesnt increase font size
-Checkbox: thin out index.css and main.tsx
+6. merge home into icon, add icon instesd of text SvenskaSpel
 --------------------------------------------------------------------------------------------------------
 
 AUTH V1:

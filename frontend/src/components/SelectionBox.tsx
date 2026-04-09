@@ -1,4 +1,5 @@
-import { Box, Typography } from "@mui/material";
+import { Box, Tooltip, Typography } from "@mui/material";
+import { useState } from "react";
 
 type SelectionTone = "none" | "base" | "coverage";
 type ScoreBorderTone = "none" | "static" | "live";
@@ -8,6 +9,8 @@ type Props = {
   tone?: SelectionTone;
   scoreBorder?: ScoreBorderTone;
   onClick?: () => void;
+  disabledTooltipTitle?: string;
+  showDisabledTooltipOnHover?: boolean;
 };
 
 export function SelectionBox({
@@ -15,83 +18,120 @@ export function SelectionBox({
   tone = "none",
   scoreBorder = "none",
   onClick,
+  disabledTooltipTitle,
+  showDisabledTooltipOnHover = false,
 }: Props) {
-  const isSelected = tone !== "none";
-  const isBase = tone === "base";
+  const [tooltipOpen, setTooltipOpen] = useState(false);
 
-  const borderColor =
-    scoreBorder === "none" ? "rgba(255,255,255,0.22)" : "rgba(255,45,142,0.9)";
-
-  const liveBorderSx =
-    scoreBorder === "live"
-      ? {
-          backgroundImage:
-            "linear-gradient(120deg, rgba(255,45,142,0.95), rgba(255,110,199,0.95), rgba(255,45,142,0.95))",
-          backgroundSize: "220% 220%",
-          animation: "scoreBorderShift 2.2s linear infinite",
-          "@keyframes scoreBorderShift": {
-            "0%": { backgroundPosition: "0% 50%" },
-            "100%": { backgroundPosition: "200% 50%" },
-          },
-          padding: "1.5px",
-        }
-      : null;
+  const tooltipEnabled =
+    showDisabledTooltipOnHover && Boolean(disabledTooltipTitle);
 
   return (
-    <Box
-      onClick={(e) => {
-        e.stopPropagation();
-        onClick?.();
-      }}
-      sx={{
-        width: 34,
-        height: 34,
-        borderRadius: "50%",
-        cursor: onClick ? "pointer" : "default",
-        userSelect: "none",
-        transition: "all 140ms ease",
-        ...(liveBorderSx ?? {}),
-      }}
+    <Tooltip
+      title={disabledTooltipTitle ?? ""}
+      open={tooltipEnabled ? tooltipOpen : false}
+      disableFocusListener
+      disableTouchListener
+      disableInteractive
+      placement="top"
     >
       <Box
-        sx={{
-          width: "100%",
-          height: "100%",
-          borderRadius: "50%",
-          display: "grid",
-          placeItems: "center",
-          border: scoreBorder === "live" ? "none" : `1px solid ${borderColor}`,
-          backgroundColor: isSelected
+        onMouseEnter={() => {
+          if (tooltipEnabled) setTooltipOpen(true);
+        }}
+        onMouseLeave={() => {
+          if (tooltipEnabled) setTooltipOpen(false);
+        }}
+        onClick={(e) => {
+          e.stopPropagation();
+          onClick?.();
+        }}
+        sx={(theme) => {
+          const isSelected = tone !== "none";
+          const isBase = tone === "base";
+
+          const borderColor =
+            scoreBorder === "none"
+              ? theme.appColors.border.strong
+              : theme.appColors.live.border;
+
+          const liveBorderSx =
+            scoreBorder === "live"
+              ? {
+                  backgroundImage: `linear-gradient(
+                    120deg,
+                    ${theme.appColors.live.border},
+                    ${theme.appColors.live.primary},
+                    ${theme.appColors.live.border}
+                  )`,
+                  backgroundSize: "220% 220%",
+                  animation: "scoreBorderShift 2.2s linear infinite",
+                  "@keyframes scoreBorderShift": {
+                    "0%": { backgroundPosition: "0% 50%" },
+                    "100%": { backgroundPosition: "200% 50%" },
+                  },
+                  padding: "1.5px",
+                  boxShadow: `0 0 0 1px ${theme.appColors.live.soft}, 0 0 18px ${theme.appColors.live.glow}`,
+                }
+              : null;
+
+          const selectedBackgroundColor = isSelected
             ? isBase
-              ? "rgba(255, 140, 0, 0.99)"
-              : "rgba(255, 184, 91, 0.88)"
-            : "rgba(0,0,0,0)",
-          boxShadow: isSelected
+              ? theme.appColors.pick.base
+              : theme.appColors.pick.coverage
+            : "transparent";
+
+          const selectedHoverBackgroundColor = isSelected
             ? isBase
-              ? "inset 0 0 0 1px rgba(255,255,255,0.06)"
-              : "inset 0 0 0 1px rgba(255,255,255,0.05)"
-            : "none",
-          "&:hover": {
-            transform: onClick ? "translateY(-1px)" : "none",
-            backgroundColor: isSelected
-              ? isBase
-                ? "rgba(255,140,0,0.95)"
-                : "rgba(255,170,60,0.95)"
-              : "rgba(255,255,255,0.04)",
-          },
+              ? theme.appColors.pick.base
+              : theme.appColors.pick.coverage
+            : theme.appColors.accent.soft;
+
+          const selectedInset = isSelected
+            ? isBase
+              ? `inset 0 0 0 1px ${theme.appColors.pick.softBase}`
+              : `inset 0 0 0 1px ${theme.appColors.pick.softCoverage}`
+            : "none";
+
+          return {
+            width: 34,
+            height: 34,
+            borderRadius: "50%",
+            cursor: onClick ? "pointer" : "default",
+            userSelect: "none",
+            transition: "all 140ms ease",
+            ...(liveBorderSx ?? {}),
+            "& > .selection-box-inner": {
+              width: "100%",
+              height: "100%",
+              borderRadius: "50%",
+              display: "grid",
+              placeItems: "center",
+              border:
+                scoreBorder === "live" ? "none" : `1px solid ${borderColor}`,
+              backgroundColor: selectedBackgroundColor,
+              boxShadow: selectedInset,
+              transition: "all 140ms ease",
+            },
+            "&:hover > .selection-box-inner": {
+              transform: onClick ? "translateY(-1px)" : "none",
+              backgroundColor: selectedHoverBackgroundColor,
+            },
+            "& .selection-box-label": {
+              fontSize: 14,
+              fontWeight: 900,
+              lineHeight: 1,
+              color: isSelected
+                ? theme.appColors.pick.contrastText
+                : theme.palette.text.primary,
+            },
+          };
         }}
       >
-        <Typography
-          sx={{
-            fontSize: 14,
-            fontWeight: 900,
-            lineHeight: 1,
-            color: isSelected ? "#161616" : "text.primary",
-          }}
-        >
-          {label}
-        </Typography>
+        <Box className="selection-box-inner">
+          <Typography className="selection-box-label">{label}</Typography>
+        </Box>
       </Box>
-    </Box>
+    </Tooltip>
   );
 }
