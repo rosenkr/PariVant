@@ -1,10 +1,4 @@
 V1:
-0. add Instant/LocalDateTime/OffsetDateTime usage
-   - goal: backend uses Instant, external data parsed to ODT then parsed to Instant, 
-   - comparisos use if (roundStart.isBefore(Instant.now(clock))) { ... } with Clock
-   - response to frontend as OffsetDateTime.ofInstant(instant, ZoneOffset.UTC)
-   - frontend display depending on Locale
-1. Rework time to use Clock (Like instant.now in ensemblemodel) (already done in livescore)
 1. UI Rework V1
 2. "Rework value as KL divergence for value calculation "
 3. Impl Auth V1, first see https://www.youtube.com/watch?v=eYCOzPx3ht8
@@ -14,13 +8,13 @@ V1:
 --------------------------------------------------------------------------------------------------------
 
 UI REWORK V1:
-0. Standardize bright mode and dark mode colors
+0.
     -app init with default dark mode, top navbar will need toggle button (see below)
-    - dark mode = variations of nardo gray for backgrounds + variations of cyan for borders, on-hovers, etc
-    - bright mode = similarly but white-gray + dark green as currently have in codebase
+    - dark mode = variations of nardo gray for backgrounds + variations of cyan for borders, on-hovers, white-ish text
+    - bright mode = similarly but white-gray + dark green (the same dark green as currently have spread in codebase). black-ish text
     - Currently have hardcoded pink in many places. Even the orange colors for picks. All of these should be in
     - a theme or colors folder MUI-style. Want to avoid hardcoded inline colors.
-    - probably will need separate definition for lightMode/darkMode 
+    - probably will need separate definition for lightMode/darkMode
 1. Inspiration from 11elo & Systemvetardagen
     - Compress navbar layour & center it instead of having it on the right. 3 parts:
         - on the left side alone: Placeholder icon (to be a larger version of my homemade SVG currently used in browser favicon. Clicking this leads to home page
@@ -31,7 +25,7 @@ UI REWORK V1:
 4. Add very light tint on hover for matches in the round view.
 5. Add on-hover to navbar for good UX. Only changes color of the text and potentially the background of 
         the immediate container it is in, but doesnt increase font size
-
+Checkbox: thin out index.css and main.tsx
 --------------------------------------------------------------------------------------------------------
 
 AUTH V1:
@@ -69,8 +63,7 @@ Control of already implemented code behavior:
 
 --------------------------------------------------------------------------------------------------------
 Other:
-0. run static tests and java/spring boot tools to check the codebase for bugs/imports/ weird stuff
-0. Test the app with various testing tools (above unit testing)
+0. Test the app with various testing tools (QA, mockito, static code analyses, linting)
 0. Add standardized logging system over the whole code (for example every scheduled action)
 1. Investigate Docker Compose https://www.youtube.com/watch?v=kOryO5I_w14, https://www.youtube.com/watch?v=Q5evuP3OnPY
 2. Add more ingestion for rounds (Tipzer only gives 1 per type, best would be to scrape off source SS or the other website if has)
@@ -87,3 +80,4 @@ Other:
 9. add robots.txt
 11. introduce differernt runtime environments dev/test/staging/prod? flavors?
 12. add extensive logging in the code (dev env)?
+13. do we want to present only swedish-time for matches? 
