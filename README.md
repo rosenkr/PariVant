@@ -2,6 +2,9 @@
 
 A decision-support system for pool betting on Svenska Spel rounds, including **Topptipset**, **Stryktipset**, and **Europatipset**.
 
+![My image](example.png)
+
+
 ## Project Status
 
 This project is **currently under construction**. Both the model and the project as a whole are still being developed, evaluated, and refined. The current version should therefore be seen as an evolving prototype rather than a finished product.

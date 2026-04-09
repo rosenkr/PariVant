@@ -1,19 +1,10 @@
 V1:
-1. UI Rework V1
 2. "Rework value as KL divergence for value calculation "
 3. Impl Auth V1, first see https://www.youtube.com/watch?v=eYCOzPx3ht8
 
 --------------------------------------------------------------------------------------------------------
 --------------------------------------------------------------------------------------------------------
 --------------------------------------------------------------------------------------------------------
-
-UI REWORK V1:
-4. login icon on the right side of navbar (to prep for auth My page stuff)
-4. Add very light tint on hover for matches in the round view.
-5. Add on-hover to navbar for good UX. Only changes color of the text and potentially the background of 
-        the immediate container it is in, but doesnt increase font size
---------------------------------------------------------------------------------------------------------
-
 AUTH V1:
     -what is the modern way for handling secure auth and seamless UX?
     -How will I persist a user and store their decisions to build my own defensible data set which can refine my own model? (for example if allowing users 1 high confidence pick per round, then check their ROI over time, then mix their knowledge into the model run step accordingly)
