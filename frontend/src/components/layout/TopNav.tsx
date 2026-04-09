@@ -3,6 +3,7 @@ import {
   Box,
   Container,
   IconButton,
+  Stack,
   Tab,
   Tabs,
   Toolbar,
@@ -16,14 +17,11 @@ import { useThemeMode } from "../../hooks/useThemeMode";
 
 type NavItem = { label: string; path: string };
 
-const NAV: NavItem[] = [
-  { label: "Home", path: "/" },
-  { label: "Rounds", path: "/rounds" },
-];
+const NAV: NavItem[] = [{ label: "About", path: "/about" }];
 
 function currentTabIndex(pathname: string) {
   const idx = NAV.findIndex((n) => n.path === pathname);
-  return idx === -1 ? 0 : idx;
+  return idx === -1 ? false : idx;
 }
 
 export function TopNav() {
@@ -41,36 +39,86 @@ export function TopNav() {
           disableGutters
           sx={{
             minHeight: 72,
-            display: "grid",
-            gridTemplateColumns: "1fr auto 1fr",
-            alignItems: "center",
-            columnGap: 2,
+            gap: 2,
           }}
         >
           <Box
             sx={{
+              flexBasis: { xs: "auto", md: 240 },
+              flexShrink: 0,
               minWidth: 0,
-              justifySelf: "start",
             }}
           >
-            <Typography
-              variant="h6"
+            <Box
+              role="button"
+              tabIndex={0}
+              onClick={() => navigate("/")}
+              onKeyDown={(e) => {
+                if (e.key === "Enter" || e.key === " ") {
+                  e.preventDefault();
+                  navigate("/");
+                }
+              }}
               sx={(theme) => ({
-                fontWeight: 800,
-                letterSpacing: 0.2,
-                color: theme.appColors.text.primary,
-                whiteSpace: "nowrap",
+                display: "inline-flex",
+                alignItems: "center",
+                gap: 0,
+                px: 0.5,
+                py: 0.5,
+                borderRadius: 2,
+                cursor: "pointer",
+                userSelect: "none",
+                "&:focus-visible": {
+                  outline: `2px solid ${theme.appColors.accent.primary}`,
+                  outlineOffset: 2,
+                },
               })}
             >
-              Svenska Spel Model
-            </Typography>
+              <Box
+                component="img"
+                src="/favicon.svg"
+                alt="PariVant logo"
+                sx={{
+                  width: 30,
+                  height: 30,
+                  display: "block",
+                  flexShrink: 0,
+                }}
+              />
+
+              <Stack spacing={0} sx={{ lineHeight: 1 }}>
+                <Typography
+                  sx={(theme) => ({
+                    fontSize: "1rem",
+                    fontWeight: 900,
+                    letterSpacing: 0.2,
+                    color: theme.appColors.text.primary,
+                    lineHeight: 1,
+                  })}
+                >
+                  Pari
+                </Typography>
+                <Typography
+                  sx={(theme) => ({
+                    fontSize: "1rem",
+                    fontWeight: 900,
+                    letterSpacing: 0.2,
+                    color: theme.appColors.text.primary,
+                    lineHeight: 1,
+                  })}
+                >
+                  Vant
+                </Typography>
+              </Stack>
+            </Box>
           </Box>
 
           <Box
             sx={{
-              minWidth: 0,
+              flex: 1,
               display: "flex",
               justifyContent: "center",
+              minWidth: 0,
             }}
           >
             <Tabs
@@ -109,8 +157,10 @@ export function TopNav() {
 
           <Box
             sx={{
-              justifySelf: "end",
+              flexBasis: { xs: "auto", md: 240 },
+              flexShrink: 0,
               display: "flex",
+              justifyContent: "flex-end",
               alignItems: "center",
             }}
           >

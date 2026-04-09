@@ -1,4 +1,4 @@
-import { Box, Container, Typography } from "@mui/material";
+import { Box, Container, Typography, Stack } from "@mui/material";
 import { Outlet } from "react-router-dom";
 import { TopNav } from "./TopNav";
 
@@ -29,15 +29,93 @@ export function AppShell() {
         component="footer"
         sx={(theme) => ({
           flexShrink: 0,
-          py: 2,
+          py: { xs: 4, md: 5 },
           backgroundColor: theme.appColors.surface.footer,
           borderTop: `1px solid ${theme.appColors.border.subtle}`,
         })}
       >
         <Container maxWidth="lg">
-          <Typography variant="body2" color="text.secondary" align="center">
-            © {new Date().getFullYear()} Svenska Spel Model (local dev)
-          </Typography>
+          <Stack spacing={2.5} alignItems="center">
+            <Stack
+              direction="row"
+              spacing={1.5}
+              alignItems="center"
+              justifyContent="center"
+            >
+              <Box
+                component="img"
+                src="/favicon.svg"
+                alt="PariVant logo"
+                sx={{
+                  width: 40,
+                  height: 40,
+                  display: "block",
+                }}
+              />
+              <Typography
+                variant="h4"
+                sx={(theme) => ({
+                  fontWeight: 900,
+                  letterSpacing: 0.2,
+                  color: theme.appColors.accent.primary,
+                  lineHeight: 1,
+                })}
+              >
+                PariVant
+              </Typography>
+            </Stack>
+
+            <Typography
+              variant="h6"
+              align="center"
+              sx={(theme) => ({
+                maxWidth: 720,
+                fontWeight: 500,
+                color: theme.appColors.text.primary,
+                lineHeight: 1.4,
+              })}
+            >
+              Data-driven decision support for smarter Svenska Spel pool
+              betting.
+            </Typography>
+
+            <Stack
+              direction="row"
+              spacing={{ xs: 2, sm: 4 }}
+              useFlexGap
+              flexWrap="wrap"
+              justifyContent="center"
+            >
+              <Typography
+                variant="body1"
+                sx={(theme) => ({ color: theme.appColors.text.primary })}
+              >
+                Privacy Policy
+              </Typography>
+              <Typography
+                variant="body1"
+                sx={(theme) => ({ color: theme.appColors.text.primary })}
+              >
+                Terms of Service
+              </Typography>
+              <Typography
+                variant="body1"
+                sx={(theme) => ({ color: theme.appColors.text.primary })}
+              >
+                Cookie Preferences
+              </Typography>
+            </Stack>
+
+            <Typography
+              variant="body2"
+              align="center"
+              sx={(theme) => ({
+                color: theme.appColors.text.secondary,
+              })}
+            >
+              © 2026 Alexander Rosenkrans. All rights reserved.
+            </Typography>
+          </Stack>
         </Container>
       </Box>
     </Box>

@@ -1,18 +1,17 @@
 import { Paper, Stack, Typography } from "@mui/material";
 import { Page } from "../components/layout/Page";
 
-export function RoundsPage() {
+export function AboutPage() {
   return (
     <Page>
       <Stack spacing={2}>
         <Typography variant="h4" sx={{ fontWeight: 800 }}>
-          Rounds
+          About
         </Typography>
 
         <Paper variant="outlined" sx={{ p: 2 }}>
           <Typography>
-            Placeholder page. Later this can show browsing of rounds, history,
-            etc.
+            Placeholder page.
           </Typography>
         </Paper>
       </Stack>

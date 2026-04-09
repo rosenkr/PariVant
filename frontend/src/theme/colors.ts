@@ -69,7 +69,7 @@ const darkMode: AppColors = {
   surface: {
     background: "#4f5558",
     page: "#3f4548",
-    paper: "#676f73",
+    paper: "#5d6569",
     panel: "#727b80",
     raised: "#7d878c",
     footer: "#2F3436",
