@@ -1,21 +1,28 @@
 import { Box, Container } from "@mui/material";
+import type { ContainerProps } from "@mui/material/Container";
 import type { ReactNode } from "react";
 
 type Props = {
   children: ReactNode;
   disableGutters?: boolean;
+  maxWidth?: ContainerProps["maxWidth"];
 };
 
-export function Page({ children, disableGutters = false }: Props) {
+export function Page({
+  children,
+  disableGutters = false,
+  maxWidth = "lg",
+}: Props) {
   return (
     <Box
-      component="main"
-      sx={{
+      sx={(theme) => ({
         width: "100%",
-        py: { xs: 2, md: 3 },
-      }}
+        backgroundColor: theme.appColors.surface.page,
+        pt: { xs: 2, md: 3 },
+        pb: { xs: 4, md: 6 },
+      })}
     >
-      <Container maxWidth="lg" disableGutters={disableGutters}>
+      <Container maxWidth={maxWidth} disableGutters={disableGutters}>
         {children}
       </Container>
     </Box>

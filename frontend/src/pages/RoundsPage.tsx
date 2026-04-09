@@ -3,7 +3,7 @@ import { Page } from "../components/layout/Page";
 
 export function RoundsPage() {
   return (
-    <Page variant="contained">
+    <Page>
       <Stack spacing={2}>
         <Typography variant="h4" sx={{ fontWeight: 800 }}>
           Rounds

@@ -66,9 +66,6 @@ export function getAppTheme(mode: PaletteMode) {
             backgroundColor: colors.surface.background,
             color: colors.text.primary,
           },
-          "#root": {
-            minHeight: "100vh",
-          },
         },
       },
 

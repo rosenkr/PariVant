@@ -7,6 +7,7 @@ export type AppColors = {
     paper: string;
     panel: string;
     raised: string;
+    footer: string;
   };
   border: {
     subtle: string;
@@ -71,6 +72,7 @@ const darkMode: AppColors = {
     paper: "#676f73",
     panel: "#727b80",
     raised: "#7d878c",
+    footer: "#3f4548",
   },
   border: {
     subtle: "rgba(165, 243, 252, 0.16)",
@@ -135,6 +137,7 @@ const lightMode: AppColors = {
     paper: "#ffffff",
     panel: "#f7f9f8",
     raised: "#ffffff",
+    footer: "#e6ebe8",
   },
   border: {
     subtle: "rgba(22, 101, 52, 0.12)",
