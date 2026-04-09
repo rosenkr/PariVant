@@ -1,37 +1,23 @@
-import { Container, Box } from "@mui/material";
+import { Box, Container } from "@mui/material";
 import type { ReactNode } from "react";
-
-
-// Contained = Home page with the current round info, full for dashboard-like pages
-export type PageVariant = "contained" | "full";
 
 type Props = {
   children: ReactNode;
-  variant?: PageVariant;
-  maxWidth?: "xs" | "sm" | "md" | "lg" | "xl";
-  paddingY?: number;
+  disableGutters?: boolean;
 };
 
-// Main content
-export function Page({
-  children,
-  variant = "contained",
-  maxWidth = "lg",
-  paddingY = 3,
-}: Props) {
-  if (variant === "full") {
-    // Uncontrained width
-    return (
-      <Box component="main" sx={{ width: "100%", py: paddingY }}>
-        {children}
-      </Box>
-    );
-  }
-
-  // Constrained width 
+export function Page({ children, disableGutters = false }: Props) {
   return (
-    <Container component="main" maxWidth={maxWidth} sx={{ py: paddingY }}>
-      {children}
-    </Container>
+    <Box
+      component="main"
+      sx={{
+        width: "100%",
+        py: { xs: 2, md: 3 },
+      }}
+    >
+      <Container maxWidth="lg" disableGutters={disableGutters}>
+        {children}
+      </Container>
+    </Box>
   );
 }

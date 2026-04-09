@@ -40,6 +40,22 @@ export type AppColors = {
     softCoverage: string;
     contrastText: string;
   };
+  modeToggle: {
+    sun: {
+      color: string;
+      border: string;
+      background: string;
+      hoverBackground: string;
+      hoverBorder: string;
+    };
+    moon: {
+      color: string;
+      border: string;
+      background: string;
+      hoverBackground: string;
+      hoverBorder: string;
+    };
+  };
   status: {
     success: string;
     warning: string;
@@ -50,7 +66,7 @@ export type AppColors = {
 
 const darkMode: AppColors = {
   surface: {
-    background: "#4f5558", // nardo-inspired app background
+    background: "#4f5558",
     page: "#5a6164",
     paper: "#676f73",
     panel: "#727b80",
@@ -87,6 +103,22 @@ const darkMode: AppColors = {
     softBase: "rgba(201, 106, 0, 0.2)",
     softCoverage: "rgba(245, 158, 11, 0.2)",
     contrastText: "#111315",
+  },
+  modeToggle: {
+    sun: {
+      color: "#f4c84a",
+      border: "rgba(244, 200, 74, 0.24)",
+      background: "rgba(244, 200, 74, 0.10)",
+      hoverBackground: "rgba(244, 200, 74, 0.16)",
+      hoverBorder: "rgba(244, 200, 74, 0.38)",
+    },
+    moon: {
+      color: "#8ea4d8",
+      border: "rgba(142, 164, 216, 0.18)",
+      background: "rgba(142, 164, 216, 0.08)",
+      hoverBackground: "rgba(142, 164, 216, 0.14)",
+      hoverBorder: "rgba(142, 164, 216, 0.3)",
+    },
   },
   status: {
     success: "#34d399",
@@ -135,6 +167,22 @@ const lightMode: AppColors = {
     softBase: "rgba(180, 83, 9, 0.14)",
     softCoverage: "rgba(217, 119, 6, 0.14)",
     contrastText: "#101514",
+  },
+  modeToggle: {
+    sun: {
+      color: "#d4a11e",
+      border: "rgba(212, 161, 30, 0.2)",
+      background: "rgba(212, 161, 30, 0.08)",
+      hoverBackground: "rgba(212, 161, 30, 0.14)",
+      hoverBorder: "rgba(212, 161, 30, 0.32)",
+    },
+    moon: {
+      color: "#6b7da8",
+      border: "rgba(107, 125, 168, 0.18)",
+      background: "rgba(107, 125, 168, 0.08)",
+      hoverBackground: "rgba(107, 125, 168, 0.14)",
+      hoverBorder: "rgba(107, 125, 168, 0.3)",
+    },
   },
   status: {
     success: "#15803d",
