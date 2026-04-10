@@ -25,3 +25,6 @@ clubelo_output.txt
 suggested_aliases.txt
 truth.txt
 docs/feats-bugs-todos.md
+
+#api keys, database pw
+.env
