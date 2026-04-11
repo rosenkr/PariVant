@@ -1,7 +1,7 @@
 V1:
 2. "Rework value as KL divergence for value calculation "
 3. Impl Auth V1, first see https://www.youtube.com/watch?v=eYCOzPx3ht8
-
+4. about page add content (clickable card, for example "V1 model" with an image)
 --------------------------------------------------------------------------------------------------------
 --------------------------------------------------------------------------------------------------------
 --------------------------------------------------------------------------------------------------------
@@ -42,8 +42,8 @@ Control of already implemented code behavior:
 Other:
 0. Test the app with various testing tools (QA, mockito, static code analyses, linting)
 0. Add standardized logging system over the whole code (for example every scheduled action)
-1. Investigate Docker Compose https://www.youtube.com/watch?v=kOryO5I_w14, https://www.youtube.com/watch?v=Q5evuP3OnPY
-2. Add more ingestion for rounds (Tipzer only gives 1 per type, best would be to scrape off source SS or the other website if has)
+2. CI/CD pipeline: Jenkins
+3. Add more ingestion for rounds (Tipzer only gives 1 per type, best would be to scrape off source SS or the other website if has)
 3. Buy domain name PariVant.se? deploy on railway (PariVant) (separate frontend/backend servers?)
 4. Do user research: create name PariVant on social media, buy host name, enter forums for swedish bettors, or skugga. For example flashback. User research.
     - Write down pain points, wishes, etc with the betting experience or svenskaspel.

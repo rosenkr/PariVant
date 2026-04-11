@@ -7,7 +7,10 @@ import java.util.Objects;
 /**
  * Chooses the base outcome for a match.
  *
- * score(outcome) = (internal - public) * exp(-k * (1 - internal))
+ * score(outcome) = p_i * log(p_i / q_i)
+ * where:
+ * - p_i = internal probability for the outcome
+ * - q_i = public probability for the outcome
  */
 public class BaseOutcomeSelector {
 
@@ -23,8 +26,7 @@ public class BaseOutcomeSelector {
         for (Outcome outcome : Outcome.values()) {
             double score = score(
                     internal.get(outcome),
-                    publicProbabilities.get(outcome),
-                    ModelConstants.BASE_PICK_AGGRESSIVENESS_K
+                    publicProbabilities.get(outcome)
             );
 
             if (score > bestScore) {
@@ -36,8 +38,31 @@ public class BaseOutcomeSelector {
         return Objects.requireNonNull(bestOutcome, "bestOutcome cannot be null");
     }
 
-    static double score(double internalProbability, double publicProbability, double k) {
-        double value = internalProbability - publicProbability;
-        return value * Math.exp(-k * (1.0 - internalProbability));
+
+    /**
+     * Returns the per-outcome contribution to KL divergence D_KL(internal || public).
+     *
+     * For one outcome i, the score is:
+     *   p_i * log(p_i / q_i)
+     * where:
+     * - p_i is the internal probability for the outcome
+     * - q_i is the public probability for the outcome
+     *
+     * A larger positive score means the outcome is weighted more heavily by the
+     * internal model than by the public distribution.
+     */
+    static double score(double internalProbability, double publicProbability) {
+        if (internalProbability < 0.0 || internalProbability > 1.0) {
+            throw new IllegalArgumentException("internalProbability must be between 0 and 1");
+        }
+        if (publicProbability <= 0.0 || publicProbability > 1.0) {
+            throw new IllegalArgumentException("publicProbability must be in (0, 1]");
+        }
+
+        if (internalProbability == 0.0) {
+            return 0.0;
+        }
+
+        return internalProbability * Math.log(internalProbability / publicProbability);
     }
 }

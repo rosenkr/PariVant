@@ -4,6 +4,7 @@ import ar.ss.betting.domain.Outcome;
 import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 class BaseOutcomeSelectorTest {
 
@@ -22,7 +23,7 @@ class BaseOutcomeSelectorTest {
     }
 
     @Test
-    void shouldChooseHighestScoreNotHighestRawValueGap() {
+    void shouldChooseHighestKlContributionNotHighestRawValueGap() {
         ProbabilityTriple internal = ProbabilityTriple.fromProbabilities(0.55, 0.30, 0.15);
         ProbabilityTriple pub = ProbabilityTriple.fromProbabilities(0.82, 0.17, 0.01);
 
@@ -32,9 +33,20 @@ class BaseOutcomeSelectorTest {
         assertEquals(0.13, drawValue, EPSILON);
         assertEquals(0.14, awayValue, EPSILON);
 
+        double drawScore = BaseOutcomeSelector.score(
+                internal.get(Outcome.DRAW),
+                pub.get(Outcome.DRAW)
+        );
+        double awayScore = BaseOutcomeSelector.score(
+                internal.get(Outcome.AWAY_WIN),
+                pub.get(Outcome.AWAY_WIN)
+        );
+
+        assertTrue(awayScore > drawScore);
+
         Outcome result = selector.chooseBaseOutcome(internal, pub);
 
-        assertEquals(Outcome.DRAW, result);
+        assertEquals(Outcome.AWAY_WIN, result);
     }
 
     @Test
@@ -58,9 +70,9 @@ class BaseOutcomeSelectorTest {
     }
 
     @Test
-    void scoreShouldMatchFormula() {
-        double score = BaseOutcomeSelector.score(0.30, 0.17, 3.0);
-        double expected = (0.30 - 0.17) * Math.exp(-3.0 * (1.0 - 0.30));
+    void scoreShouldMatchKlContributionFormula() {
+        double score = BaseOutcomeSelector.score(0.30, 0.17);
+        double expected = 0.30 * Math.log(0.30 / 0.17);
 
         assertEquals(expected, score, EPSILON);
     }

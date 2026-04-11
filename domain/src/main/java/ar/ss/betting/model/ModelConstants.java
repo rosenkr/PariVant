@@ -6,8 +6,6 @@ public final class ModelConstants {
     private ModelConstants() {
     }
 
-    public static final double BASE_PICK_AGGRESSIVENESS_K = 3.0;
-
     /**
      * Used when applying tag/buff shifts so that all three outcomes remain positive
      * before final normalization.
