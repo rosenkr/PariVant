@@ -1,5 +1,5 @@
-V1:
-2. "Rework value as KL divergence for value calculation "
+
+
 3. Impl Auth V1, first see https://www.youtube.com/watch?v=eYCOzPx3ht8
 4. about page add content (clickable card, for example "V1 model" with an image)
 --------------------------------------------------------------------------------------------------------
@@ -60,3 +60,35 @@ Other:
 13. do we want to present only swedish-time for matches? 
 14. fix parivant icon (works bad depending on background)
 15. inspire UX colors dark blue from https://felixastner.com/articles/enhancing-mui-theming-with-typescript
+16. The score = KL term contribution, is in fact more dog-heavy than the previous algorithm. 
+    -It is pure value based. This is not what I want, given that base pick selector uses this
+    - Renyi with alpha 0.5 im unsure if it works
+    - try to tune the score post-edge finding (KL term), but how?
+    - an alternative is to have base pick choose internal faves, and then coverage picks go for pure value
+    - How to know which alternative best? ideally would run a set of different models, but I dont have the data to backtest
+    - if sticing with base = value, then a good middlesolution by 
+    - gpt is: score_i = (KL term_i) * p_i^B where beta=1 is reasonable:
+    - Might thus settle for riskAverseKLedgePowerWeighting(...)
+    - Can at least test vs my intuition (which naturally tries to bake in risk with value)
+    - by looking at real internal vs public distrs for matches and calculating scores and see if highest score matches intuition
+
+
+Notes for Railway:
+1. deploy Railway
+   backend = Spring boot
+   frontend = Vite/React web service
+   postgres = Railway Postgres
+   Wait for parivant.se to register, then connect to it
+   Configure build options to use my dockerfile (Service -> Settings -> Build -> Deploy)
+   Set preferred region to Stockholm Settings -> Deploy -. Regions
+   Set Usage Limits to have spending cap!
+2. restart policy: set to Never
+   Configure (frontend)service to pause on no traffic (serverless deployment) (App Sleep) - but backend/db make outbound calls every min, so cant sleep
+   Service communication (backend/database/frontend?) using
+   Settings -> Networking to set domain for service, and Reference variables
+   to share that with other services (SERVICE_NAME.railway.internal). service called api? then http://api.railway.internal:PORT
+   Disable TCP proxy (avoid public connections for NON HTTP services)
+   Ensure using  private network for inbetween service comms, + private env vars
+   railway future: prod/dev environments, check suites, config as code in toml/json
+   Cloudflare for WAF&DDoS mitigation.
+3. be wary of memory leaks - can increease RAM costs
