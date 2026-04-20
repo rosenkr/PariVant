@@ -5,20 +5,8 @@
 --------------------------------------------------------------------------------------------------------
 --------------------------------------------------------------------------------------------------------
 --------------------------------------------------------------------------------------------------------
-AUTH V1:
-    -what is the modern way for handling secure auth and seamless UX?
-    -How will I persist a user and store their decisions to build my own defensible data set which can refine my own model? (for example if allowing users 1 high confidence pick per round, then check their ROI over time, then mix their knowledge into the model run step accordingly)
-    -how to do it safe/secure/law-abiding GDPR/modern web dev style?
-    - Will want to support different views/possibilities for authenticated users vs just website visitor
-    - will want to handle payments for additional service in future.
-1. add My Page dashboard page (authentication). User table? Security? Views? gmail?
-2. sliders&tags
-3. run model
-4. modify selection (with full coverage?)
-5. submit personal selection (1 per round)
-6. upload/set own internal probs
-7. view my past results, compare with base model
-8. allow one confident pick that overrides model, can track stats for this
+
+
 
 --------------------------------------------------------------------------------------------------------
 
@@ -71,7 +59,9 @@ Other:
     - Might thus settle for riskAverseKLedgePowerWeighting(...)
     - Can at least test vs my intuition (which naturally tries to bake in risk with value)
     - by looking at real internal vs public distrs for matches and calculating scores and see if highest score matches intuition
-
+-User:
+7. view my past results, compare with base model
+8. allow one confident pick that overrides model, can track stats for this
 
 Notes for Railway:
 1. deploy Railway
