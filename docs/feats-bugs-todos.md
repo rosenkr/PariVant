@@ -1,7 +1,6 @@
-
-
-3. Impl Auth V1, first see https://www.youtube.com/watch?v=eYCOzPx3ht8
-4. about page add content (clickable card, for example "V1 model" with an image)
+1. Auth implemented, now add login & Authorization. Login with U/PW AND google OAuth2. 
+2. Then see users_specs
+3. about page add content (clickable card, for example "V1 model" with an image)
 --------------------------------------------------------------------------------------------------------
 --------------------------------------------------------------------------------------------------------
 --------------------------------------------------------------------------------------------------------
@@ -16,7 +15,7 @@ V2:
 3. Explanatory AI messages per pick
 4. More information in info panel (weather, injuries, type of clash, not sure what else). Goal is to provide value to make bettor more informed
 5. Impl the About page explaining the model, the purpose, constraints, stats/maths + fresh domain data + knowledge = Parivant logo, etc
-
+6. colors-style like Railway but with my dark green/cyan tone instead of purple
 --------------------------------------------------------------------------------------------------------
 
 Control of already implemented code behavior:

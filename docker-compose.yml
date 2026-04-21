@@ -26,6 +26,7 @@ services:
       FOOTBALL_DATA_TOKEN: ${FOOTBALL_DATA_TOKEN}
       ELEVEN_ELO_KEY: ${ELEVEN_ELO_KEY}
       BZZOIRO_KEY: ${BZZOIRO_KEY}
+      JWT_SECRET: ${JWT_SECRET}
 
 volumes:
   betting_pgdata:
