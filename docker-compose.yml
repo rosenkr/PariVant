@@ -19,6 +19,7 @@ services:
     ports:
       - "8080:8080"
     environment:
+      SPRING_PROFILES_ACTIVE: dev
       SPRING_DATASOURCE_URL: jdbc:postgresql://db:5432/betting
       SPRING_DATASOURCE_USERNAME: betting
       SPRING_DATASOURCE_PASSWORD: ${POSTGRES_PASSWORD}
@@ -27,6 +28,8 @@ services:
       ELEVEN_ELO_KEY: ${ELEVEN_ELO_KEY}
       BZZOIRO_KEY: ${BZZOIRO_KEY}
       JWT_SECRET: ${JWT_SECRET}
+      LOGGING_LEVEL_ORG_SPRINGFRAMEWORK: DEBUG
+    command: [ "java", "-jar", "/app/app.jar", "--debug" ]
 
 volumes:
   betting_pgdata:
