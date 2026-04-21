@@ -42,6 +42,7 @@ public class SecurityConfig {
     @Profile("prod")
     public SecurityFilterChain prodFilterChain(HttpSecurity http) throws Exception {
         http
+                .cors(Customizer.withDefaults())
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers("/authenticate", "/public/**", "/error").permitAll()
                         .anyRequest().authenticated()
