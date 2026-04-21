@@ -35,7 +35,7 @@ public class SecurityConfig {
         http
                 .authorizeHttpRequests(auth ->
                         auth
-                                .requestMatchers("authenticate").permitAll() // Allow clients to hit authenticate without authentication
+                                .requestMatchers("/authenticate").permitAll() // Allow clients to hit authenticate without authentication
                                 .anyRequest().authenticated()); // Require authentication for all requests
         http.addFilterBefore(jwtAuthFilter, UsernamePasswordAuthenticationFilter.class);
         return http.build();
