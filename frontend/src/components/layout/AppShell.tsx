@@ -1,8 +1,12 @@
 import { Box, Container, Typography, Stack } from "@mui/material";
-import { Outlet } from "react-router-dom";
+import { Link as RouterLink, Outlet } from "react-router-dom";
+import { useState } from "react";
 import { TopNav } from "./TopNav";
+import { AuthModal } from "../auth/AuthModal";
 
 export function AppShell() {
+  const [authModalOpen, setAuthModalOpen] = useState(false);
+
   return (
     <Box
       sx={(theme) => ({
@@ -12,7 +16,7 @@ export function AppShell() {
         backgroundColor: theme.appColors.surface.page,
       })}
     >
-      <TopNav />
+      <TopNav onOpenAuthModal={() => setAuthModalOpen(true)} />
 
       <Box
         component="main"
@@ -87,20 +91,47 @@ export function AppShell() {
               justifyContent="center"
             >
               <Typography
+                component={RouterLink}
+                to="/privacy"
                 variant="body1"
-                sx={(theme) => ({ color: theme.appColors.text.primary })}
+                sx={(theme) => ({
+                  color: theme.appColors.text.secondary,
+                  textDecoration: "none",
+                  transition:
+                    "color 160ms ease, text-decoration-color 160ms ease",
+                  "&:hover": {
+                    color: theme.appColors.text.primary,
+                    textDecoration: "underline",
+                  },
+                })}
               >
                 Privacy Policy
               </Typography>
+
               <Typography
+                component={RouterLink}
+                to="/tos"
                 variant="body1"
-                sx={(theme) => ({ color: theme.appColors.text.primary })}
+                sx={(theme) => ({
+                  color: theme.appColors.text.secondary,
+                  textDecoration: "none",
+                  transition:
+                    "color 160ms ease, text-decoration-color 160ms ease",
+                  "&:hover": {
+                    color: theme.appColors.text.primary,
+                    textDecoration: "underline",
+                  },
+                })}
               >
                 Terms of Service
               </Typography>
+
               <Typography
                 variant="body1"
-                sx={(theme) => ({ color: theme.appColors.text.primary })}
+                sx={(theme) => ({
+                  color: theme.appColors.text.secondary,
+                  cursor: "default",
+                })}
               >
                 Cookie Preferences
               </Typography>
@@ -113,11 +144,14 @@ export function AppShell() {
                 color: theme.appColors.text.secondary,
               })}
             >
-              © 2026 Alexander Rosenkrans. All rights reserved.
+              © {new Date().getFullYear()} Alexander Rosenkrans. All rights
+              reserved.
             </Typography>
           </Stack>
         </Container>
       </Box>
+
+      <AuthModal open={authModalOpen} onClose={() => setAuthModalOpen(false)} />
     </Box>
   );
 }

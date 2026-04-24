@@ -57,6 +57,23 @@ export type AppColors = {
       hoverBorder: string;
     };
   };
+  auth: {
+    modalBackground: string;
+    modalBorder: string;
+    modalShadow: string;
+    fieldBackground: string;
+    fieldBorder: string;
+    fieldBorderHover: string;
+    fieldBorderFocus: string;
+    googleBackground: string;
+    googleBackgroundHover: string;
+    googleBorder: string;
+    googleBorderHover: string;
+    strengthTrack: string;
+    strengthWeak: string;
+    strengthMedium: string;
+    strengthStrong: string;
+  };
   status: {
     success: string;
     warning: string;
@@ -131,6 +148,23 @@ const darkMode: AppColors = {
       hoverBorder: "rgba(142, 164, 216, 0.3)",
     },
   },
+  auth: {
+    modalBackground: "#566064",
+    modalBorder: "rgba(165, 243, 252, 0.18)",
+    modalShadow: "0 24px 56px rgba(0, 0, 0, 0.28)",
+    fieldBackground: "rgba(255, 255, 255, 0.03)",
+    fieldBorder: "rgba(165, 243, 252, 0.18)",
+    fieldBorderHover: "rgba(165, 243, 252, 0.3)",
+    fieldBorderFocus: "#67e8f9",
+    googleBackground: "rgba(255, 255, 255, 0.03)",
+    googleBackgroundHover: "rgba(255, 255, 255, 0.06)",
+    googleBorder: "rgba(165, 243, 252, 0.18)",
+    googleBorderHover: "rgba(165, 243, 252, 0.3)",
+    strengthTrack: "rgba(255, 255, 255, 0.08)",
+    strengthWeak: "#f87171",
+    strengthMedium: "#f59e0b",
+    strengthStrong: "#34d399",
+  },
   status: {
     success: "#34d399",
     warning: "#f59e0b",
@@ -139,9 +173,9 @@ const darkMode: AppColors = {
   },
   nav: {
     item: {
-      color: "#d9e0e3",
-      activeColor: "#f5f7f8",
-      hoverColor: "#f5f7f8",
+      color: "#edf2f4",
+      activeColor: "#ffffff",
+      hoverColor: "#ffffff",
       hoverBackground: "rgba(103, 232, 249, 0.10)",
       activeBackground: "rgba(103, 232, 249, 0.14)",
     },
@@ -204,6 +238,23 @@ const lightMode: AppColors = {
       hoverBackground: "rgba(107, 125, 168, 0.14)",
       hoverBorder: "rgba(107, 125, 168, 0.3)",
     },
+  },
+  auth: {
+    modalBackground: "#ffffff",
+    modalBorder: "rgba(22, 101, 52, 0.12)",
+    modalShadow: "0 24px 56px rgba(16, 21, 20, 0.12)",
+    fieldBackground: "#ffffff",
+    fieldBorder: "rgba(22, 101, 52, 0.16)",
+    fieldBorderHover: "rgba(22, 101, 52, 0.28)",
+    fieldBorderFocus: "#166534",
+    googleBackground: "#ffffff",
+    googleBackgroundHover: "rgba(22, 101, 52, 0.04)",
+    googleBorder: "rgba(22, 101, 52, 0.16)",
+    googleBorderHover: "rgba(22, 101, 52, 0.28)",
+    strengthTrack: "rgba(16, 21, 20, 0.08)",
+    strengthWeak: "#dc2626",
+    strengthMedium: "#d97706",
+    strengthStrong: "#15803d",
   },
   status: {
     success: "#15803d",

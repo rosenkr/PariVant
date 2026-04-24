@@ -56,7 +56,8 @@ export function getAppTheme(mode: PaletteMode) {
     },
 
     typography: {
-      fontFamily: "system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Arial, sans-serif",
+      fontFamily:
+        "system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Arial, sans-serif",
     },
 
     components: {
@@ -116,6 +117,59 @@ export function getAppTheme(mode: PaletteMode) {
             backgroundColor: colors.surface.paper,
             color: colors.text.primary,
             borderBottom: `1px solid ${colors.border.subtle}`,
+          },
+        },
+      },
+
+      MuiTextField: {
+        defaultProps: {
+          variant: "outlined",
+          fullWidth: true,
+        },
+      },
+
+      MuiOutlinedInput: {
+        styleOverrides: {
+          root: {
+            backgroundColor: colors.auth.fieldBackground,
+            borderRadius: 14,
+            transition: "box-shadow 160ms ease, border-color 160ms ease",
+            "& .MuiOutlinedInput-notchedOutline": {
+              borderColor: colors.auth.fieldBorder,
+            },
+            "&:hover .MuiOutlinedInput-notchedOutline": {
+              borderColor: colors.auth.fieldBorderHover,
+            },
+            "&.Mui-focused .MuiOutlinedInput-notchedOutline": {
+              borderColor: colors.auth.fieldBorderFocus,
+              borderWidth: 2,
+            },
+          },
+        },
+      },
+
+      MuiInputLabel: {
+        styleOverrides: {
+          root: {
+            "&.Mui-focused": {
+              color: colors.auth.fieldBorderFocus,
+            },
+          },
+        },
+      },
+
+      MuiDialog: {
+        styleOverrides: {
+          paper: {
+            backgroundImage: "none",
+          },
+        },
+      },
+
+      MuiButton: {
+        styleOverrides: {
+          containedPrimary: {
+            boxShadow: "none",
           },
         },
       },

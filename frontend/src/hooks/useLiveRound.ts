@@ -1,8 +1,6 @@
-// src/hooks/useLiveRound.ts
 import { useEffect, useMemo, useState } from "react";
+import { API_BASE_URL } from "../api/http";
 import type { LiveRoundSnapshot } from "../types/live";
-
-const API_BASE_URL = import.meta.env.VITE_API_BASE_URL ?? "http://localhost:8080";
 
 type LiveState =
   | { status: "idle" }
@@ -24,29 +22,38 @@ export function useLiveRound(roundId: number | null, enabled: boolean) {
     const url = `${API_BASE_URL}/public/rounds/${roundId}/live`;
     const es = new EventSource(url);
 
-    const onSnapshot = (ev: MessageEvent) => {
+    const onSnapshot = (event: Event) => {
+      if (!(event instanceof MessageEvent) || typeof event.data !== "string") {
+        setState({
+          status: "error",
+          message: "Failed to parse live snapshot JSON.",
+        });
+        return;
+      }
+
       try {
-        const parsed = JSON.parse(ev.data) as LiveRoundSnapshot;
+        const parsed = JSON.parse(event.data) as LiveRoundSnapshot;
         setState({ status: "live", snapshot: parsed });
       } catch {
-        setState({ status: "error", message: "Failed to parse live snapshot JSON." });
+        setState({
+          status: "error",
+          message: "Failed to parse live snapshot JSON.",
+        });
       }
     };
-    
-    es.addEventListener("snapshot", onSnapshot as EventListener);
+
+    es.addEventListener("snapshot", onSnapshot);
 
     es.onerror = () => {
-      // Browser auto-retries EventSource. We keep a friendly state.
       setState({ status: "error", message: "Live connection lost. Reconnecting…" });
     };
 
     return () => {
-      es.removeEventListener("snapshot", onSnapshot as EventListener);
+      es.removeEventListener("snapshot", onSnapshot);
       es.close();
     };
   }, [roundId, enabled]);
 
-  // Convenience: return snapshot (or null) + state.
   const snapshot = useMemo(() => {
     return state.status === "live" ? state.snapshot : null;
   }, [state]);

@@ -12,6 +12,7 @@ import {
   FormControl,
   MenuItem,
   Select,
+  type SelectChangeEvent,
 } from "@mui/material";
 import LightModeRoundedIcon from "@mui/icons-material/LightModeRounded";
 import DarkModeRoundedIcon from "@mui/icons-material/DarkModeRounded";
@@ -26,20 +27,27 @@ type NavItem = { label: string; path: string };
 
 const NAV: NavItem[] = [{ label: "About", path: "/about" }];
 
-function currentTabIndex(pathname: string) {
+function currentTabIndex(pathname: string): number | false {
   const idx = NAV.findIndex((n) => n.path === pathname);
   return idx === -1 ? false : idx;
 }
 
-export function TopNav() {
+type Props = {
+  onOpenAuthModal: () => void;
+};
+
+export function TopNav({ onOpenAuthModal }: Props) {
   const location = useLocation();
   const navigate = useNavigate();
   const { mode, toggleMode } = useThemeMode();
 
   const value = currentTabIndex(location.pathname);
   const isDark = mode === "dark";
-  // todo add real state management for language
-  const [language, setLanguage] = useState<"English" | "Svenska">("English");
+  const [language, setLanguage] = useState("English");
+
+  const handleLanguageChange = (event: SelectChangeEvent) => {
+    setLanguage(event.target.value);
+  };
 
   return (
     <AppBar position="sticky" elevation={0}>
@@ -61,11 +69,13 @@ export function TopNav() {
             <Box
               role="button"
               tabIndex={0}
-              onClick={() => navigate("/")}
-              onKeyDown={(e) => {
-                if (e.key === "Enter" || e.key === " ") {
-                  e.preventDefault();
-                  navigate("/");
+              onClick={() => {
+                void navigate("/");
+              }}
+              onKeyDown={(event) => {
+                if (event.key === "Enter" || event.key === " ") {
+                  event.preventDefault();
+                  void navigate("/");
                 }
               }}
               sx={(theme) => ({
@@ -132,7 +142,12 @@ export function TopNav() {
           >
             <Tabs
               value={value}
-              onChange={(_, next) => navigate(NAV[next].path)}
+              onChange={(_, next: number) => {
+                const nextItem = NAV[next];
+                if (nextItem) {
+                  void navigate(nextItem.path);
+                }
+              }}
               textColor="inherit"
               indicatorColor="primary"
               sx={(theme) => ({
@@ -190,9 +205,10 @@ export function TopNav() {
             }}
           >
             <Stack direction="row" spacing={1} alignItems="center">
-              <Tooltip title="Log in">
+              <Tooltip title="Log in or create account">
                 <IconButton
-                  aria-label="Log in"
+                  aria-label="Log in or create account"
+                  onClick={onOpenAuthModal}
                   sx={(theme) => ({
                     width: 40,
                     height: 40,
@@ -211,9 +227,7 @@ export function TopNav() {
               <FormControl size="small">
                 <Select
                   value={language}
-                  onChange={(e) =>
-                    setLanguage(e.target.value as "English" | "Svenska")
-                  }
+                  onChange={handleLanguageChange}
                   variant="outlined"
                   displayEmpty
                   startAdornment={
@@ -272,7 +286,6 @@ export function TopNav() {
                       width: 40,
                       height: 40,
                       borderRadius: 1.5,
-
                       color: toggleColors.color,
                       "&:hover": {
                         backgroundColor: toggleColors.hoverBackground,

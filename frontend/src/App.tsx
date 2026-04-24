@@ -1,8 +1,9 @@
 import { Routes, Route } from "react-router-dom";
 import { AppShell } from "./components/layout/AppShell";
 import HomePage from "./pages/HomePage";
-import { AboutPage } from "./pages/RoundsPage";
-
+import { AboutPage } from "./pages/AboutPage";
+import { TermsPage } from "./pages/TermsPage";
+import { PolicyPage } from "./pages/PolicyPage";
 
 export default function App() {
   return (
@@ -10,6 +11,8 @@ export default function App() {
       <Route element={<AppShell />}>
         <Route path="/" element={<HomePage />} />
         <Route path="/about" element={<AboutPage />} />
+        <Route path="/tos" element={<TermsPage />} />
+        <Route path="/privacy" element={<PolicyPage />} />
       </Route>
     </Routes>
   );
