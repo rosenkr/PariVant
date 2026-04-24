@@ -161,6 +161,7 @@ export function TopNav({ onOpenAuthModal }: Props) {
                   textTransform: "none",
                   fontWeight: 700,
                   color: theme.appColors.nav.item.color,
+                  opacity: 1,
                   px: { xs: 1.25, sm: 2 },
                   borderRadius: 999,
                   transition: "background-color 160ms ease, color 160ms ease",

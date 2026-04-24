@@ -173,7 +173,7 @@ const darkMode: AppColors = {
   },
   nav: {
     item: {
-      color: "#edf2f4",
+      color: "#ffffff",
       activeColor: "#ffffff",
       hoverColor: "#ffffff",
       hoverBackground: "rgba(103, 232, 249, 0.10)",
