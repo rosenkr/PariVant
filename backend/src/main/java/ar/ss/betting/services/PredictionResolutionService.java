@@ -1,4 +1,4 @@
-package ar.ss.betting.rework;
+package ar.ss.betting.services;
 
 import ar.ss.betting.matchresolver.MatchResolver;
 import ar.ss.betting.matchresolver.RequestedMatchIdentity;

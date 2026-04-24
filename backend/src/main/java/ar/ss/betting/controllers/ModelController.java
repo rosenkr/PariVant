@@ -1,8 +1,8 @@
 package ar.ss.betting.controllers;
 
-import ar.ss.betting.rework.ModelSelectionRequestDto;
-import ar.ss.betting.rework.ModelSelectionResponseDto;
-import ar.ss.betting.rework.ModelService;
+import ar.ss.betting.services.dto.ModelSelectionRequestDto;
+import ar.ss.betting.services.dto.ModelSelectionResponseDto;
+import ar.ss.betting.services.ModelService;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 

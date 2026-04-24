@@ -1,4 +1,4 @@
-package ar.ss.betting.rework;
+package ar.ss.betting.services.livescore;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;

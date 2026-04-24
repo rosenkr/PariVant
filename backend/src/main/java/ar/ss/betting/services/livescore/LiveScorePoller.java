@@ -1,4 +1,4 @@
-package ar.ss.betting.rework;
+package ar.ss.betting.services.livescore;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

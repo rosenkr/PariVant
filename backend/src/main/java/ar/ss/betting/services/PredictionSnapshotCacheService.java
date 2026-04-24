@@ -1,4 +1,4 @@
-package ar.ss.betting.rework;
+package ar.ss.betting.services;
 
 import ar.ss.betting.predictionproviders.service.PredictionQueryService;
 import ar.ss.betting.predictionproviders.service.model.ProviderRawPredictionSnapshot;

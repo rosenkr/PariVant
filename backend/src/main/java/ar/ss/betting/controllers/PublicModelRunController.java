@@ -5,7 +5,7 @@ import ar.ss.betting.persistence.entity.ModelRunProviderPredictionEntity;
 import ar.ss.betting.persistence.repo.ModelRunProviderPredictionRepository;
 import ar.ss.betting.persistence.repo.ModelRunRepository;
 import ar.ss.betting.persistence.repo.RoundRepository;
-import ar.ss.betting.rework.RoundApiService;
+import ar.ss.betting.services.RoundApiService;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 

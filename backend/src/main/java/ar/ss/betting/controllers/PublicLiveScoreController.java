@@ -1,6 +1,6 @@
 package ar.ss.betting.controllers;
 
-import ar.ss.betting.rework.LiveScoreService;
+import ar.ss.betting.services.livescore.LiveScoreService;
 import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;

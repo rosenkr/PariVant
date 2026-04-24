@@ -1,4 +1,4 @@
-package ar.ss.betting.rework;
+package ar.ss.betting.util;
 
 import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.dao.DataIntegrityViolationException;

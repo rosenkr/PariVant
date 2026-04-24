@@ -1,4 +1,4 @@
-package ar.ss.betting.rework;
+package ar.ss.betting.services;
 
 import ar.ss.betting.domain.Match;
 import ar.ss.betting.domain.Round;
@@ -20,6 +20,7 @@ import ar.ss.betting.predictionproviders.service.model.PredictionQueryResponse;
 import ar.ss.betting.predictionproviders.service.model.ProviderPredictionResult;
 import ar.ss.betting.predictionproviders.service.model.ProviderPredictionStatus;
 import ar.ss.betting.predictionproviders.service.model.ProviderRawPredictionSnapshot;
+import ar.ss.betting.services.dto.ModelSelectionRequestDto;
 import org.springframework.stereotype.Service;
 
 import java.time.Clock;

@@ -1,4 +1,4 @@
-package ar.ss.betting.rework;
+package ar.ss.betting.services.dto;
 
 import java.util.List;
 import java.util.Map;

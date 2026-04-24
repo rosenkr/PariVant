@@ -25,4 +25,8 @@ For localhost testing:
 2. In a separate terminal, start the frontend dev server: 
 ```npm run dev```
 
-If in read-only mode, it means I will be asking for either planning or for code suggestions.
+If in read-only mode, it means I will be asking for either planning, explanations, or for code suggestions.
+For planning, you may roughly keep in mind the project goal: Parivant should be a tool that helps users make better 
+informed decisions when betting on Stryktipset, Topptipset or Europatipset. I already gather predictions about matches from the web,
+a model that spits out suggested selections for any round of matches, and I intend on aggregating important news relevant to figuring out which team is more likely to win.
+In addition, I show live scores currently.

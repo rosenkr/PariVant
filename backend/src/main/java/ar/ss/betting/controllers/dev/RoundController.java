@@ -1,8 +1,8 @@
 package ar.ss.betting.controllers.dev;
 
 import ar.ss.betting.domain.RoundType;
-import ar.ss.betting.rework.ModelSelectionRequestDto;
-import ar.ss.betting.rework.RoundApiService;
+import ar.ss.betting.services.dto.ModelSelectionRequestDto;
+import ar.ss.betting.services.RoundApiService;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 

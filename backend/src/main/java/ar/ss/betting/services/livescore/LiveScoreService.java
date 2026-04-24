@@ -1,4 +1,4 @@
-package ar.ss.betting.rework;
+package ar.ss.betting.services.livescore;
 
 import ar.ss.betting.domain.MatchStatus;
 import ar.ss.betting.domain.RoundStatus;

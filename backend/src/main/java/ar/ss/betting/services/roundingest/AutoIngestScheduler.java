@@ -1,4 +1,4 @@
-package ar.ss.betting.roundingest;
+package ar.ss.betting.services.roundingest;
 
 import ar.ss.betting.domain.RoundType;
 import org.slf4j.Logger;

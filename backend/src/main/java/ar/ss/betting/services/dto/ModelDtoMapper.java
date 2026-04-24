@@ -1,4 +1,4 @@
-package ar.ss.betting.rework;
+package ar.ss.betting.services.dto;
 
 import ar.ss.betting.domain.Match;
 import ar.ss.betting.domain.Outcome;
@@ -14,6 +14,7 @@ import ar.ss.betting.model.ModelSelectionResult;
 import ar.ss.betting.model.ProbabilityTriple;
 import ar.ss.betting.model.Side;
 import ar.ss.betting.model.TagType;
+import ar.ss.betting.services.ModelService;
 import org.springframework.stereotype.Component;
 
 import java.time.Instant;
