@@ -1,7 +1,7 @@
 import { Paper, Stack, Typography } from "@mui/material";
 import { Page } from "../components/layout/Page";
 
-export function PrivacyPage() {
+export function PolicyPage() {
   return (
     <Page maxWidth="md">
       <Stack spacing={3}>
