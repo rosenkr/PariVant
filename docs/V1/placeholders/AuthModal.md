@@ -21,3 +21,18 @@ So the main placeholder area is:
 await delay(...)
 
 instead of real fetch(...) calls.
+
+2. No authenticated session state exists yet
+
+Right now the modal closes on “success”, but there is no actual frontend auth state.
+
+That means:
+
+no current user
+no token storage
+no cookie/session handling awareness
+no navbar state change after login
+no protected route behavior
+no “My Page” route yet
+
+So currently auth is only a UI flow, not an app-wide signed-in state.
