@@ -71,6 +71,9 @@ export function getAppTheme(mode: PaletteMode) {
       },
 
       MuiPaper: {
+        defaultProps: {
+          variant: "outlined",
+        },
         styleOverrides: {
           root: {
             backgroundImage: "none",
