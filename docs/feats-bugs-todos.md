@@ -3,7 +3,6 @@ Stuff to consider for V2:
 2. mobile-friendly rework
 3. Explanatory AI messages per pick
 4. More information in info panel (weather, injuries, type of clash, not sure what else). Goal is to provide value to make bettor more informed
-5. Impl the About page explaining the model, the purpose, constraints, stats/maths + fresh domain data + knowledge = Parivant logo, etc
 6. colors-style like Railway but with my dark green/cyan tone instead of purple
 7. Investigate how I handle an ended round: trigger, storage, presentation, correctness, match scores
     - How does it intermingle with model runs, compare result to model run. On ended page, store actual result

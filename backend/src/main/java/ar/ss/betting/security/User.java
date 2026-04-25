@@ -1,7 +1,9 @@
 package ar.ss.betting.security;
 
 import jakarta.persistence.*;
+import lombok.AccessLevel;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
 import lombok.Setter;
 import org.jspecify.annotations.Nullable;
 import org.springframework.security.core.GrantedAuthority;
@@ -14,19 +16,24 @@ import java.util.List;
 // Implements UserDetails which the Spring authentication provider understands
 // email is the effective username either from gmail or email flows
 @Entity
+@NoArgsConstructor(access = AccessLevel.PROTECTED)
+@Table(name = "app_user")
 public class User implements UserDetails {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(nullable = false, unique = true)
+    @Column(name = "email", nullable = false, unique = true)
     private String email;
+    @Column(name = "p_hash")
     private String pHash;
+    @Getter
     @Enumerated(EnumType.STRING)
     private Role role;
 
     // Should store Google OIC sub claim
-    @Column(unique = true)
+    @Getter
+    @Column(name = "google_subject", unique = true)
     private String googleSubject;
 
     @Override
@@ -43,6 +50,5 @@ public class User implements UserDetails {
     public String getUsername() {
         return email;
     }
-
 
 }
