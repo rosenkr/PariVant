@@ -78,6 +78,7 @@ export function getAppTheme(mode: PaletteMode) {
           root: {
             backgroundImage: "none",
             border: `1px solid ${colors.border.subtle}`,
+            borderRadius: 5.6, // 0.7 * theme.shape.borderRadius if default is 8px
           },
         },
       },
