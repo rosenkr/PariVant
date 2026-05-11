@@ -4,6 +4,7 @@ import {
   useContext,
   useMemo,
   useState,
+  useEffect,
   type PropsWithChildren,
 } from "react";
 import type { AuthResponse } from "../types/auth";
@@ -17,20 +18,36 @@ type AuthContextValue = {
 };
 
 const AuthContext = createContext<AuthContextValue | undefined>(undefined);
+const AUTH_STORAGE_KEY = "parivant.auth";
 
 export function AuthProvider({ children }: PropsWithChildren) {
   const [token, setToken] = useState<string | null>(null);
   const [user, setUser] = useState<AuthResponse["user"] | null>(null);
 
+  useEffect(() => {
+    const raw = localStorage.getItem(AUTH_STORAGE_KEY);
+    if (!raw) return;
+
+    try {
+      const parsed = JSON.parse(raw) as AuthResponse;
+      setToken(parsed.token);
+      setUser(parsed.user);
+    } catch {
+      localStorage.removeItem(AUTH_STORAGE_KEY);
+    }
+  }, []);
+
   // Updates token + user
   const signIn = useCallback((authResponse: AuthResponse) => {
     setToken(authResponse.token);
     setUser(authResponse.user);
+    localStorage.setItem(AUTH_STORAGE_KEY, JSON.stringify(authResponse));
   }, []);
 
   const signOut = useCallback(() => {
     setToken(null);
     setUser(null);
+    localStorage.removeItem(AUTH_STORAGE_KEY);
   }, []);
 
   const value = useMemo<AuthContextValue>(
