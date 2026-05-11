@@ -1,4 +1,4 @@
-// src/types/live.ts
+// src/types/liveScore.ts
 // Types for the SSE /public/rounds/{roundId}/live endpoint.
 
 export type LiveMatchUpdate = {

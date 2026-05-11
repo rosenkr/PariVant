@@ -8,7 +8,7 @@ import {
   Typography,
 } from "@mui/material";
 import { useEffect, useState } from "react";
-import type { AuthView } from "../../auth/types";
+import type { AuthView } from "../../types/auth";
 import { LoginForm } from "./LoginForm";
 import { RegisterForm } from "./RegisterForm";
 import { VerifyEmailView } from "./VerifyEmailView";

@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
 import { API_BASE_URL } from "../api/http";
-import type { LiveRoundSnapshot } from "../types/live";
+import type { LiveRoundSnapshot } from "../types/liveScore";
 
 type LiveState =
   | { status: "idle" }

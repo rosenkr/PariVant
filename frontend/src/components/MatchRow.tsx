@@ -1,7 +1,7 @@
 import { Box, Stack, Typography } from "@mui/material";
 import { SelectionBox } from "./SelectionBox";
 import type { Outcome } from "../types/modelRun";
-import type { LiveMatchUpdate } from "../types/live";
+import type { LiveMatchUpdate } from "../types/liveScore";
 import { formatTimeOnly, parseLocalDateTime } from "../utils/time";
 
 type Props = {

@@ -11,7 +11,7 @@ import { useModelRuns } from "../hooks/useModelRuns";
 import { useLiveRound } from "../hooks/useLiveRound";
 import { useRoundProviderPredictions } from "../hooks/useRoundProviderPredictions";
 
-import type { LiveMatchUpdate } from "../types/live";
+import type { LiveMatchUpdate } from "../types/liveScore";
 import type {
   ModelRunView,
   Outcome,
