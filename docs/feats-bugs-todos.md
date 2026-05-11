@@ -42,5 +42,11 @@ Stuff to consider for V2:
    or in other words; when a round is over, all its coupons needs to be resolved to win or lose
 31. scrape directly from SS instead of tipzer? Mainly to parse MORE rounds per type.
 32. analyze webssite with https://pagespeed.web.dev/analysis/https-parivant-se/mbmyefunbv?form_factor=mobile
-
-
+33. Forms + Client side validation practice: Migrate *Form.tsx & VerifyEmailView 
+- to use React Hook Form and zod. Email validation is duped in both auth forms
+- insted of as ... after fetch() in rounds,modelRuns,HomePage, use zod
+35. Context usage? 
+36. Homepage is too large: but whats the idea behind extracting into custom hooks?3e
+37. ProbabilityTripleDtoShape is duplicated in MatchDetilsPanels n shared types
+38. as Record casts bad
+39. Clickable logo shouldnt be box with role button.. ButtonBase or Router Link

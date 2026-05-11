@@ -36,6 +36,21 @@ public class User implements UserDetails {
     @Column(name = "google_subject", unique = true)
     private String googleSubject;
 
+    private User(String email, String pHash, Role role, String googleSubject) {
+        this.email = email;
+        this.pHash = pHash;
+        this.role = role;
+        this.googleSubject = googleSubject;
+    }
+
+    public static User localUser(String email, String pHash) {
+        return new User(email, pHash, Role.ROLE_USER, null);
+    }
+
+    public static User gmailUser(String gmail, String googleSubject) {
+        return new User(gmail, null, Role.ROLE_USER, googleSubject);
+    }
+
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
         return List.of(new SimpleGrantedAuthority(role.name()));
