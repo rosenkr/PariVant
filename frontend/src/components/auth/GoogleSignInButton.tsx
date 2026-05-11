@@ -1,6 +1,7 @@
 import { Alert, Box, CircularProgress, Stack, Typography } from "@mui/material";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { signInWithGoogle } from "../../api/auth";
+import type {AuthResponse} from "../../types/auth.ts";
 
 declare global {
   interface Window {
@@ -24,7 +25,7 @@ declare global {
 
 type Props = {
   onStart: () => void;
-  onSuccess: () => void;
+  onSuccess: (authResponse: AuthResponse) => void;
   onError: (message: string) => void;
 };
 
@@ -79,8 +80,8 @@ export function GoogleSignInButton({ onStart, onSuccess, onError }: Props) {
       onStart();
 
       try {
-        await signInWithGoogle({ credential });
-        onSuccess();
+        let authResponse = await signInWithGoogle({ credential });
+        onSuccess(authResponse);
       } catch {
         onError(
           "Google sign-in is not available yet. Please try email sign-in.",

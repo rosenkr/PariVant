@@ -28,7 +28,7 @@ export type VerifyEmailPayload = {
   code: string;
 };
 
-export type GoogleAuthPayload = {
+export type GoogleAuthRequest = {
   credential: string;
 };
 
@@ -39,4 +39,12 @@ export type RegisterResponse = {
 
 export type VerifyEmailResponse = {
   success: true;
+};
+
+export type AuthResponse = {
+  token: string;
+  user: {
+    email: string;
+    role: string;
+  };
 };

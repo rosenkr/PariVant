@@ -13,8 +13,9 @@ import {
 } from "@mui/material";
 import { useMemo, useState } from "react";
 import type { FormEventHandler } from "react";
-import { signIn } from "../../api/auth";
 import { GoogleSignInButton } from "./GoogleSignInButton";
+import { useAuth} from "../../auth/AuthContext.tsx";
+import {signInWithEmailAndPw} from "../../api/auth.ts";
 
 type Props = {
   onSwitchToSignUp: () => void;
@@ -33,6 +34,7 @@ export function LoginForm({ onSwitchToSignUp, onSuccess }: Props) {
   const [showPassword, setShowPassword] = useState(false);
   const [submitError, setSubmitError] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const { signIn } = useAuth();
 
   const emailError = useMemo(() => {
     if (!emailTouched) return "";
@@ -63,7 +65,7 @@ export function LoginForm({ onSwitchToSignUp, onSuccess }: Props) {
 
     void (async () => {
       try {
-        await signIn({ email, password });
+        await signInWithEmailAndPw({ email, password });
         onSuccess();
       } catch (error) {
         setSubmitError(
@@ -171,7 +173,8 @@ export function LoginForm({ onSwitchToSignUp, onSuccess }: Props) {
             setIsSubmitting(true);
             setSubmitError(null);
           }}
-          onSuccess={() => {
+          onSuccess={(authResponse) => {
+            signIn(authResponse);
             setIsSubmitting(false);
             onSuccess();
           }}

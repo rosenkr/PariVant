@@ -144,7 +144,7 @@ export function AppShell() {
                 color: theme.appColors.text.secondary,
               })}
             >
-              © {new Date().getFullYear()} Alexander Rosenkrans. All rights
+              © {new Date().getFullYear()} A.R. All rights
               reserved.
             </Typography>
           </Stack>

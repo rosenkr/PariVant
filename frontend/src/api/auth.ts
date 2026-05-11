@@ -1,12 +1,13 @@
 import { API_BASE_URL } from "./http";
 import type {
-  GoogleAuthPayload,
+  AuthResponse,
+  GoogleAuthRequest,
   RegisterPayload,
   RegisterResponse,
   SignInPayload,
   VerifyEmailPayload,
   VerifyEmailResponse,
-} from "../auth/types";
+} from "../types/auth";
 
 const PLACEHOLDER_DELAY_MS = 900;
 const VERIFY_CODE = "123456";
@@ -16,26 +17,8 @@ function delay(ms: number) {
   return new Promise((resolve) => window.setTimeout(resolve, ms));
 }
 
-async function postJson<TResponse>(
-  path: string,
-  payload: unknown
-): Promise<TResponse> {
-  const response = await fetch(`${API_BASE_URL}${path}`, {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-    },
-    body: JSON.stringify(payload),
-  });
 
-  if (!response.ok) {
-    throw new Error(`HTTP ${response.status}`);
-  }
-
-  return (await response.json()) as TResponse;
-}
-
-export async function signIn(payload: SignInPayload): Promise<void> {
+export async function signInWithEmailAndPw(payload: SignInPayload): Promise<void> {
   await delay(PLACEHOLDER_DELAY_MS);
 
   if (payload.email.toLowerCase().includes("fail")) {
@@ -79,12 +62,23 @@ export async function resendVerificationCode(email: string): Promise<void> {
   await delay(RESEND_DELAY_MS);
 }
 
+// POSTs credentials to /auth/google
+// Later, auth token should be stored in client-side for further api calls
 export async function signInWithGoogle(
-  payload: GoogleAuthPayload
-): Promise<void> {
-  try {
-    await postJson("/api/auth/google", payload);
-  } catch {
-    await delay(PLACEHOLDER_DELAY_MS);
+  payload: GoogleAuthRequest
+): Promise<AuthResponse> {
+  const path = "/auth/google";
+  const response = await fetch(`${API_BASE_URL}${path}`, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify(payload),
+  });
+
+  if (!response.ok) {
+    throw new Error(`HTTP ${response.status}`);
   }
+
+  return (await response.json()) as AuthResponse;
 }
