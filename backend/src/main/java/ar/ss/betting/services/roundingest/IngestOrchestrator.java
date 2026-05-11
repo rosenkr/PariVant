@@ -1,6 +1,8 @@
 package ar.ss.betting.services.roundingest;
 
 import ar.ss.betting.domain.RoundType;
+import ar.ss.betting.roundingest.IngestedRound;
+import ar.ss.betting.roundingest.RoundIngestSource;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
