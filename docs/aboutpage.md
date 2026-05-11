@@ -1,4 +1,5 @@
-
+0. add a railway-like thing that when you scroll down
+its a filled object that is pulled along a rail which looks nice
 
 
 UI: Do it like 11elo:

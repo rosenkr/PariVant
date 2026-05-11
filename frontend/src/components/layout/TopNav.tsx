@@ -22,6 +22,8 @@ import LanguageRoundedIcon from "@mui/icons-material/LanguageRounded";
 import AccountCircleRoundedIcon from "@mui/icons-material/AccountCircleRounded";
 import { useState } from "react";
 import InfoOutlinedIcon from "@mui/icons-material/InfoOutlined";
+import {useAuth} from "../../auth/AuthContext.tsx";
+import { UserGreeting } from "../UserGreeting.tsx";
 
 type NavItem = { label: string; path: string };
 
@@ -44,6 +46,8 @@ export function TopNav({ onOpenAuthModal }: Props) {
   const value = currentTabIndex(location.pathname);
   const isDark = mode === "dark";
   const [language, setLanguage] = useState("English");
+
+  const {user, isAuthenticated} = useAuth();
 
   const handleLanguageChange = (event: SelectChangeEvent) => {
     setLanguage(event.target.value);
@@ -206,7 +210,8 @@ export function TopNav({ onOpenAuthModal }: Props) {
             }}
           >
             <Stack direction="row" spacing={1} alignItems="center">
-              <Tooltip title="Log in or create account">
+                {isAuthenticated && user && <UserGreeting user={user} />}
+                <Tooltip title="Log in or create account">
                 <IconButton
                   aria-label="Log in or create account"
                   onClick={onOpenAuthModal}

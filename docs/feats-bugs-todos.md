@@ -1,17 +1,13 @@
-1. Frontend Gmail flow:
-- Persist authresponse; setState/Context/Provider at top level
-2. frontend email flow
-
-
-
-3. add use of localStorage for across browser sessions (storing JWT token, encrypt it first: https://www.syncfusion.com/blogs/post/secure-jwt-storage-best-practices)
+0. If logged in, show in topnav some way to tell you're logged in as (
+strip mail from email, acts as username)
+1. 
+2. fix frontend email flow
+3. logout? (if logged in, login icon now dropdowns option to logout?)
 4. TopNav to consume the auth state so I can display the "dashboard" button?
-5. attach auth to future requests
+5. attach auth to future requests (Bearer: token)
 6. fix email + gmail uniqueness issue
 
-
-
-
+10. CI GA additions: Semgrep + OWASP ZAP + OWASP Dependency-Check + Gitleaks + Trivy + Checkov
 
 Stuff to consider for V2:
 1. Refine Ensemble model
