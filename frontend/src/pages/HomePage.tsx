@@ -15,8 +15,8 @@ import type { LiveMatchUpdate } from "../types/liveScore";
 import type {
   ModelRunView,
   Outcome,
-  ProbabilityTripleDtoShape,
 } from "../types/modelRun";
+import type { ProbabilityTriple } from "../types/probabilityTriple";
 import type {
   MatchProviderPredictionsView,
   ProviderPredictionView,
@@ -64,7 +64,7 @@ function parseBasePicks(run: ModelRunView | null): Record<string, Outcome> {
 
 function parseInternalProbabilities(
   run: ModelRunView | null,
-): Record<string, ProbabilityTripleDtoShape> {
+): Record<string, ProbabilityTriple> {
   if (!run) return {};
 
   if (run.internalProbabilities) return run.internalProbabilities;
@@ -73,7 +73,7 @@ function parseInternalProbabilities(
     try {
       const obj = JSON.parse(run.internalProbabilitiesJson) as unknown;
       if (obj && typeof obj === "object") {
-        return obj as Record<string, ProbabilityTripleDtoShape>;
+        return obj as Record<string, ProbabilityTriple>;
       }
     } catch {
       // ignore

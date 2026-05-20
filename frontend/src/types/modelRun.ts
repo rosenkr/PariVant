@@ -1,10 +1,5 @@
 export type Outcome = "HOME_WIN" | "DRAW" | "AWAY_WIN";
-
-export type ProbabilityTripleDtoShape = {
-  homeWin: number;
-  draw: number;
-  awayWin: number;
-};
+import type { ProbabilityTriple } from "./probabilityTriple";
 
 export type ModelRunView = {
   id: number;
@@ -22,7 +17,7 @@ export type ModelRunView = {
 
   selections?: Record<string, Outcome[]>;
   basePicks?: Record<string, Outcome>;
-  internalProbabilities?: Record<string, ProbabilityTripleDtoShape>;
+  internalProbabilities?: Record<string, ProbabilityTriple>;
 };
 
 export type GetModelRunsResult =

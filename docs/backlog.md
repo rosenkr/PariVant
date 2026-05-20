@@ -1,7 +1,3 @@
-1. logout? (if logged in, login icon now dropdowns option to logout?)
-
-
-
 
 4. Start attaching the stored JWT to protected frontend API call
 4. TopNav to consume the auth state so I can display the "dashboard" button?
@@ -32,8 +28,6 @@ Stuff to consider for V2:
    -use the exporting tool once a day
    -bugfix: aliases.put("paris saint germain", "paris saint germain"); inferred from api-football "Paris Saint Germain vs Liverpool" matched to truth "Paris Saint-Germain|Liverpool"
     - team name normalizer strips "-" from db which is bad
-16. "rework/" should be split into sensible structure over time
-17. Clean up Instant/OffsetDatetime/LocalDateTime drift across whole project
 18. add robots.txt
 19. introduce differernt runtime environments dev/test/staging/prod? flavors?
 20. add extensive logging in the code (dev env)?
@@ -62,5 +56,5 @@ Stuff to consider for V2:
 37. ProbabilityTripleDtoShape is duplicated in MatchDetilsPanels n shared types
 38. as Record casts bad
 39. Clickable logo shouldnt be box with role button.. ButtonBase or Router Link
-40. fix UI bug where the auth modal rerenders including the google button whenever I type in the textfields
 41. enable fedcm?
+42. export selections to Svenskaspel

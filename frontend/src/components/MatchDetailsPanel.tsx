@@ -2,20 +2,15 @@ import { Alert, Box, Divider, Paper, Stack, Typography } from "@mui/material";
 import type { UseQueryResult } from "@tanstack/react-query";
 import type { GetRoundProviderPredictionsResult } from "../types/providerPrediction";
 import type { ProviderPredictionView } from "../types/providerPrediction";
-import type { MatchView, TripleView } from "../types/round";
-
-type ProbabilityTripleDtoShape = {
-  homeWin: number;
-  draw: number;
-  awayWin: number;
-};
+import type { ProbabilityTriple } from "../types/probabilityTriple";
+import type { MatchView } from "../types/round";
 
 type Props = {
   match: MatchView | null;
-  publicPick: TripleView | null;
-  market: TripleView | null;
+  publicPick: ProbabilityTriple | null;
+  market: ProbabilityTriple | null;
   providers: ProviderPredictionView[];
-  internal: ProbabilityTripleDtoShape | null;
+  internal: ProbabilityTriple | null;
   providerQueryState: UseQueryResult<GetRoundProviderPredictionsResult>;
 };
 

@@ -1,0 +1,1 @@
+V1 includes adding an authentication layer, and implementing logged-in-user business logic found in user-features.md
