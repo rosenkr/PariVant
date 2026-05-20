@@ -1,4 +1,4 @@
-export type AuthView = "sign-in" | "sign-up" | "verify-email";
+export type AuthView = "sign-in" | "sign-up";
 
 export type AuthErrorCode =
   | "INVALID_CREDENTIALS"
@@ -13,32 +13,13 @@ export type AuthError = {
   message: string;
 };
 
-export type SignInPayload = {
+export type AuthRequest = {
   email: string;
   password: string;
-};
-
-export type RegisterPayload = {
-  email: string;
-  password: string;
-};
-
-export type VerifyEmailPayload = {
-  email: string;
-  code: string;
 };
 
 export type GoogleAuthRequest = {
   credential: string;
-};
-
-export type RegisterResponse = {
-  email: string;
-  verificationExpiresInSeconds: number;
-};
-
-export type VerifyEmailResponse = {
-  success: true;
 };
 
 export type AuthResponse = {

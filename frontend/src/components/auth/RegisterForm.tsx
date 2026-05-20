@@ -15,17 +15,18 @@ import { useMemo, useState } from "react";
 import type { FormEventHandler } from "react";
 import { registerAccount } from "../../api/auth";
 import { PasswordStrengthMeter } from "./PasswordStrengthMeter";
+import {useAuth} from "../../auth/AuthContext.tsx";
 
 type Props = {
   onSwitchToSignIn: () => void;
-  onRegistered: (email: string, verificationExpiresInSeconds: number) => void;
+  onSuccess: () => void;
 };
 
 function validateEmail(email: string) {
   return /\S+@\S+\.\S+/.test(email);
 }
 
-export function RegisterForm({ onSwitchToSignIn, onRegistered }: Props) {
+export function RegisterForm({ onSwitchToSignIn, onSuccess}: Props) {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [emailTouched, setEmailTouched] = useState(false);
@@ -33,7 +34,7 @@ export function RegisterForm({ onSwitchToSignIn, onRegistered }: Props) {
   const [showPassword, setShowPassword] = useState(false);
   const [submitError, setSubmitError] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
-
+  const { signIn } = useAuth();
   const emailError = useMemo(() => {
     if (!emailTouched) return "";
     if (!email.trim()) return "Email is required.";
@@ -64,8 +65,9 @@ export function RegisterForm({ onSwitchToSignIn, onRegistered }: Props) {
 
     void (async () => {
       try {
-        const response = await registerAccount({ email, password });
-        onRegistered(response.email, response.verificationExpiresInSeconds);
+        const authResponse = await registerAccount({ email, password });
+        signIn(authResponse);
+        onSuccess();
       } catch (error) {
         setSubmitError(
           error instanceof Error ? error.message : "Unable to create account right now."

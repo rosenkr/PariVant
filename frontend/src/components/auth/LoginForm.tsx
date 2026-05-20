@@ -65,7 +65,8 @@ export function LoginForm({ onSwitchToSignUp, onSuccess }: Props) {
 
     void (async () => {
       try {
-        await signInWithEmailAndPw({ email, password });
+        const authResponse = await signInWithEmailAndPw({ email, password });
+        signIn(authResponse);
         onSuccess();
       } catch (error) {
         setSubmitError(

@@ -1,7 +1,6 @@
-0. If logged in, show in topnav some way to tell you're logged in as (
-strip mail from email, acts as username)
-1. 
-2. fix frontend email flow
+0. fix frontend email flow
+2. Start attaching the stored JWT to protected frontend API call
+
 3. logout? (if logged in, login icon now dropdowns option to logout?)
 4. TopNav to consume the auth state so I can display the "dashboard" button?
 5. attach auth to future requests (Bearer: token)

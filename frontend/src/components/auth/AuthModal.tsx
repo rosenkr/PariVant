@@ -11,7 +11,6 @@ import { useEffect, useState } from "react";
 import type { AuthView } from "../../types/auth";
 import { LoginForm } from "./LoginForm";
 import { RegisterForm } from "./RegisterForm";
-import { VerifyEmailView } from "./VerifyEmailView";
 
 type Props = {
   open: boolean;
@@ -20,15 +19,10 @@ type Props = {
 
 export function AuthModal({ open, onClose }: Props) {
   const [view, setView] = useState<AuthView>("sign-in");
-  const [verificationEmail, setVerificationEmail] = useState("");
-  const [verificationExpiresInSeconds, setVerificationExpiresInSeconds] =
-    useState(10 * 60);
 
   useEffect(() => {
     if (!open) {
       setView("sign-in");
-      setVerificationEmail("");
-      setVerificationExpiresInSeconds(10 * 60);
     }
   }, [open]);
 
@@ -106,22 +100,7 @@ export function AuthModal({ open, onClose }: Props) {
           {view === "sign-up" && (
             <RegisterForm
               onSwitchToSignIn={() => setView("sign-in")}
-              onRegistered={(email, verificationExpiresInSecondsValue) => {
-                setVerificationEmail(email);
-                setVerificationExpiresInSeconds(
-                  verificationExpiresInSecondsValue,
-                );
-                setView("verify-email");
-              }}
-            />
-          )}
-
-          {view === "verify-email" && (
-            <VerifyEmailView
-              email={verificationEmail}
-              expiresInSeconds={verificationExpiresInSeconds}
-              onBackToSignUp={() => setView("sign-up")}
-              onVerified={onClose}
+              onSuccess={onClose}
             />
           )}
         </Stack>
