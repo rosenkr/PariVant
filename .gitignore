@@ -24,7 +24,6 @@ bzzoiro_output.txt
 clubelo_output.txt
 suggested_aliases.txt
 truth.txt
-docs/feats-bugs-todos.md
-
+docs
 #api keys, database pw
 .env
