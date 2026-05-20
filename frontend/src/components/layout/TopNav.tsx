@@ -36,9 +36,10 @@ function currentTabIndex(pathname: string): number | false {
 
 type Props = {
   onOpenAuthModal: () => void;
+  onOpenLogoutModal: () => void;
 };
 
-export function TopNav({ onOpenAuthModal }: Props) {
+export function TopNav({ onOpenAuthModal, onOpenLogoutModal }: Props) {
   const location = useLocation();
   const navigate = useNavigate();
   const { mode, toggleMode } = useThemeMode();
@@ -48,6 +49,7 @@ export function TopNav({ onOpenAuthModal }: Props) {
   const [language, setLanguage] = useState("English");
 
   const {user, isAuthenticated} = useAuth();
+  const profileTooltip = isAuthenticated ? "Log out" : "Log in or create account";
 
   const handleLanguageChange = (event: SelectChangeEvent) => {
     setLanguage(event.target.value);
@@ -211,10 +213,10 @@ export function TopNav({ onOpenAuthModal }: Props) {
           >
             <Stack direction="row" spacing={1} alignItems="center">
                 {isAuthenticated && user && <UserGreeting user={user} />}
-                <Tooltip title="Log in or create account">
+
+                <Tooltip title= {profileTooltip}>
                 <IconButton
-                  aria-label="Log in or create account"
-                  onClick={onOpenAuthModal}
+                  onClick={isAuthenticated ? onOpenLogoutModal : onOpenAuthModal}
                   sx={(theme) => ({
                     width: 40,
                     height: 40,

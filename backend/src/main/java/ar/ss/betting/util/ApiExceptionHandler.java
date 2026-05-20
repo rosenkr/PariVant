@@ -11,6 +11,7 @@ import org.springframework.web.bind.annotation.*;
 import java.time.Clock;
 import java.time.Instant;
 import java.util.Objects;
+import org.springframework.web.server.ResponseStatusException;
 
 @RestControllerAdvice
 public class ApiExceptionHandler {
@@ -49,6 +50,16 @@ public class ApiExceptionHandler {
                 .body(new ApiError(Instant.now(clock).toString(), 400, "Invalid date-time format"));
     }
 
+
+    @ExceptionHandler(ResponseStatusException.class)
+    public ResponseEntity<ApiError> handleResponseStatus(ResponseStatusException ex) {
+        int status = ex.getStatusCode().value();
+        String message = ex.getReason() != null ? ex.getReason() : "Request failed";
+
+        return ResponseEntity
+                .status(ex.getStatusCode())
+                .body(new ApiError(Instant.now(clock).toString(), status, message));
+    }
     /**
      * IMPORTANT: SSE endpoints (text/event-stream) cannot reliably serialize our ApiError as JSON once the
      * response is committed as event-stream. If an exception occurs in that context, return plain text.
