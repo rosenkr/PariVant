@@ -28,6 +28,7 @@ services:
       ELEVEN_ELO_KEY: ${ELEVEN_ELO_KEY}
       BZZOIRO_KEY: ${BZZOIRO_KEY}
       JWT_SECRET: ${JWT_SECRET}
+      GOOGLE_WEB_CLIENT_ID: ${GOOGLE_WEB_CLIENT_ID}
       LOGGING_LEVEL_ORG_SPRINGFRAMEWORK: DEBUG
     command: [ "java", "-jar", "/app/app.jar", "--debug" ]
 
