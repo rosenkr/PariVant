@@ -1,7 +1,7 @@
 import { Alert, Box, CircularProgress, Stack, Typography } from "@mui/material";
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { signInWithGoogle } from "../../api/auth";
-import type {AuthResponse} from "../../types/auth.ts";
+import type { AuthResponse } from "../../types/auth";
 
 declare global {
   interface Window {
@@ -66,6 +66,9 @@ function ensureGoogleScript() {
 
 export function GoogleSignInButton({ onStart, onSuccess, onError }: Props) {
   const gisContainerRef = useRef<HTMLDivElement | null>(null);
+  const onStartRef = useRef(onStart);
+  const onSuccessRef = useRef(onSuccess);
+  const onErrorRef = useRef(onError);
   const [gisReady, setGisReady] = useState(false);
   const [gisError, setGisError] = useState<string | null>(null);
 
@@ -75,21 +78,11 @@ export function GoogleSignInButton({ onStart, onSuccess, onError }: Props) {
       : undefined;
   }, []);
 
-  const handleGoogleCredential = useCallback(
-    async (credential: string) => {
-      onStart();
-
-      try {
-        let authResponse = await signInWithGoogle({ credential });
-        onSuccess(authResponse);
-      } catch {
-        onError(
-          "Google sign-in is not available yet. Please try email sign-in.",
-        );
-      }
-    },
-    [onError, onStart, onSuccess],
-  );
+  useEffect(() => {
+    onStartRef.current = onStart;
+    onSuccessRef.current = onSuccess;
+    onErrorRef.current = onError;
+  }, [onError, onStart, onSuccess]);
 
   useEffect(() => {
     if (!clientId) {
@@ -120,7 +113,18 @@ export function GoogleSignInButton({ onStart, onSuccess, onError }: Props) {
         window.google.accounts.id.initialize({
           client_id: clientId,
           callback: ({ credential }) => {
-            void handleGoogleCredential(credential);
+            void (async () => {
+              onStartRef.current();
+
+              try {
+                const authResponse = await signInWithGoogle({ credential });
+                onSuccessRef.current(authResponse);
+              } catch {
+                onErrorRef.current(
+                  "Google sign-in is not available yet. Please try email sign-in.",
+                );
+              }
+            })();
           },
         });
 
@@ -147,7 +151,7 @@ export function GoogleSignInButton({ onStart, onSuccess, onError }: Props) {
         gisContainerRef.current.innerHTML = "";
       }
     };
-  }, [clientId, handleGoogleCredential]);
+  }, [clientId]);
 
   return (
     <Stack spacing={1.25}>
