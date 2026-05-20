@@ -1,0 +1,224 @@
+import { useEffect, useMemo, useState } from "react";
+import { cn } from "@/lib/utils";
+
+export type ScrollSpySection = {
+  id: string;
+  title: string;
+};
+
+type ScrollSpyRailProps = {
+  sections: ScrollSpySection[];
+  /** Offset in px to account for any fixed header. */
+  offset?: number;
+  className?: string;
+  /** Heading shown at top of the rail. */
+  label?: string;
+};
+
+// Layout constants for the zigzag path (in svg user units = px)
+const V_SEG = 24; // vertical run per section
+const DIAG = 10; // vertical drop of each diagonal between sections
+const X_OFF = 8; // horizontal shift between zigzag columns
+const STROKE_W = 3; // bar thickness
+const INITIAL_FILL = V_SEG * 0.3; // a tad bit filled when on first section
+
+export function ScrollSpyRail({
+  sections,
+  offset = 80,
+  className,
+  label = "On this page",
+}: ScrollSpyRailProps) {
+  const [activeId, setActiveId] = useState<string>(sections[0]?.id ?? "");
+
+  const activeIndex = Math.max(
+    0,
+    sections.findIndex((s) => s.id === activeId),
+  );
+
+  // Track active section by finding the last one whose top has crossed the offset line
+  useEffect(() => {
+    if (sections.length === 0) return;
+
+    const computeActive = () => {
+      const threshold = offset + 1;
+      let current = sections[0].id;
+      for (const s of sections) {
+        const el = document.getElementById(s.id);
+        if (!el) continue;
+        const top = el.getBoundingClientRect().top;
+        if (top <= threshold) {
+          current = s.id;
+        } else {
+          break;
+        }
+      }
+      setActiveId(current);
+    };
+
+    computeActive();
+    window.addEventListener("scroll", computeActive, { passive: true });
+    window.addEventListener("resize", computeActive);
+    return () => {
+      window.removeEventListener("scroll", computeActive);
+      window.removeEventListener("resize", computeActive);
+    };
+  }, [sections, offset]);
+
+  const handleClick = (e: React.MouseEvent<HTMLAnchorElement>, id: string) => {
+    e.preventDefault();
+    const el = document.getElementById(id);
+    if (!el) return;
+    const top = el.getBoundingClientRect().top + window.scrollY - offset;
+    window.scrollTo({ top, behavior: "smooth" });
+  };
+
+  // Build zigzag path geometry
+  const geom = useMemo(() => {
+    const N = sections.length;
+    const points: { x: number; y: number }[] = [];
+    let y = STROKE_W / 2;
+    for (let i = 0; i < N; i++) {
+      const x = (i % 2 === 0 ? 0 : X_OFF) + STROKE_W / 2;
+      if (i === 0) {
+        points.push({ x, y }); // start of vertical 0
+      }
+      y += V_SEG;
+      points.push({ x, y }); // end of vertical i
+      if (i < N - 1) {
+        const nextX = ((i + 1) % 2 === 0 ? 0 : X_OFF) + STROKE_W / 2;
+        y += DIAG;
+        points.push({ x: nextX, y }); // end of diagonal = start of vertical i+1
+      }
+    }
+
+    const segLengths: number[] = [];
+    for (let i = 1; i < points.length; i++) {
+      const dx = points[i].x - points[i - 1].x;
+      const dy = points[i].y - points[i - 1].y;
+      segLengths.push(Math.sqrt(dx * dx + dy * dy));
+    }
+    const totalLen = segLengths.reduce((a, b) => a + b, 0);
+
+    const d = points.map((p, i) => `${i === 0 ? "M" : "L"} ${p.x} ${p.y}`).join(" ");
+    const height = y + STROKE_W / 2;
+    const width = X_OFF + STROKE_W;
+
+    return { points, segLengths, totalLen, d, height, width };
+  }, [sections.length]);
+
+  // Length along path to draw the bar fill, and matching circle position
+  const { fillLen, circle } = useMemo(() => {
+    // Segments index pattern (per section i): segLengths[2*i] = vertical i, segLengths[2*i + 1] = diagonal after i
+    let len = 0;
+    for (let i = 0; i < activeIndex; i++) {
+      len += geom.segLengths[2 * i] ?? 0; // vertical i
+      len += geom.segLengths[2 * i + 1] ?? 0; // diagonal after i
+    }
+    len += INITIAL_FILL; // partway into the active vertical
+
+    // Walk the polyline to find the (x,y) at this length
+    let remaining = len;
+    let pos = geom.points[0];
+    for (let i = 1; i < geom.points.length; i++) {
+      const segLen = geom.segLengths[i - 1];
+      if (remaining <= segLen) {
+        const t = segLen === 0 ? 0 : remaining / segLen;
+        pos = {
+          x: geom.points[i - 1].x + (geom.points[i].x - geom.points[i - 1].x) * t,
+          y: geom.points[i - 1].y + (geom.points[i].y - geom.points[i - 1].y) * t,
+        };
+        break;
+      }
+      remaining -= segLen;
+      pos = geom.points[i];
+    }
+
+    return { fillLen: len, circle: pos };
+  }, [activeIndex, geom]);
+
+  // Each label sits at the top of its corresponding vertical segment
+  const labelTop = (i: number) => geom.points[2 * i]?.y ?? 0;
+
+  return (
+    <nav
+      aria-label="Section navigation"
+      className={cn("hidden md:block sticky top-24 self-start", className)}
+    >
+      <div className="text-xs font-medium uppercase tracking-wider text-muted-foreground mb-3">
+        {label}
+      </div>
+
+      <div className="relative" style={{ height: geom.height }}>
+        <svg
+          width={geom.width}
+          height={geom.height}
+          viewBox={`0 0 ${geom.width} ${geom.height}`}
+          className="absolute left-1 top-0 overflow-visible"
+          aria-hidden="true"
+        >
+          {/* Track */}
+          <path
+            d={geom.d}
+            fill="none"
+            stroke="currentColor"
+            strokeWidth={STROKE_W}
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            className="text-border"
+          />
+          {/* Progress fill */}
+          <path
+            d={geom.d}
+            fill="none"
+            stroke="currentColor"
+            strokeWidth={STROKE_W}
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            className="text-foreground transition-[stroke-dashoffset] duration-300"
+            style={{
+              strokeDasharray: `${geom.totalLen} ${geom.totalLen}`,
+              strokeDashoffset: geom.totalLen - fillLen,
+            }}
+          />
+          {/* Circular marker */}
+          <circle
+            cx={circle.x}
+            cy={circle.y}
+            r={4}
+            className="fill-foreground transition-[cx,cy] duration-300"
+          />
+        </svg>
+
+        <ul className="relative" style={{ paddingLeft: geom.width + 10 }}>
+          {sections.map((section, i) => {
+            const isActive = section.id === activeId;
+            return (
+              <li
+                key={section.id}
+                className="absolute left-0 right-0"
+                style={{
+                  top: labelTop(i),
+                  transform: "translateY(-3px)",
+                  paddingLeft: geom.width + 10 + 4,
+                }}
+              >
+                <a
+                  href={`#${section.id}`}
+                  onClick={(e) => handleClick(e, section.id)}
+                  className={cn(
+                    "block text-sm whitespace-nowrap transition-colors",
+                    isActive
+                      ? "text-foreground font-medium"
+                      : "text-muted-foreground hover:text-foreground",
+                  )}
+                >
+                  {section.title}
+                </a>
+              </li>
+            );
+          })}
+        </ul>
+      </div>
+    </nav>
+  );
+}

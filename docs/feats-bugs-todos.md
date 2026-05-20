@@ -63,3 +63,4 @@ Stuff to consider for V2:
 38. as Record casts bad
 39. Clickable logo shouldnt be box with role button.. ButtonBase or Router Link
 40. fix UI bug where the auth modal rerenders including the google button whenever I type in the textfields
+41. enable fedcm?
