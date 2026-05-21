@@ -14,8 +14,6 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.server.ResponseStatusException;
 
-import java.util.Optional;
-
 @RestController
 @RequestMapping("/auth")
 public class AuthController {
@@ -44,7 +42,7 @@ public class AuthController {
         authenticationManager.authenticate(authentication);
 
         // User is authenticated
-        User user = userDetailsRepository.findByEmail(email)
+        UserEntity user = userDetailsRepository.findByEmail(email)
                 .orElseThrow(() -> new ResponseStatusException(
                         HttpStatus.UNAUTHORIZED,
                         "Invalid email or password"
@@ -60,7 +58,7 @@ public class AuthController {
         if(userDetailsRepository.findByEmail(email).isPresent()) {
             throw new ResponseStatusException(HttpStatus.CONFLICT, "An account with this email already exists.");
         }
-        User user = User.localUser(email, encoder.encode(authRequest.getPassword()));
+        UserEntity user = UserEntity.localUser(email, encoder.encode(authRequest.getPassword()));
         userDetailsRepository.save(user);
 
         return new AuthResponse(jwtUtil.generateToken(email), new UserDto(email,user.getRole()));
@@ -75,9 +73,9 @@ public class AuthController {
 
             // Use the sub field as user identifier
             // Find as existing, or create new and get it
-            User user = userDetailsRepository.findByGoogleSubject(principal.sub())
+            UserEntity user = userDetailsRepository.findByGoogleSubject(principal.sub())
                     .orElseGet(() -> userDetailsRepository.save(
-                            User.gmailUser(principal.email(), principal.sub())
+                            UserEntity.gmailUser(principal.email(), principal.sub())
                     ));
 
             return new AuthResponse(

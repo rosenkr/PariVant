@@ -5,8 +5,8 @@ import org.springframework.data.jpa.repository.JpaRepository;
 
 import java.util.Optional;
 
-public interface UserDetailsRepository extends JpaRepository<User,Long> {
+public interface UserDetailsRepository extends JpaRepository<UserEntity,Long> {
 
-    Optional<User> findByEmail(String email);
-    Optional<User> findByGoogleSubject(String subject);
+    Optional<UserEntity> findByEmail(String email);
+    Optional<UserEntity> findByGoogleSubject(String subject);
 }
