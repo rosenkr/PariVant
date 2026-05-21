@@ -176,7 +176,7 @@ public class Coupon {
     }
 
     private void validateResolutionState() {
-        int maxCorrectPicks = round.getRoundType().getNumberOfMatches();
+        int maxCorrectPicks = roundType.getNumberOfMatches();
 
         if (status == CouponStatus.UNDETERMINED) {
             if (correctPickCount != null) {
