@@ -1,13 +1,22 @@
 import { Box, Container, Typography, Stack } from "@mui/material";
-import { Link as RouterLink, Outlet } from "react-router-dom";
-import { useState } from "react";
+import { Link as RouterLink, Outlet, useLocation } from "react-router-dom";
+import { useEffect, useState } from "react";
 import { TopNav } from "./TopNav";
 import { AuthModal } from "../auth/AuthModal";
 import {LogoutModal} from "../auth/LogoutModal.tsx";
+import { useAuth } from "../../auth/AuthContext.tsx";
 
 export function AppShell() {
   const [authModalOpen, setAuthModalOpen] = useState(false);
   const [logoutModalOpen, setLogoutModalOpen] = useState(false);
+  const { isAuthenticated } = useAuth();
+  const location = useLocation();
+
+  useEffect(() => {
+    if (location.pathname === "/dashboard" && !isAuthenticated) {
+      setAuthModalOpen(true);
+    }
+  }, [isAuthenticated, location.pathname]);
 
   return (
     <Box

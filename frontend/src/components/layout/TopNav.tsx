@@ -1,6 +1,7 @@
 import {
   AppBar,
   Box,
+  Button,
   Container,
   IconButton,
   Stack,
@@ -23,7 +24,6 @@ import AccountCircleRoundedIcon from "@mui/icons-material/AccountCircleRounded";
 import { useState } from "react";
 import InfoOutlinedIcon from "@mui/icons-material/InfoOutlined";
 import {useAuth} from "../../auth/AuthContext.tsx";
-import { UserGreeting } from "../UserGreeting.tsx";
 
 type NavItem = { label: string; path: string };
 
@@ -48,8 +48,9 @@ export function TopNav({ onOpenAuthModal, onOpenLogoutModal }: Props) {
   const isDark = mode === "dark";
   const [language, setLanguage] = useState("English");
 
-  const {user, isAuthenticated} = useAuth();
+  const {isAuthenticated} = useAuth();
   const profileTooltip = isAuthenticated ? "Log out" : "Log in or create account";
+  const dashboardTooltip = isAuthenticated ? "Dashboard" : "Log in to view dashboard";
 
   const handleLanguageChange = (event: SelectChangeEvent) => {
     setLanguage(event.target.value);
@@ -212,9 +213,33 @@ export function TopNav({ onOpenAuthModal, onOpenLogoutModal }: Props) {
             }}
           >
             <Stack direction="row" spacing={1} alignItems="center">
-                {isAuthenticated && user && <UserGreeting user={user} />}
+              <Tooltip title={dashboardTooltip}>
+                <Button
+                  onClick={() => {
+                    if (isAuthenticated) {
+                      void navigate("/dashboard");
+                      return;
+                    }
+                    onOpenAuthModal();
+                  }}
+                  sx={(theme) => ({
+                    height: 40,
+                    borderRadius: 1.5,
+                    px: 1.5,
+                    color: theme.appColors.text.secondary,
+                    fontWeight: 700,
+                    textTransform: "none",
+                    "&:hover": {
+                      borderColor: theme.appColors.border.strong,
+                      backgroundColor: theme.appColors.accent.soft,
+                    },
+                  })}
+                >
+                  Dashboard
+                </Button>
+              </Tooltip>
 
-                <Tooltip title= {profileTooltip}>
+              <Tooltip title={profileTooltip}>
                 <IconButton
                   onClick={isAuthenticated ? onOpenLogoutModal : onOpenAuthModal}
                   sx={(theme) => ({

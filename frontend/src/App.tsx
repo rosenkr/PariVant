@@ -4,12 +4,14 @@ import HomePage from "./pages/HomePage";
 import { AboutPage } from "./pages/AboutPage";
 import { TermsPage } from "./pages/TermsPage";
 import { PolicyPage } from "./pages/PolicyPage";
+import { DashboardPage } from "./pages/DashboardPage";
 
 export default function App() {
   return (
     <Routes>
       <Route element={<AppShell />}>
         <Route path="/" element={<HomePage />} />
+        <Route path="/dashboard" element={<DashboardPage />} />
         <Route path="/about" element={<AboutPage />} />
         <Route path="/tos" element={<TermsPage />} />
         <Route path="/privacy" element={<PolicyPage />} />
