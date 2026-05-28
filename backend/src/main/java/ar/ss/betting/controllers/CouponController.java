@@ -38,4 +38,12 @@ public class CouponController {
     ) {
         return ResponseEntity.ok(couponService.getCouponsForUser(user));
     }
+
+    @GetMapping("/{couponId}")
+    public ResponseEntity<CouponResponse> getCoupon(
+            @AuthenticationPrincipal UserEntity user,
+            @PathVariable long couponId
+    ) {
+        return ResponseEntity.ok(couponService.getCouponForUser(user, couponId));
+    }
 }

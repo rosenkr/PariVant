@@ -15,9 +15,10 @@ import { RegisterForm } from "./RegisterForm";
 type Props = {
   open: boolean;
   onClose: () => void;
+  onSuccess?: () => void;
 };
 
-export function AuthModal({ open, onClose }: Props) {
+export function AuthModal({ open, onClose, onSuccess }: Props) {
   const [view, setView] = useState<AuthView>("sign-in");
 
   useEffect(() => {
@@ -93,14 +94,14 @@ export function AuthModal({ open, onClose }: Props) {
           {view === "sign-in" && (
             <LoginForm
               onSwitchToSignUp={() => setView("sign-up")}
-              onSuccess={onClose}
+              onSuccess={onSuccess ?? onClose}
             />
           )}
 
           {view === "sign-up" && (
             <RegisterForm
               onSwitchToSignIn={() => setView("sign-in")}
-              onSuccess={onClose}
+              onSuccess={onSuccess ?? onClose}
             />
           )}
         </Stack>

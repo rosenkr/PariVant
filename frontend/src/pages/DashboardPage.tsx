@@ -1,44 +1,519 @@
-import DashboardRoundedIcon from "@mui/icons-material/DashboardRounded";
-import { Box, Paper, Stack, Typography } from "@mui/material";
+import AddRoundedIcon from "@mui/icons-material/AddRounded";
+import {
+  Alert,
+  Box,
+  Button,
+  CircularProgress,
+  Divider,
+  List,
+  ListItemButton,
+  ListItemText,
+  Paper,
+  Stack,
+  Typography,
+} from "@mui/material";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { useMemo, useState } from "react";
+import { createCoupon, getCoupon, getCoupons } from "../api/private/coupons";
 import { useAuth } from "../auth/AuthContext";
 import { Page } from "../components/layout/Page";
+import { SelectionBox } from "../components/SelectionBox";
+import { useRoundsByFilters } from "../hooks/useRoundsByFilters";
+import type { CouponRequest, CouponResponse, CouponSelections } from "../types/coupon";
+import type { Outcome } from "../types/modelRun";
+import type { MatchView, RoundType, RoundView } from "../types/round";
+import { formatRoundDateTime, formatTimeOnly } from "../utils/time";
+
+const OUTCOMES: Array<{ outcome: Outcome; label: string }> = [
+  { outcome: "HOME_WIN", label: "1" },
+  { outcome: "DRAW", label: "X" },
+  { outcome: "AWAY_WIN", label: "2" },
+];
+
+function roundTypeLabel(roundType: RoundType): string {
+  switch (roundType) {
+    case "STRYKTIPSET":
+      return "Stryktipset";
+    case "EUROPATIPSET":
+      return "Europatipset";
+    case "TOPPTIPSET":
+      return "Topptipset";
+  }
+}
+
+function roundListLabel(round: RoundView): string {
+  const date = formatRoundDateTime(round.startTime)?.replace(" - ", " ");
+  return `${roundTypeLabel(round.roundType)} - ${date ?? round.startTime}`;
+}
+
+function initialSelections(round: RoundView): Record<number, Outcome[]> {
+  const selections: Record<number, Outcome[]> = {};
+  for (const match of round.matches) {
+    selections[match.matchNumber] = [];
+  }
+  return selections;
+}
+
+function toCouponSelections(
+  selectionsByMatch: Record<number, Outcome[]>,
+): CouponSelections {
+  const out: CouponSelections = {};
+  for (const [matchNumber, outcomes] of Object.entries(selectionsByMatch)) {
+    out[matchNumber] = outcomes;
+  }
+  return out;
+}
+
+function selectionIsComplete(round: RoundView, selections: Record<number, Outcome[]>) {
+  return round.matches.every((match) => selections[match.matchNumber]?.length > 0);
+}
+
+function computeDraftPrice(
+  round: RoundView | null,
+  selections: Record<number, Outcome[]>,
+): number | null {
+  if (!round || !selectionIsComplete(round, selections)) return null;
+
+  return round.matches.reduce((price, match) => {
+    return price * (selections[match.matchNumber]?.length ?? 0);
+  }, 1);
+}
+
+function couponSelectionLabels(selections: CouponSelections): string {
+  return Object.entries(selections)
+    .sort(([a], [b]) => Number(a) - Number(b))
+    .map(([matchNumber, outcomes]) => {
+      const labels = OUTCOMES
+        .filter(({ outcome }) => outcomes.includes(outcome))
+        .map(({ label }) => label)
+        .join("");
+      return `${matchNumber}: ${labels}`;
+    })
+    .join("  ");
+}
+
+function CouponDetail({ coupon }: { coupon: CouponResponse }) {
+  return (
+    <Paper
+      sx={(theme) => ({
+        mt: 2,
+        p: 2,
+        backgroundColor: theme.appColors.accent.soft,
+        borderColor: theme.appColors.border.muted,
+      })}
+    >
+      <Stack spacing={1}>
+        <Stack
+          direction={{ xs: "column", sm: "row" }}
+          spacing={1}
+          justifyContent="space-between"
+        >
+          <Box>
+            <Typography sx={{ fontWeight: 900 }}>
+              {roundTypeLabel(coupon.roundType)} - Round #{coupon.roundId}
+            </Typography>
+            <Typography variant="body2" color="text.secondary">
+              Coupon #{coupon.id} - Created {formatRoundDateTime(coupon.createdAt)}
+            </Typography>
+          </Box>
+          <Typography sx={{ fontWeight: 900 }}>{coupon.status}</Typography>
+        </Stack>
+
+        <Typography>
+          Price: <strong>{coupon.totalCost}</strong>
+        </Typography>
+
+        {coupon.correctPickCount != null && (
+          <Typography>
+            Correct picks: <strong>{coupon.correctPickCount}</strong>
+          </Typography>
+        )}
+
+        <Typography variant="body2" color="text.secondary">
+          {couponSelectionLabels(coupon.selections)}
+        </Typography>
+      </Stack>
+    </Paper>
+  );
+}
+
+function CouponMatchRow({
+  match,
+  selected,
+  onToggle,
+}: {
+  match: MatchView;
+  selected: Outcome[];
+  onToggle: (outcome: Outcome) => void;
+}) {
+  return (
+    <Box
+      sx={(theme) => ({
+        px: 2,
+        py: 1.1,
+        display: "grid",
+        gridTemplateColumns: "28px 1fr auto",
+        gap: 1.5,
+        alignItems: "center",
+        borderBottom: `1px solid ${theme.appColors.border.subtle}`,
+      })}
+    >
+      <Typography sx={{ fontWeight: 800, opacity: 0.9 }}>
+        {match.matchNumber}
+      </Typography>
+
+      <Box>
+        <Typography sx={{ fontWeight: 900 }}>
+          {match.homeTeamName} <span style={{ opacity: 0.8 }}>-</span>{" "}
+          {match.awayTeamName}
+        </Typography>
+        <Typography variant="caption" sx={{ opacity: 0.7 }}>
+          {formatTimeOnly(match.startTime) ?? match.startTime}
+        </Typography>
+      </Box>
+
+      <Stack direction="row" spacing={1}>
+        {OUTCOMES.map(({ outcome, label }) => (
+          <SelectionBox
+            key={outcome}
+            label={label}
+            tone={selected.includes(outcome) ? "base" : "none"}
+            onClick={() => onToggle(outcome)}
+          />
+        ))}
+      </Stack>
+    </Box>
+  );
+}
 
 export function DashboardPage() {
-  const { isAuthenticated } = useAuth();
+  const { isAuthenticated, token } = useAuth();
+  const queryClient = useQueryClient();
+  const [creatorOpen, setCreatorOpen] = useState(false);
+  const [selectedRound, setSelectedRound] = useState<RoundView | null>(null);
+  const [selections, setSelections] = useState<Record<number, Outcome[]>>({});
+  const [selectedCouponId, setSelectedCouponId] = useState<number | null>(null);
+
+  const couponsQuery = useQuery({
+    queryKey: ["coupons"],
+    queryFn: () => getCoupons(token as string),
+    enabled: isAuthenticated && token != null,
+  });
+
+  const selectedCouponQuery = useQuery({
+    queryKey: ["coupon", selectedCouponId],
+    queryFn: () => getCoupon(token as string, selectedCouponId as number),
+    enabled: isAuthenticated && token != null && selectedCouponId != null,
+  });
+
+  const roundsQuery = useRoundsByFilters("UPCOMING");
+  const upcomingRounds = useMemo(() => {
+    const result = roundsQuery.data;
+    if (!result || result.kind !== "ok") return [];
+    return [...result.data].sort(
+      (a, b) => new Date(a.startTime).getTime() - new Date(b.startTime).getTime(),
+    );
+  }, [roundsQuery.data]);
+
+  const couponRoundIds = useMemo(() => {
+    return new Set((couponsQuery.data ?? []).map((coupon) => coupon.roundId));
+  }, [couponsQuery.data]);
+
+  const createMutation = useMutation({
+    mutationFn: (payload: CouponRequest) => {
+      if (!token) throw new Error("Authentication required");
+      return createCoupon(token, payload);
+    },
+    onSuccess: async () => {
+      await queryClient.invalidateQueries({ queryKey: ["coupons"] });
+      await queryClient.invalidateQueries({ queryKey: ["coupon"] });
+      setSelectedRound(null);
+      setSelections({});
+      setCreatorOpen(false);
+    },
+  });
 
   if (!isAuthenticated) {
     return null;
   }
 
+  const canSubmit =
+    selectedRound != null &&
+    selectionIsComplete(selectedRound, selections) &&
+    !couponRoundIds.has(selectedRound.id) &&
+    !createMutation.isPending;
+  const draftPrice = computeDraftPrice(selectedRound, selections);
+
+  function selectRound(round: RoundView) {
+    setSelectedRound(round);
+    setSelections(initialSelections(round));
+    createMutation.reset();
+  }
+
+  function toggleOutcome(matchNumber: number, outcome: Outcome) {
+    setSelections((current) => {
+      const existing = current[matchNumber] ?? [];
+      const next = existing.includes(outcome)
+        ? existing.filter((item) => item !== outcome)
+        : [...existing, outcome];
+
+      return {
+        ...current,
+        [matchNumber]: OUTCOMES
+          .map((option) => option.outcome)
+          .filter((option) => next.includes(option)),
+      };
+    });
+  }
+
+  function submitCoupon() {
+    if (!selectedRound) return;
+
+    createMutation.mutate({
+      roundId: selectedRound.id,
+      selections: toCouponSelections(selections),
+    });
+  }
+
   return (
     <Page maxWidth="lg">
       <Stack spacing={3} sx={{ px: { xs: 2, md: 0 }, py: { xs: 2, md: 4 } }}>
-        <Box>
-          <Typography variant="h4" sx={{ fontWeight: 900 }}>
-            Dashboard
-          </Typography>
-          <Typography color="text.secondary">
-            Your Parivant workspace will live here.
-          </Typography>
-        </Box>
-
-        <Paper
-          sx={(theme) => ({
-            p: 3,
-            backgroundColor: theme.appColors.accent.soft,
-            borderColor: theme.appColors.border.muted,
-          })}
+        <Stack
+          direction={{ xs: "column", sm: "row" }}
+          spacing={2}
+          alignItems={{ xs: "stretch", sm: "center" }}
+          justifyContent="space-between"
         >
-          <Stack direction="row" spacing={2} alignItems="center">
-            <DashboardRoundedIcon color="primary" />
-            <Box>
-              <Typography sx={{ fontWeight: 800 }}>My coupons</Typography>
+          <Box>
+            <Typography variant="h4" sx={{ fontWeight: 900 }}>
+              Dashboard
+            </Typography>
+            <Typography color="text.secondary">
+              Create test coupons and view your saved coupons.
+            </Typography>
+          </Box>
+
+          <Button
+            variant="contained"
+            startIcon={<AddRoundedIcon />}
+            onClick={() => setCreatorOpen((open) => !open)}
+          >
+            Create coupon
+          </Button>
+        </Stack>
+
+        <Paper sx={{ p: 2 }}>
+          <Typography variant="h6" sx={{ fontWeight: 900, mb: 1 }}>
+            My coupons
+          </Typography>
+
+          {couponsQuery.isLoading && <Typography>Loading coupons...</Typography>}
+
+          {couponsQuery.isError && (
+            <Alert severity="error">
+              {couponsQuery.error instanceof Error
+                ? couponsQuery.error.message
+                : "Failed to load coupons."}
+            </Alert>
+          )}
+
+          {!couponsQuery.isLoading &&
+            !couponsQuery.isError &&
+            (couponsQuery.data?.length ?? 0) === 0 && (
+              <Typography color="text.secondary">No coupons yet.</Typography>
+            )}
+
+          <Stack spacing={1}>
+            {(couponsQuery.data ?? []).map((coupon) => (
+              <Paper
+                key={coupon.id}
+                component={ListItemButton}
+                onClick={() => setSelectedCouponId(coupon.id)}
+                sx={(theme) => ({
+                  p: 1.5,
+                  backgroundColor: theme.appColors.accent.soft,
+                  borderColor: theme.appColors.border.muted,
+                })}
+              >
+                <Stack
+                  direction={{ xs: "column", sm: "row" }}
+                  spacing={1}
+                  justifyContent="space-between"
+                >
+                  <Box>
+                    <Typography sx={{ fontWeight: 800 }}>
+                      {roundTypeLabel(coupon.roundType)} - Round #{coupon.roundId}
+                    </Typography>
+                    <Typography variant="body2" color="text.secondary">
+                      Created {formatRoundDateTime(coupon.createdAt)}
+                    </Typography>
+                  </Box>
+                  <Stack spacing={0.25} alignItems={{ xs: "flex-start", sm: "flex-end" }}>
+                    <Typography sx={{ fontWeight: 800 }}>
+                      {coupon.status}
+                    </Typography>
+                    <Typography variant="body2" color="text.secondary">
+                      Price: {coupon.totalCost}
+                    </Typography>
+                  </Stack>
+                </Stack>
+              </Paper>
+            ))}
+          </Stack>
+
+          {selectedCouponQuery.isLoading && (
+            <Box sx={{ mt: 2 }}>
+              <CircularProgress size={22} />
+            </Box>
+          )}
+
+          {selectedCouponQuery.isError && (
+            <Alert severity="error" sx={{ mt: 2 }}>
+              {selectedCouponQuery.error instanceof Error
+                ? selectedCouponQuery.error.message
+                : "Failed to load coupon."}
+            </Alert>
+          )}
+
+          {selectedCouponQuery.data && (
+            <CouponDetail coupon={selectedCouponQuery.data} />
+          )}
+        </Paper>
+
+        {creatorOpen && (
+          <Paper sx={{ overflow: "hidden" }}>
+            <Box sx={{ p: 2 }}>
+              <Typography variant="h6" sx={{ fontWeight: 900 }}>
+                Create coupon
+              </Typography>
               <Typography color="text.secondary">
-                Placeholder for your saved coupons and betting history.
+                Pick an upcoming round, then choose one or more outcomes for every
+                match.
               </Typography>
             </Box>
-          </Stack>
-        </Paper>
+
+            <Divider />
+
+            <Box
+              sx={{
+                display: "grid",
+                gridTemplateColumns: { xs: "1fr", md: "320px 1fr" },
+                minHeight: 360,
+              }}
+            >
+              <Box sx={(theme) => ({ borderRight: { md: `1px solid ${theme.appColors.border.subtle}` } })}>
+                {roundsQuery.isLoading && (
+                  <Box sx={{ p: 2 }}>
+                    <CircularProgress size={22} />
+                  </Box>
+                )}
+
+                {roundsQuery.data?.kind === "server-error" && (
+                  <Alert severity="error">
+                    Server error {roundsQuery.data.status}: {roundsQuery.data.message}
+                  </Alert>
+                )}
+
+                {roundsQuery.data?.kind === "network-error" && (
+                  <Alert severity="error">
+                    Network error: {roundsQuery.data.message}
+                  </Alert>
+                )}
+
+                {!roundsQuery.isLoading && upcomingRounds.length === 0 && (
+                  <Box sx={{ p: 2 }}>
+                    <Typography color="text.secondary">
+                      No upcoming rounds available.
+                    </Typography>
+                  </Box>
+                )}
+
+                <List disablePadding>
+                  {upcomingRounds.map((round) => (
+                    <ListItemButton
+                      key={round.id}
+                      selected={selectedRound?.id === round.id}
+                      onClick={() => selectRound(round)}
+                    >
+                      <ListItemText
+                        primary={roundListLabel(round)}
+                        secondary={
+                          couponRoundIds.has(round.id)
+                            ? "Coupon already created"
+                            : `Round #${round.id}`
+                        }
+                      />
+                    </ListItemButton>
+                  ))}
+                </List>
+              </Box>
+
+              <Box>
+                {!selectedRound && (
+                  <Box sx={{ p: 2 }}>
+                    <Typography color="text.secondary">
+                      Select a round to start building your coupon.
+                    </Typography>
+                  </Box>
+                )}
+
+                {selectedRound && (
+                  <Box>
+                    <Box sx={{ p: 2 }}>
+                      <Typography sx={{ fontWeight: 900 }}>
+                        {roundListLabel(selectedRound)}
+                      </Typography>
+                      <Typography variant="body2" color="text.secondary">
+                        Select at least one outcome for each match.
+                      </Typography>
+                    </Box>
+
+                    <Divider />
+
+                    {selectedRound.matches.map((match) => (
+                      <CouponMatchRow
+                        key={match.matchNumber}
+                        match={match}
+                        selected={selections[match.matchNumber] ?? []}
+                        onToggle={(outcome) =>
+                          toggleOutcome(match.matchNumber, outcome)
+                        }
+                      />
+                    ))}
+
+                    <Box sx={{ p: 2 }}>
+                      <Typography sx={{ mb: 2, fontWeight: 800 }}>
+                        Price: {draftPrice == null ? "N/A" : draftPrice}
+                      </Typography>
+
+                      {couponRoundIds.has(selectedRound.id) && (
+                        <Alert severity="info" sx={{ mb: 2 }}>
+                          You already have a coupon for this round.
+                        </Alert>
+                      )}
+
+                      {createMutation.isError && (
+                        <Alert severity="error" sx={{ mb: 2 }}>
+                          {createMutation.error instanceof Error
+                            ? createMutation.error.message
+                            : "Failed to create coupon."}
+                        </Alert>
+                      )}
+
+                      <Button
+                        variant="contained"
+                        onClick={submitCoupon}
+                        disabled={!canSubmit}
+                      >
+                        {createMutation.isPending ? "Submitting..." : "Submit"}
+                      </Button>
+                    </Box>
+                  </Box>
+                )}
+              </Box>
+            </Box>
+          </Paper>
+        )}
       </Stack>
     </Page>
   );

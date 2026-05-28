@@ -85,6 +85,15 @@ public class CouponService {
                 .toList();
     }
 
+    @Transactional
+    public CouponResponse getCouponForUser(UserEntity user, long couponId) {
+        Long userId = requireUserId(user);
+        CouponEntity coupon = couponRepository.findByIdAndUser_Id(couponId, userId)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Coupon not found"));
+
+        return toView(coupon);
+    }
+
     private Long requireUserId(UserEntity user) {
         if (user == null || user.getId() == null) {
             throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Authentication required");
@@ -135,15 +144,33 @@ public class CouponService {
 
     private CouponResponse toView(CouponEntity entity) {
         RoundEntity round = entity.getRound();
+        Object selections = JsonUtil.parseJsonToObject(entity.getSelectionsJson());
         return new CouponResponse(
                 entity.getId(),
                 round.getId(),
                 round.getRoundType(),
                 entity.getStatus(),
                 entity.getCorrectPickCount(),
-                JsonUtil.parseJsonToObject(entity.getSelectionsJson()),
+                computeTotalCost(selections),
+                selections,
                 entity.getCreatedAt(),
                 entity.getUpdatedAt()
         );
+    }
+
+    private int computeTotalCost(Object selections) {
+        if (!(selections instanceof Map<?, ?> selectionsMap)) {
+            throw new IllegalStateException("Persisted coupon selections must be a JSON object");
+        }
+
+        int cost = 1;
+        for (Object value : selectionsMap.values()) {
+            if (!(value instanceof List<?> outcomes)) {
+                throw new IllegalStateException("Persisted coupon selection value must be a JSON array");
+            }
+            cost *= outcomes.size();
+        }
+
+        return cost;
     }
 }

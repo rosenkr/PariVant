@@ -13,14 +13,19 @@ import {useAuth} from "../../auth/AuthContext.tsx";
 type Props = {
     open: boolean;
     onClose: () => void;
+    onSuccess?: () => void;
 };
 
-export function LogoutModal({ open, onClose }: Props) {
+export function LogoutModal({ open, onClose, onSuccess }: Props) {
     const { signOut } = useAuth();
 
 
     const handleLogout = () => {
         signOut();
+        if (onSuccess) {
+            onSuccess();
+            return;
+        }
         onClose();
     }
     return (

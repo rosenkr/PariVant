@@ -1,5 +1,5 @@
 import { Box, Container, Typography, Stack } from "@mui/material";
-import { Link as RouterLink, Outlet, useLocation } from "react-router-dom";
+import { Link as RouterLink, Outlet, useLocation, useNavigate } from "react-router-dom";
 import { useEffect, useState } from "react";
 import { TopNav } from "./TopNav";
 import { AuthModal } from "../auth/AuthModal";
@@ -9,14 +9,47 @@ import { useAuth } from "../../auth/AuthContext.tsx";
 export function AppShell() {
   const [authModalOpen, setAuthModalOpen] = useState(false);
   const [logoutModalOpen, setLogoutModalOpen] = useState(false);
+  const [authRedirectPath, setAuthRedirectPath] = useState<string | null>(null);
   const { isAuthenticated } = useAuth();
   const location = useLocation();
+  const navigate = useNavigate();
 
   useEffect(() => {
     if (location.pathname === "/dashboard" && !isAuthenticated) {
+      setAuthRedirectPath("/dashboard");
       setAuthModalOpen(true);
     }
   }, [isAuthenticated, location.pathname]);
+
+  function openAuthModal() {
+    setAuthRedirectPath(null);
+    setAuthModalOpen(true);
+  }
+
+  function openDashboardAuthModal() {
+    setAuthRedirectPath("/dashboard");
+    setAuthModalOpen(true);
+  }
+
+  function closeAuthModal() {
+    setAuthModalOpen(false);
+    setAuthRedirectPath(null);
+  }
+
+  function handleAuthSuccess() {
+    setAuthModalOpen(false);
+
+    if (authRedirectPath) {
+      void navigate(authRedirectPath);
+    }
+
+    setAuthRedirectPath(null);
+  }
+
+  function handleLogoutSuccess() {
+    setLogoutModalOpen(false);
+    void navigate("/");
+  }
 
   return (
     <Box
@@ -27,8 +60,11 @@ export function AppShell() {
         backgroundColor: theme.appColors.surface.page,
       })}
     >
-      <TopNav onOpenAuthModal={() => setAuthModalOpen(true)}
-      onOpenLogoutModal={() => setLogoutModalOpen(true)}/>
+      <TopNav
+        onOpenAuthModal={openAuthModal}
+        onOpenDashboardAuthModal={openDashboardAuthModal}
+        onOpenLogoutModal={() => setLogoutModalOpen(true)}
+      />
 
       <Box
         component="main"
@@ -163,8 +199,16 @@ export function AppShell() {
         </Container>
       </Box>
 
-      <AuthModal open={authModalOpen} onClose={() => setAuthModalOpen(false)} />
-      <LogoutModal open={logoutModalOpen} onClose={() => setLogoutModalOpen(false)} />
+      <AuthModal
+        open={authModalOpen}
+        onClose={closeAuthModal}
+        onSuccess={handleAuthSuccess}
+      />
+      <LogoutModal
+        open={logoutModalOpen}
+        onClose={() => setLogoutModalOpen(false)}
+        onSuccess={handleLogoutSuccess}
+      />
     </Box>
   );
 }

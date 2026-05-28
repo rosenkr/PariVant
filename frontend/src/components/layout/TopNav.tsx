@@ -36,10 +36,11 @@ function currentTabIndex(pathname: string): number | false {
 
 type Props = {
   onOpenAuthModal: () => void;
+  onOpenDashboardAuthModal: () => void;
   onOpenLogoutModal: () => void;
 };
 
-export function TopNav({ onOpenAuthModal, onOpenLogoutModal }: Props) {
+export function TopNav({ onOpenAuthModal, onOpenDashboardAuthModal, onOpenLogoutModal }: Props) {
   const location = useLocation();
   const navigate = useNavigate();
   const { mode, toggleMode } = useThemeMode();
@@ -220,7 +221,7 @@ export function TopNav({ onOpenAuthModal, onOpenLogoutModal }: Props) {
                       void navigate("/dashboard");
                       return;
                     }
-                    onOpenAuthModal();
+                    onOpenDashboardAuthModal();
                   }}
                   sx={(theme) => ({
                     height: 40,
