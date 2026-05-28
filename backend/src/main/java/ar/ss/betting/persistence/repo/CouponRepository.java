@@ -8,9 +8,9 @@ import java.util.Optional;
 
 public interface CouponRepository extends JpaRepository<CouponEntity, Long> {
 
-    boolean existsByUserIdAndRoundId(long userId, long roundId);
+    boolean existsByUser_IdAndRound_Id(long userId, long roundId);
 
-    List<CouponEntity> findByUserIdOrderByCreatedAtDesc(long userId);
+    List<CouponEntity> findByUser_IdOrderByCreatedAtDesc(long userId);
 
-    Optional<CouponEntity> findByIdAndUserId(long id, long userId);
+    Optional<CouponEntity> findByIdAndUser_Id(long id, long userId);
 }
