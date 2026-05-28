@@ -87,18 +87,11 @@ public class Coupon {
     }
 
     public boolean isWinningCoupon() {
-        if (status != CouponStatus.RESOLVED || correctPickCount == null) {
-            return false;
-        }
-
-        return switch (roundType) {
-            case TOPPTIPSET -> correctPickCount == roundType.getNumberOfMatches();
-            case STRYKTIPSET, EUROPATIPSET -> correctPickCount >= 10;
-        };
+        return status == CouponStatus.WIN;
     }
 
     public Coupon resolve(Map<Integer, Outcome> actualOutcomes) {
-        if (status == CouponStatus.RESOLVED) {
+        if (status != CouponStatus.UNDETERMINED) {
             throw new IllegalStateException("Coupon is already resolved");
         }
 
@@ -113,7 +106,8 @@ public class Coupon {
             }
         }
 
-        return new Coupon(userId, roundId, roundType, CouponStatus.RESOLVED, hits, selections);
+        CouponStatus resolvedStatus = isWinningHitCount(hits) ? CouponStatus.WIN : CouponStatus.LOSE;
+        return new Coupon(userId, roundId, roundType, resolvedStatus, hits, selections);
     }
 
     private Map<Integer, Set<Outcome>> freezeSelections(Map<Integer, Set<Outcome>> input) {
@@ -219,5 +213,12 @@ public class Coupon {
 
     private boolean isValidMatchNumber(int matchNumber) {
         return matchNumber >= 1 && matchNumber <= roundType.getNumberOfMatches();
+    }
+
+    private boolean isWinningHitCount(int hits) {
+        return switch (roundType) {
+            case TOPPTIPSET -> hits == roundType.getNumberOfMatches();
+            case STRYKTIPSET, EUROPATIPSET -> hits >= 10;
+        };
     }
 }
