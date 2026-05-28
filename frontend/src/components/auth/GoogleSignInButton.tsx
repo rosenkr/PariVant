@@ -161,7 +161,7 @@ export function GoogleSignInButton({ onStart, onSuccess, onError }: Props) {
           spacing={1}
           alignItems="center"
           justifyContent="center"
-          sx={{ minHeight: 44 }}
+          sx={{ height: 44 }}
         >
           <CircularProgress size={18} />
           <Typography variant="body2">Loading Google sign-in…</Typography>
@@ -171,9 +171,13 @@ export function GoogleSignInButton({ onStart, onSuccess, onError }: Props) {
       <Box
         ref={gisContainerRef}
         sx={{
-          minHeight: 44,
+          height: 44,
+          width: 320,
+          mx: "auto",
+          overflow: "hidden",
           display: gisError ? "none" : "flex",
           justifyContent: "center",
+          alignItems: "center",
         }}
       />
 
