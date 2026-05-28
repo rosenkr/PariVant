@@ -18,9 +18,11 @@ import { createCoupon, getCoupon, getCoupons } from "../api/private/coupons";
 import { useAuth } from "../auth/AuthContext";
 import { Page } from "../components/layout/Page";
 import { SelectionBox } from "../components/SelectionBox";
+import { useModelRuns } from "../hooks/useModelRuns";
 import { useRoundsByFilters } from "../hooks/useRoundsByFilters";
 import type { CouponRequest, CouponResponse, CouponSelections } from "../types/coupon";
-import type { Outcome } from "../types/modelRun";
+import type { ModelRunView, Outcome } from "../types/modelRun";
+import type { ProbabilityTriple } from "../types/probabilityTriple";
 import type { MatchView, RoundType, RoundView } from "../types/round";
 import { formatRoundDateTime, formatTimeOnly } from "../utils/time";
 
@@ -92,6 +94,76 @@ function couponSelectionLabels(selections: CouponSelections): string {
     .join("  ");
 }
 
+function parseInternalProbabilities(
+  run: ModelRunView | null,
+): Record<string, ProbabilityTriple> {
+  if (!run) return {};
+
+  if (run.internalProbabilities) return run.internalProbabilities;
+
+  if (run.internalProbabilitiesJson) {
+    try {
+      const parsed = JSON.parse(run.internalProbabilitiesJson) as unknown;
+      if (parsed && typeof parsed === "object") {
+        return parsed as Record<string, ProbabilityTriple>;
+      }
+    } catch {
+      // ignore malformed model-run payloads and render N/A instead
+    }
+  }
+
+  return {};
+}
+
+function probabilityForOutcome(
+  probability: ProbabilityTriple | null | undefined,
+  outcome: Outcome,
+): number | null {
+  if (!probability) return null;
+
+  switch (outcome) {
+    case "HOME_WIN":
+      return probability.homeWin;
+    case "DRAW":
+      return probability.draw;
+    case "AWAY_WIN":
+      return probability.awayWin;
+  }
+}
+
+function pct(value: number | null): string {
+  if (value == null) return "N/A";
+  return `${Math.round(value * 100)}%`;
+}
+
+function ProbabilityRow({
+  label,
+  probabilities,
+}: {
+  label: string;
+  probabilities: ProbabilityTriple | null | undefined;
+}) {
+  return (
+    <Box
+      sx={{
+        display: "grid",
+        gridTemplateColumns: "72px repeat(3, 44px)",
+        gap: 0.75,
+        alignItems: "center",
+      }}
+    >
+      <Typography variant="caption" sx={{ fontWeight: 800, opacity: 0.72 }}>
+        {label}
+      </Typography>
+      {OUTCOMES.map(({ outcome, label: outcomeLabel }) => (
+        <Typography key={outcome} variant="caption" sx={{ opacity: 0.72 }}>
+          {outcomeLabel} {pct(probabilityForOutcome(probabilities, outcome))}
+        </Typography>
+      ))}
+    </Box>
+  );
+}
+
 function CouponDetail({ coupon }: { coupon: CouponResponse }) {
   return (
     <Paper
@@ -139,10 +211,12 @@ function CouponDetail({ coupon }: { coupon: CouponResponse }) {
 
 function CouponMatchRow({
   match,
+  internal,
   selected,
   onToggle,
 }: {
   match: MatchView;
+  internal: ProbabilityTriple | null | undefined;
   selected: Outcome[];
   onToggle: (outcome: Outcome) => void;
 }) {
@@ -170,6 +244,10 @@ function CouponMatchRow({
         <Typography variant="caption" sx={{ opacity: 0.7 }}>
           {formatTimeOnly(match.startTime) ?? match.startTime}
         </Typography>
+        <Stack spacing={0.25} sx={{ mt: 0.75 }}>
+          <ProbabilityRow label="Public" probabilities={match.publicPick} />
+          <ProbabilityRow label="Internal" probabilities={internal} />
+        </Stack>
       </Box>
 
       <Stack direction="row" spacing={1}>
@@ -207,6 +285,7 @@ export function DashboardPage() {
   });
 
   const roundsQuery = useRoundsByFilters("UPCOMING");
+  const modelRunsQuery = useModelRuns(selectedRound?.id ?? null);
   const upcomingRounds = useMemo(() => {
     const result = roundsQuery.data;
     if (!result || result.kind !== "ok") return [];
@@ -232,6 +311,16 @@ export function DashboardPage() {
       setCreatorOpen(false);
     },
   });
+
+  const selectedModelRun = useMemo(() => {
+    const result = modelRunsQuery.data;
+    if (!result || result.kind !== "ok") return null;
+    return result.data[0] ?? null;
+  }, [modelRunsQuery.data]);
+  const internalProbabilitiesByMatch = useMemo(
+    () => parseInternalProbabilities(selectedModelRun),
+    [selectedModelRun],
+  );
 
   if (!isAuthenticated) {
     return null;
@@ -474,6 +563,10 @@ export function DashboardPage() {
                       <CouponMatchRow
                         key={match.matchNumber}
                         match={match}
+                        internal={
+                          internalProbabilitiesByMatch[String(match.matchNumber)] ??
+                          null
+                        }
                         selected={selections[match.matchNumber] ?? []}
                         onToggle={(outcome) =>
                           toggleOutcome(match.matchNumber, outcome)
