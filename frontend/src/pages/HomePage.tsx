@@ -22,6 +22,7 @@ import type {
   ProviderPredictionView,
 } from "../types/providerPrediction";
 import type { RoundStatus, RoundType, RoundView } from "../types/round";
+import {RoundPanelSkeleton} from "../components/RoundPanelSkeleton.tsx";
 
 type BudgetValue = 32 | 64 | 128 | 256;
 
@@ -366,9 +367,7 @@ export default function HomePage() {
             })}
           >
             {roundsQuery.isLoading && (
-              <Box sx={{ p: 2 }}>
-                <Typography>Loading rounds…</Typography>
-              </Box>
+                <RoundPanelSkeleton rows={roundType === "TOPPTIPSET" ? 8 : 13} />
             )}
 
             {!roundsQuery.isLoading &&
@@ -391,7 +390,11 @@ export default function HomePage() {
                 </Box>
               )}
 
-            {activeRound && selectedRun && (
+            {activeRound && modelRunsQuery.isLoading && (
+              <RoundPanelSkeleton rows={activeRound.matches.length} />
+            )}
+
+            {activeRound && !modelRunsQuery.isLoading && selectedRun && (
               <Box>
                 <Box
                   sx={(theme) => ({
@@ -466,7 +469,7 @@ export default function HomePage() {
               </Box>
             )}
 
-            {activeRound && !selectedRun && (
+            {activeRound && !modelRunsQuery.isLoading && !selectedRun && (
               <Box sx={{ p: 2 }}>
                 <Typography color="text.secondary">
                   No model run found for budget {budget} SEK yet.
