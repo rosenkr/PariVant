@@ -19,6 +19,24 @@ type AuthContextValue = {
 const AuthContext = createContext<AuthContextValue | undefined>(undefined);
 const AUTH_STORAGE_KEY = "parivant.auth";
 
+function isJwtExpired(token: string): boolean {
+  const [, payload] = token.split(".");
+  if (!payload) return true;
+
+  try {
+    const base64 = payload.replace(/-/g, "+").replace(/_/g, "/");
+    const padded = base64.padEnd(base64.length + ((4 - base64.length % 4) % 4), "=");
+    const decoded = JSON.parse(atob(padded)) as {
+      exp?: number;
+    };
+    if (typeof decoded.exp !== "number") return true;
+
+    return decoded.exp * 1000 <= Date.now();
+  } catch {
+    return true;
+  }
+}
+
 function readStoredAuth(): AuthResponse | null {
   if (typeof window === "undefined") return null;
 
@@ -26,7 +44,12 @@ function readStoredAuth(): AuthResponse | null {
   if (!raw) return null;
 
   try {
-    return JSON.parse(raw) as AuthResponse;
+    const auth = JSON.parse(raw) as AuthResponse;
+    if (!auth.token || isJwtExpired(auth.token)) {
+      localStorage.removeItem(AUTH_STORAGE_KEY);
+      return null;
+    }
+    return auth;
   } catch {
     localStorage.removeItem(AUTH_STORAGE_KEY);
     return null;

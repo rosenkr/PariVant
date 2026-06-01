@@ -18,6 +18,7 @@ import {
 } from "@mui/material";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useMemo, useState } from "react";
+import { Link as RouterLink } from "react-router-dom";
 import { createCoupon, getCoupon, getCoupons } from "../api/private/coupons";
 import { runModelSelection } from "../api/private/modelSelection";
 import { useAuth } from "../auth/AuthContext";
@@ -622,6 +623,12 @@ export function DashboardPage() {
             onClick={() => setCreatorOpen((open) => !open)}
           >
             Create coupon
+          </Button>
+        </Stack>
+
+        <Stack direction="row" spacing={1}>
+          <Button variant="outlined" component={RouterLink} to="/dashboard/statistics">
+            Statistics
           </Button>
         </Stack>
 

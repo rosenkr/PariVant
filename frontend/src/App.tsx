@@ -5,6 +5,7 @@ import { AboutPage } from "./pages/AboutPage";
 import { TermsPage } from "./pages/TermsPage";
 import { PolicyPage } from "./pages/PolicyPage";
 import { DashboardPage } from "./pages/DashboardPage";
+import { DashboardStatisticsPage } from "./pages/DashboardStatisticsPage";
 
 export default function App() {
   return (
@@ -12,6 +13,7 @@ export default function App() {
       <Route element={<AppShell />}>
         <Route path="/" element={<HomePage />} />
         <Route path="/dashboard" element={<DashboardPage />} />
+        <Route path="/dashboard/statistics" element={<DashboardStatisticsPage />} />
         <Route path="/about" element={<AboutPage />} />
         <Route path="/tos" element={<TermsPage />} />
         <Route path="/privacy" element={<PolicyPage />} />

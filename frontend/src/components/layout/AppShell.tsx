@@ -15,8 +15,8 @@ export function AppShell() {
   const navigate = useNavigate();
 
   useEffect(() => {
-    if (location.pathname === "/dashboard" && !isAuthenticated) {
-      setAuthRedirectPath("/dashboard");
+    if (location.pathname.startsWith("/dashboard") && !isAuthenticated) {
+      setAuthRedirectPath(location.pathname);
       setAuthModalOpen(true);
     }
   }, [isAuthenticated, location.pathname]);
