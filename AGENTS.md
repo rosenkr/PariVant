@@ -1,6 +1,10 @@
 Your text replies for discussions should be short.
 While the project has a Docker Compose, its just for development. Otherwise I host on Railway.com
 All the code between frontend and backend dealing with data should correspond with DTO data types called ...Response or ...Request.
+
+
+After implementing code, always end with a suggested commit message
+
 This is a monorepo with:
 - `frontend/`: React + Vite + TypeScript + MUI frontend.
 - `backend/`: Java Spring Boot backend module.

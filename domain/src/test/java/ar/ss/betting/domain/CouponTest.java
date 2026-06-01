@@ -19,8 +19,24 @@ class CouponTest {
         Coupon coupon = new Coupon(1L, 10L, RoundType.TOPPTIPSET, selections(RoundType.TOPPTIPSET));
 
         assertEquals(CouponStatus.UNDETERMINED, coupon.getStatus());
+        assertEquals(null, coupon.getConfidentPickMatchNumber());
         assertEquals(6, coupon.getTotalCost());
         assertFalse(coupon.isWinningCoupon());
+    }
+
+    @Test
+    void shouldAllowOneConfidentPickMatchNumber() {
+        Coupon coupon = new Coupon(1L, 10L, RoundType.TOPPTIPSET, selections(RoundType.TOPPTIPSET), 2);
+
+        assertEquals(2, coupon.getConfidentPickMatchNumber());
+    }
+
+    @Test
+    void shouldRejectConfidentPickOutsideRoundMatches() {
+        assertThrows(
+                IllegalArgumentException.class,
+                () -> new Coupon(1L, 10L, RoundType.TOPPTIPSET, selections(RoundType.TOPPTIPSET), 9)
+        );
     }
 
     @Test

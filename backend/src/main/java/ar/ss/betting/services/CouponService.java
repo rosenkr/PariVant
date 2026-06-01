@@ -63,7 +63,8 @@ public class CouponService {
                 userId,
                 round.getId(),
                 round.getRoundType(),
-                toDomainSelections(request.selections())
+                toDomainSelections(request.selections()),
+                request.confidentPickMatchNumber()
         );
 
         Instant now = Instant.now(clock);
@@ -71,6 +72,7 @@ public class CouponService {
                 user,
                 round,
                 JsonUtil.toJson(toSelectionsJsonShape(domainCoupon.getSelections())),
+                domainCoupon.getConfidentPickMatchNumber(),
                 now
         ));
 
@@ -151,6 +153,7 @@ public class CouponService {
                 round.getRoundType(),
                 entity.getStatus(),
                 entity.getCorrectPickCount(),
+                entity.getConfidentPickMatchNumber(),
                 computeTotalCost(selections),
                 selections,
                 entity.getCreatedAt(),

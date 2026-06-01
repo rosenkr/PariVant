@@ -11,6 +11,7 @@ public record CouponResponse(
         RoundType roundType,
         CouponStatus status,
         Integer correctPickCount,
+        Integer confidentPickMatchNumber,
         int totalCost,
         Object selections,
         Instant createdAt,

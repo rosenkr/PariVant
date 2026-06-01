@@ -5,5 +5,6 @@ import java.util.Map;
 
 public record CouponRequest(
         long roundId,
-        Map<Integer, List<String>> selections
+        Map<Integer, List<String>> selections,
+        Integer confidentPickMatchNumber
 ) { }

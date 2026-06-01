@@ -53,6 +53,9 @@ public class CouponEntity {
     @Column(name = "correct_pick_count")
     private Integer correctPickCount;
 
+    @Column(name = "confident_pick_match_number")
+    private Integer confidentPickMatchNumber;
+
     @Column(name = "created_at", nullable = false)
     private Instant createdAt;
 
@@ -63,12 +66,21 @@ public class CouponEntity {
                         RoundEntity round,
                         String selectionsJson,
                         Instant createdAt) {
+        this(user, round, selectionsJson, null, createdAt);
+    }
+
+    public CouponEntity(UserEntity user,
+                        RoundEntity round,
+                        String selectionsJson,
+                        Integer confidentPickMatchNumber,
+                        Instant createdAt) {
         this(
                 user,
                 round,
                 CouponStatus.UNDETERMINED,
                 selectionsJson,
                 null,
+                confidentPickMatchNumber,
                 createdAt,
                 createdAt
         );
@@ -79,6 +91,7 @@ public class CouponEntity {
                         CouponStatus status,
                         String selectionsJson,
                         Integer correctPickCount,
+                        Integer confidentPickMatchNumber,
                         Instant createdAt,
                         Instant updatedAt) {
         this.user = Objects.requireNonNull(user, "user cannot be null");
@@ -86,6 +99,7 @@ public class CouponEntity {
         this.status = Objects.requireNonNull(status, "status cannot be null");
         this.selectionsJson = requireNonBlank(selectionsJson, "selectionsJson");
         this.correctPickCount = correctPickCount;
+        this.confidentPickMatchNumber = confidentPickMatchNumber;
         this.createdAt = Objects.requireNonNull(createdAt, "createdAt cannot be null");
         this.updatedAt = Objects.requireNonNull(updatedAt, "updatedAt cannot be null");
 

@@ -8,6 +8,7 @@ export type CouponSelections = Record<string, Outcome[]>;
 export type CouponRequest = {
   roundId: number;
   selections: CouponSelections;
+  confidentPickMatchNumber: number | null;
 };
 
 export type CouponResponse = {
@@ -16,6 +17,7 @@ export type CouponResponse = {
   roundType: RoundType;
   status: CouponStatus;
   correctPickCount: number | null;
+  confidentPickMatchNumber: number | null;
   totalCost: number;
   selections: CouponSelections;
   createdAt: string;

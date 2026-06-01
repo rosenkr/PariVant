@@ -23,9 +23,18 @@ public class Coupon {
     private final Map<Integer, Set<Outcome>> selections;
     private final CouponStatus status;
     private final Integer correctPickCount;
+    private final Integer confidentPickMatchNumber;
 
     public Coupon(long userId, long roundId, RoundType roundType, Map<Integer, Set<Outcome>> selections) {
-        this(userId, roundId, roundType, CouponStatus.UNDETERMINED, null, selections);
+        this(userId, roundId, roundType, CouponStatus.UNDETERMINED, null, selections, null);
+    }
+
+    public Coupon(long userId,
+                  long roundId,
+                  RoundType roundType,
+                  Map<Integer, Set<Outcome>> selections,
+                  Integer confidentPickMatchNumber) {
+        this(userId, roundId, roundType, CouponStatus.UNDETERMINED, null, selections, confidentPickMatchNumber);
     }
 
     public Coupon(long userId,
@@ -34,6 +43,16 @@ public class Coupon {
                   CouponStatus status,
                   Integer correctPickCount,
                   Map<Integer, Set<Outcome>> selections) {
+        this(userId, roundId, roundType, status, correctPickCount, selections, null);
+    }
+
+    public Coupon(long userId,
+                  long roundId,
+                  RoundType roundType,
+                  CouponStatus status,
+                  Integer correctPickCount,
+                  Map<Integer, Set<Outcome>> selections,
+                  Integer confidentPickMatchNumber) {
         if (userId <= 0) {
             throw new IllegalArgumentException("userId must be positive");
         }
@@ -46,11 +65,13 @@ public class Coupon {
         this.roundType = Objects.requireNonNull(roundType, "roundType cannot be null");
         this.status = Objects.requireNonNull(status, "status cannot be null");
         this.correctPickCount = correctPickCount;
+        this.confidentPickMatchNumber = confidentPickMatchNumber;
         this.selections = freezeSelections(
                 Objects.requireNonNull(selections, "selections cannot be null")
         );
 
         validateSelections();
+        validateConfidentPick();
         validateResolutionState();
     }
 
@@ -72,6 +93,10 @@ public class Coupon {
 
     public Integer getCorrectPickCount() {
         return correctPickCount;
+    }
+
+    public Integer getConfidentPickMatchNumber() {
+        return confidentPickMatchNumber;
     }
 
     public Map<Integer, Set<Outcome>> getSelections() {
@@ -107,7 +132,7 @@ public class Coupon {
         }
 
         CouponStatus resolvedStatus = isWinningHitCount(hits) ? CouponStatus.WIN : CouponStatus.LOSE;
-        return new Coupon(userId, roundId, roundType, resolvedStatus, hits, selections);
+        return new Coupon(userId, roundId, roundType, resolvedStatus, hits, selections, confidentPickMatchNumber);
     }
 
     private Map<Integer, Set<Outcome>> freezeSelections(Map<Integer, Set<Outcome>> input) {
@@ -186,6 +211,19 @@ public class Coupon {
             throw new IllegalArgumentException(
                     "correctPickCount must be between 0 and " + maxCorrectPicks
             );
+        }
+    }
+
+    private void validateConfidentPick() {
+        if (confidentPickMatchNumber == null) {
+            return;
+        }
+        if (!isValidMatchNumber(confidentPickMatchNumber)) {
+            throw new IllegalArgumentException("confidentPickMatchNumber refers to unknown match number: "
+                    + confidentPickMatchNumber);
+        }
+        if (!selections.containsKey(confidentPickMatchNumber) || selections.get(confidentPickMatchNumber).isEmpty()) {
+            throw new IllegalArgumentException("confidentPickMatchNumber must refer to a selected match");
         }
     }
 

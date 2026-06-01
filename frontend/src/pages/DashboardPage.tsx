@@ -319,6 +319,15 @@ function CouponDetail({ coupon }: { coupon: CouponResponse }) {
           Price: <strong>{coupon.totalCost}</strong>
         </Typography>
 
+        <Typography>
+          Confident pick:{" "}
+          <strong>
+            {coupon.confidentPickMatchNumber == null
+              ? "None"
+              : `Match ${coupon.confidentPickMatchNumber}`}
+          </strong>
+        </Typography>
+
         {coupon.correctPickCount != null && (
           <Typography>
             Correct picks: <strong>{coupon.correctPickCount}</strong>
@@ -338,7 +347,9 @@ function CouponMatchRow({
   internal,
   userProbability,
   selected,
+  isConfidentPick,
   onToggle,
+  onToggleConfidentPick,
   onProbabilityChange,
   onProbabilityReset,
 }: {
@@ -346,7 +357,9 @@ function CouponMatchRow({
   internal: ProbabilityTriple | null | undefined;
   userProbability: ProbabilityTriple;
   selected: Outcome[];
+  isConfidentPick: boolean;
   onToggle: (outcome: Outcome) => void;
+  onToggleConfidentPick: () => void;
   onProbabilityChange: (probability: ProbabilityTriple) => void;
   onProbabilityReset: () => void;
 }) {
@@ -407,6 +420,14 @@ function CouponMatchRow({
             onClick={() => onToggle(outcome)}
           />
         ))}
+        <Button
+          size="small"
+          variant={isConfidentPick ? "contained" : "outlined"}
+          onClick={onToggleConfidentPick}
+          sx={{ minWidth: 92, fontWeight: 800 }}
+        >
+          Confident
+        </Button>
       </Stack>
     </Box>
   );
@@ -418,6 +439,7 @@ export function DashboardPage() {
   const [creatorOpen, setCreatorOpen] = useState(false);
   const [selectedRound, setSelectedRound] = useState<RoundView | null>(null);
   const [selections, setSelections] = useState<Record<number, Outcome[]>>({});
+  const [confidentPickMatchNumber, setConfidentPickMatchNumber] = useState<number | null>(null);
   const [userProbabilities, setUserProbabilities] = useState<Record<number, ProbabilityTriple>>({});
   const [valuePickInternalProbabilities, setValuePickInternalProbabilities] = useState<Record<string, ProbabilityTriple> | null>(null);
   const [selectedCouponId, setSelectedCouponId] = useState<number | null>(null);
@@ -459,6 +481,7 @@ export function DashboardPage() {
       await queryClient.invalidateQueries({ queryKey: ["coupon"] });
       setSelectedRound(null);
       setSelections({});
+      setConfidentPickMatchNumber(null);
       setCreatorOpen(false);
     },
   });
@@ -511,6 +534,7 @@ export function DashboardPage() {
   function selectRound(round: RoundView) {
     setSelectedRound(round);
     setSelections(initialSelections(round));
+    setConfidentPickMatchNumber(null);
     setUserProbabilities(initialUserProbabilities(round));
     setValuePickInternalProbabilities(null);
     createMutation.reset();
@@ -539,7 +563,14 @@ export function DashboardPage() {
     createMutation.mutate({
       roundId: selectedRound.id,
       selections: toCouponSelections(selections),
+      confidentPickMatchNumber,
     });
+  }
+
+  function toggleConfidentPick(matchNumber: number) {
+    setConfidentPickMatchNumber((current) =>
+      current === matchNumber ? null : matchNumber,
+    );
   }
 
   function updateUserProbability(matchNumber: number, probability: ProbabilityTriple) {
@@ -758,11 +789,14 @@ export function DashboardPage() {
                       <Typography variant="body2" color="text.secondary">
                         Select at least one outcome for each match.
                       </Typography>
-                      <Typography variant="body2" color="text.secondary">
-                        Your estimates start at 33% - 34% - 33% and are used as
-                        one temporary provider input.
-                      </Typography>
-                    </Box>
+                    <Typography variant="body2" color="text.secondary">
+                      Your estimates start at 33% - 34% - 33% and are used as
+                      one temporary provider input.
+                    </Typography>
+                    <Typography variant="body2" color="text.secondary">
+                      Optionally mark one match as your confident pick.
+                    </Typography>
+                  </Box>
 
                     <Divider />
 
@@ -779,8 +813,14 @@ export function DashboardPage() {
                           DEFAULT_USER_PROBABILITY
                         }
                         selected={selections[match.matchNumber] ?? []}
+                        isConfidentPick={
+                          confidentPickMatchNumber === match.matchNumber
+                        }
                         onToggle={(outcome) =>
                           toggleOutcome(match.matchNumber, outcome)
+                        }
+                        onToggleConfidentPick={() =>
+                          toggleConfidentPick(match.matchNumber)
                         }
                         onProbabilityChange={(probability) =>
                           updateUserProbability(match.matchNumber, probability)
@@ -794,6 +834,13 @@ export function DashboardPage() {
                     <Box sx={{ p: 2 }}>
                       <Typography sx={{ mb: 2, fontWeight: 800 }}>
                         Price: {draftPrice == null ? "N/A" : draftPrice}
+                      </Typography>
+
+                      <Typography sx={{ mb: 2 }} color="text.secondary">
+                        Confident pick:{" "}
+                        {confidentPickMatchNumber == null
+                          ? "None"
+                          : `Match ${confidentPickMatchNumber}`}
                       </Typography>
 
                       {couponRoundIds.has(selectedRound.id) && (
