@@ -6,7 +6,7 @@ import ar.ss.betting.model.ModelInput;
 import ar.ss.betting.model.ModelSelectionResult;
 import ar.ss.betting.security.UserEntity;
 import ar.ss.betting.services.dto.ModelSelectionRequest;
-import ar.ss.betting.services.dto.ModelSelectionResponse;
+import ar.ss.betting.services.dto.ModelResultResponse;
 import ar.ss.betting.services.dto.ModelDtoMapper;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
@@ -34,7 +34,7 @@ public class ModelService {
         this.clock = Objects.requireNonNull(clock);
     }
 
-    public ModelSelectionResponse runModel(UserEntity user, ModelSelectionRequest request) {
+    public ModelResultResponse runModel(UserEntity user, ModelSelectionRequest request) {
         requireAuthenticatedUser(user);
         Objects.requireNonNull(request, "request cannot be null");
 

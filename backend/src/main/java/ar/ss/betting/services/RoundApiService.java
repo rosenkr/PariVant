@@ -20,7 +20,10 @@ import ar.ss.betting.predictionproviders.service.model.PredictionQueryResponse;
 import ar.ss.betting.predictionproviders.service.model.ProviderPredictionResult;
 import ar.ss.betting.predictionproviders.service.model.ProviderPredictionStatus;
 import ar.ss.betting.predictionproviders.service.model.ProviderRawPredictionSnapshot;
+import ar.ss.betting.services.dto.ModelResultResponse;
+import ar.ss.betting.services.dto.ModelRunResponse;
 import ar.ss.betting.services.dto.ModelSelectionRequest;
+import ar.ss.betting.util.JsonUtil;
 import org.springframework.stereotype.Service;
 
 import java.time.Clock;
@@ -140,7 +143,7 @@ public class RoundApiService {
         return createdRuns;
     }
 
-    public List<ModelRunView> getLatestPresetModelRuns(long roundId) {
+    public List<ModelRunResponse> getLatestPresetModelRuns(long roundId) {
         List<ModelRunEntity> runs = modelRunRepository.findByRoundIdOrderByGeneratedAtDesc(roundId);
 
         Map<Integer, ModelRunEntity> latestByBudget = new HashMap<>();
@@ -153,7 +156,7 @@ public class RoundApiService {
             }
         }
 
-        List<ModelRunView> out = new ArrayList<>();
+        List<ModelRunResponse> out = new ArrayList<>();
         for (Integer b : PRESET_BUDGETS) {
             ModelRunEntity r = latestByBudget.get(b);
             if (r != null) {
@@ -349,19 +352,89 @@ public class RoundApiService {
         };
     }
 
-    private ModelRunView toView(ModelRunEntity r) {
-        return new ModelRunView(
+    private ModelRunResponse toView(ModelRunEntity r) {
+        return new ModelRunResponse(
                 r.getId(),
-                r.getModelName(),
-                r.getGeneratedAt(),
                 r.getBudgetInSek(),
-                r.getTotalCostInSek(),
-                r.getHalfGuardsCount(),
                 r.getTrigger(),
-                r.getSelectionsJson(),
-                r.getBasePicksJson(),
-                r.getInternalProbabilitiesJson()
+                new ModelResultResponse(
+                        r.getModelName(),
+                        r.getGeneratedAt(),
+                        r.getTotalCostInSek(),
+                        r.getHalfGuardsCount(),
+                        0,
+                        parseSelections(r.getSelectionsJson()),
+                        parseBasePicks(r.getBasePicksJson()),
+                        parseInternalProbabilities(r.getInternalProbabilitiesJson())
+                )
         );
+    }
+
+    private Map<Integer, List<String>> parseSelections(String json) {
+        Object parsed = JsonUtil.parseJsonToObject(json);
+        if (!(parsed instanceof Map<?, ?> map)) {
+            throw new IllegalStateException("Persisted model selections must be a JSON object");
+        }
+
+        Map<Integer, List<String>> out = new HashMap<>();
+        for (Map.Entry<?, ?> entry : map.entrySet()) {
+            if (!(entry.getValue() instanceof List<?> values)) {
+                throw new IllegalStateException("Persisted model selection value must be a JSON array");
+            }
+            out.put(parseJsonMatchNumber(entry.getKey()), values.stream().map(String::valueOf).toList());
+        }
+        return out;
+    }
+
+    private Map<Integer, String> parseBasePicks(String json) {
+        Object parsed = JsonUtil.parseJsonToObject(json);
+        if (!(parsed instanceof Map<?, ?> map)) {
+            throw new IllegalStateException("Persisted model base picks must be a JSON object");
+        }
+
+        Map<Integer, String> out = new HashMap<>();
+        for (Map.Entry<?, ?> entry : map.entrySet()) {
+            out.put(parseJsonMatchNumber(entry.getKey()), String.valueOf(entry.getValue()));
+        }
+        return out;
+    }
+
+    private Map<Integer, ModelResultResponse.ProbabilityTripleResponse> parseInternalProbabilities(String json) {
+        Object parsed = JsonUtil.parseJsonToObject(json);
+        if (!(parsed instanceof Map<?, ?> map)) {
+            throw new IllegalStateException("Persisted model internal probabilities must be a JSON object");
+        }
+
+        Map<Integer, ModelResultResponse.ProbabilityTripleResponse> out = new HashMap<>();
+        for (Map.Entry<?, ?> entry : map.entrySet()) {
+            if (!(entry.getValue() instanceof Map<?, ?> triple)) {
+                throw new IllegalStateException("Persisted internal probability value must be a JSON object");
+            }
+
+            out.put(parseJsonMatchNumber(entry.getKey()), new ModelResultResponse.ProbabilityTripleResponse(
+                    parseJsonDouble(triple.get("homeWin")),
+                    parseJsonDouble(triple.get("draw")),
+                    parseJsonDouble(triple.get("awayWin"))
+            ));
+        }
+        return out;
+    }
+
+    private int parseJsonMatchNumber(Object value) {
+        if (value instanceof Number number) {
+            return number.intValue();
+        }
+        return Integer.parseInt(String.valueOf(value));
+    }
+
+    private Double parseJsonDouble(Object value) {
+        if (value instanceof Number number) {
+            return number.doubleValue();
+        }
+        if (value == null) {
+            throw new IllegalStateException("Persisted probability component cannot be null");
+        }
+        return Double.parseDouble(String.valueOf(value));
     }
 
     public record CreatedModelRun(
@@ -370,16 +443,4 @@ public class RoundApiService {
             Instant generatedAt
     ) { }
 
-    public record ModelRunView(
-            long id,
-            String modelName,
-            Instant generatedAt,
-            int budgetInSek,
-            int totalCostInSek,
-            int halfGuardsCount,
-            String trigger,
-            String selectionsJson,
-            String basePicksJson,
-            String internalProbabilitiesJson
-    ) { }
 }

@@ -127,28 +127,35 @@ public class ModelDtoMapper {
         return new ModelService.DomainRun(round, modelInput, req.budgetInSek());
     }
 
-    public ModelSelectionResponse toResponseDto(ModelSelectionResult result) {
+    public ModelResultResponse toResponseDto(ModelSelectionResult result) {
         Map<Integer, List<String>> selections = new TreeMap<>();
         for (Map.Entry<Integer, Set<Outcome>> e : result.selections().entrySet()) {
             List<String> outcomes = e.getValue().stream().map(Enum::name).toList();
             selections.put(e.getKey(), outcomes);
         }
 
-        Map<Integer, ModelSelectionResponse.ProbabilityTripleDto> internalProbabilities = new TreeMap<>();
+        Map<Integer, String> basePicks = new TreeMap<>();
+        result.basePicks().forEach((matchNumber, outcome) ->
+                basePicks.put(matchNumber, outcome.name())
+        );
+
+        Map<Integer, ModelResultResponse.ProbabilityTripleResponse> internalProbabilities = new TreeMap<>();
         result.internalProbabilities().forEach((matchNumber, triple) ->
-                internalProbabilities.put(matchNumber, new ModelSelectionResponse.ProbabilityTripleDto(
+                internalProbabilities.put(matchNumber, new ModelResultResponse.ProbabilityTripleResponse(
                         triple.get(Outcome.HOME_WIN),
                         triple.get(Outcome.DRAW),
                         triple.get(Outcome.AWAY_WIN)
                 ))
         );
 
-        return new ModelSelectionResponse(
+        return new ModelResultResponse(
                 result.modelName(),
-                result.generatedAt().toString(),
+                result.generatedAt(),
                 result.totalCostInSek(),
                 result.halfGuardsCount(),
+                result.fullGuardsCount(),
                 selections,
+                basePicks,
                 internalProbabilities
         );
     }

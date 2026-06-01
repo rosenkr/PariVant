@@ -6,6 +6,7 @@ import ar.ss.betting.persistence.repo.ModelRunProviderPredictionRepository;
 import ar.ss.betting.persistence.repo.ModelRunRepository;
 import ar.ss.betting.persistence.repo.RoundRepository;
 import ar.ss.betting.services.RoundApiService;
+import ar.ss.betting.services.dto.ModelRunResponse;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -39,7 +40,7 @@ public class PublicModelRunController {
      * Public read-only endpoint: latest model run per preset budget (32/64/128/256) for a round.
      */
     @GetMapping("/{roundId}/model-runs")
-    public ResponseEntity<List<RoundApiService.ModelRunView>> getLatestPresetRuns(@PathVariable long roundId) {
+    public ResponseEntity<List<ModelRunResponse>> getLatestPresetRuns(@PathVariable long roundId) {
         return ResponseEntity.ok(roundApiService.getLatestPresetModelRuns(roundId));
     }
 

@@ -1,6 +1,7 @@
 package ar.ss.betting.controllers.dev;
 
 import ar.ss.betting.domain.RoundType;
+import ar.ss.betting.services.dto.ModelRunResponse;
 import ar.ss.betting.services.dto.ModelSelectionRequest;
 import ar.ss.betting.services.RoundApiService;
 import org.springframework.http.ResponseEntity;
@@ -46,7 +47,7 @@ public class RoundController {
     }
 
     @GetMapping("/{roundId}/model-runs/presets/latest")
-    public ResponseEntity<List<RoundApiService.ModelRunView>> latestPresetRuns(@PathVariable long roundId) {
+    public ResponseEntity<List<ModelRunResponse>> latestPresetRuns(@PathVariable long roundId) {
         return ResponseEntity.ok(roundApiService.getLatestPresetModelRuns(roundId));
     }
 

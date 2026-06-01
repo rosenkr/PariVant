@@ -13,7 +13,7 @@ import { useRoundProviderPredictions } from "../hooks/useRoundProviderPrediction
 
 import type { LiveMatchUpdate } from "../types/liveScore";
 import type {
-  ModelRunView,
+  ModelRunResponse,
   Outcome,
 } from "../types/modelRun";
 import type { ProbabilityTriple } from "../types/probabilityTriple";
@@ -27,61 +27,18 @@ import {RoundPanelSkeleton} from "../components/RoundPanelSkeleton.tsx";
 type BudgetValue = 32 | 64 | 128 | 256;
 
 
-function parseSelections(run: ModelRunView): Record<string, Outcome[]> {
-  if (run.selections) return run.selections;
-
-  if (run.selectionsJson) {
-    try {
-      const obj = JSON.parse(run.selectionsJson) as unknown;
-      if (obj && typeof obj === "object") {
-        return obj as Record<string, Outcome[]>;
-      }
-    } catch {
-      // ignore
-    }
-  }
-
-  return {};
+function selectionsFromRun(run: ModelRunResponse | null): Record<string, Outcome[]> {
+  return run?.result.selections ?? {};
 }
 
-function parseBasePicks(run: ModelRunView | null): Record<string, Outcome> {
-  if (!run) return {};
-
-  if (run.basePicks) return run.basePicks;
-
-  if (run.basePicksJson) {
-    try {
-      const obj = JSON.parse(run.basePicksJson) as unknown;
-      if (obj && typeof obj === "object") {
-        return obj as Record<string, Outcome>;
-      }
-    } catch {
-      // ignore
-    }
-  }
-
-  return {};
+function basePicksFromRun(run: ModelRunResponse | null): Record<string, Outcome> {
+  return run?.result.basePicks ?? {};
 }
 
-function parseInternalProbabilities(
-  run: ModelRunView | null,
+function internalProbabilitiesFromRun(
+  run: ModelRunResponse | null,
 ): Record<string, ProbabilityTriple> {
-  if (!run) return {};
-
-  if (run.internalProbabilities) return run.internalProbabilities;
-
-  if (run.internalProbabilitiesJson) {
-    try {
-      const obj = JSON.parse(run.internalProbabilitiesJson) as unknown;
-      if (obj && typeof obj === "object") {
-        return obj as Record<string, ProbabilityTriple>;
-      }
-    } catch {
-      // ignore
-    }
-  }
-
-  return {};
+  return run?.result.internalProbabilities ?? {};
 }
 
 function sortRoundsForStatus(
@@ -222,17 +179,17 @@ export default function HomePage() {
   }, [modelRunsQuery.data, budget]);
 
   const selectionsByMatch = useMemo(
-    () => (selectedRun ? parseSelections(selectedRun) : {}),
+    () => selectionsFromRun(selectedRun),
     [selectedRun],
   );
 
   const basePicksByMatch = useMemo(
-    () => parseBasePicks(selectedRun),
+    () => basePicksFromRun(selectedRun),
     [selectedRun],
   );
 
   const internalProbabilitiesByMatch = useMemo(
-    () => parseInternalProbabilities(selectedRun),
+    () => internalProbabilitiesFromRun(selectedRun),
     [selectedRun],
   );
 
@@ -411,9 +368,9 @@ export default function HomePage() {
                   </Typography>
 
                   <Typography variant="body2" sx={{ opacity: 0.75 }}>
-                    cost {selectedRun.totalCostInSek} • half{" "}
-                    {selectedRun.halfGuardsCount} • full{" "}
-                    {selectedRun.fullGuardsCount ?? 0}
+                    cost {selectedRun.result.totalCostInSek} • half{" "}
+                    {selectedRun.result.halfGuardsCount} • full{" "}
+                    {selectedRun.result.fullGuardsCount}
                     {enableLive && (
                       <>
                         {" "}

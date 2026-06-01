@@ -28,7 +28,7 @@ import { useModelRuns } from "../hooks/useModelRuns";
 import { useRoundProviderPredictions } from "../hooks/useRoundProviderPredictions";
 import { useRoundsByFilters } from "../hooks/useRoundsByFilters";
 import type { CouponRequest, CouponResponse, CouponSelections } from "../types/coupon";
-import type { ModelRunView, Outcome } from "../types/modelRun";
+import type { ModelRunResponse, Outcome } from "../types/modelRun";
 import type { ModelSelectionRequest } from "../types/modelSelection";
 import type { ProbabilityTriple } from "../types/probabilityTriple";
 import type { MatchProviderPredictionsView } from "../types/providerPrediction";
@@ -119,24 +119,9 @@ function couponSelectionLabels(selections: CouponSelections): string {
 }
 
 function parseInternalProbabilities(
-  run: ModelRunView | null,
+  run: ModelRunResponse | null,
 ): Record<string, ProbabilityTriple> {
-  if (!run) return {};
-
-  if (run.internalProbabilities) return run.internalProbabilities;
-
-  if (run.internalProbabilitiesJson) {
-    try {
-      const parsed = JSON.parse(run.internalProbabilitiesJson) as unknown;
-      if (parsed && typeof parsed === "object") {
-        return parsed as Record<string, ProbabilityTriple>;
-      }
-    } catch {
-      // ignore malformed model-run payloads and render N/A instead
-    }
-  }
-
-  return {};
+  return run?.result.internalProbabilities ?? {};
 }
 
 function probabilityForOutcome(
@@ -179,14 +164,12 @@ function fromSliderValue(value: number | number[]): ProbabilityTriple {
   };
 }
 
-function selectionsFromModelSelection(
-  selections: Record<string, Outcome[]>,
+function selectionsFromBasePicks(
+  basePicks: Record<string, Outcome>,
 ): Record<number, Outcome[]> {
   const next: Record<number, Outcome[]> = {};
-  for (const [matchNumber, outcomes] of Object.entries(selections)) {
-    next[Number(matchNumber)] = OUTCOMES
-      .map((option) => option.outcome)
-      .filter((outcome) => outcomes.includes(outcome));
+  for (const [matchNumber, outcome] of Object.entries(basePicks)) {
+    next[Number(matchNumber)] = [outcome];
   }
   return next;
 }
@@ -493,7 +476,7 @@ export function DashboardPage() {
       return runModelSelection(token, payload);
     },
     onSuccess: (result) => {
-      setSelections(selectionsFromModelSelection(result.selections));
+      setSelections(selectionsFromBasePicks(result.basePicks));
       setValuePickInternalProbabilities(result.internalProbabilities);
     },
   });

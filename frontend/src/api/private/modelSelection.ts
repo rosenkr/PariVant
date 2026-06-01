@@ -1,7 +1,7 @@
 import { API_BASE_URL } from "../http";
 import type {
   ModelSelectionRequest,
-  ModelSelectionResponse,
+  ModelResultResponse,
 } from "../../types/modelSelection";
 
 async function readErrorMessage(response: Response): Promise<string> {
@@ -12,7 +12,7 @@ async function readErrorMessage(response: Response): Promise<string> {
 export async function runModelSelection(
   token: string,
   payload: ModelSelectionRequest,
-): Promise<ModelSelectionResponse> {
+): Promise<ModelResultResponse> {
   const response = await fetch(`${API_BASE_URL}/model/selection`, {
     method: "POST",
     headers: {
@@ -26,5 +26,5 @@ export async function runModelSelection(
     throw new Error(await readErrorMessage(response));
   }
 
-  return (await response.json()) as ModelSelectionResponse;
+  return (await response.json()) as ModelResultResponse;
 }
