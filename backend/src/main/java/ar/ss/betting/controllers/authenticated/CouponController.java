@@ -1,4 +1,4 @@
-package ar.ss.betting.controllers;
+package ar.ss.betting.controllers.authenticated;
 
 import ar.ss.betting.security.UserEntity;
 import ar.ss.betting.services.CouponService;

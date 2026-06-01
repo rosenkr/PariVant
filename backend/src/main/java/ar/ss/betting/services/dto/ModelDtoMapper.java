@@ -31,7 +31,7 @@ import java.util.TreeMap;
 @Component
 public class ModelDtoMapper {
 
-    public ModelService.DomainRun toDomain(ModelSelectionRequestDto req) {
+    public ModelService.DomainRun toDomain(ModelSelectionRequest req) {
 
         if (req.roundType() == null || req.roundType().isBlank()) {
             throw new IllegalArgumentException("roundType is required");
@@ -53,7 +53,7 @@ public class ModelDtoMapper {
         Instant roundStartTime = Instant.parse(req.roundStartDate());
 
         List<Match> matches = new ArrayList<>();
-        for (ModelSelectionRequestDto.MatchDto m : req.matches()) {
+        for (ModelSelectionRequest.MatchDto m : req.matches()) {
             if (m.matchNumber() == null || m.matchNumber() <= 0) {
                 throw new IllegalArgumentException("matchNumber must be positive");
             }
@@ -78,9 +78,9 @@ public class ModelDtoMapper {
         Round round = new Round(roundStartTime, roundType, matches);
 
         Map<Integer, MatchContext> contexts = new HashMap<>();
-        for (Map.Entry<Integer, ModelSelectionRequestDto.MatchContextDto> e : req.contexts().entrySet()) {
+        for (Map.Entry<Integer, ModelSelectionRequest.MatchContextDto> e : req.contexts().entrySet()) {
             Integer matchNumber = e.getKey();
-            ModelSelectionRequestDto.MatchContextDto c = e.getValue();
+            ModelSelectionRequest.MatchContextDto c = e.getValue();
 
             if (matchNumber == null || matchNumber <= 0) {
                 throw new IllegalArgumentException("contexts keys must be positive matchNumbers");
@@ -97,7 +97,7 @@ public class ModelDtoMapper {
 
             List<ProbabilityTriple> providers = new ArrayList<>();
             if (c.providers() != null) {
-                for (ModelSelectionRequestDto.ProbabilityTripleDto providerDto : c.providers()) {
+                for (ModelSelectionRequest.ProbabilityTripleDto providerDto : c.providers()) {
                     providers.add(toProbabilityTriple(providerDto));
                 }
             }
@@ -107,9 +107,9 @@ public class ModelDtoMapper {
 
         Map<Integer, MatchInterventions> interventions = new HashMap<>();
         if (req.interventions() != null) {
-            for (Map.Entry<Integer, ModelSelectionRequestDto.MatchInterventionsDto> e : req.interventions().entrySet()) {
+            for (Map.Entry<Integer, ModelSelectionRequest.MatchInterventionsDto> e : req.interventions().entrySet()) {
                 Integer matchNumber = e.getKey();
-                ModelSelectionRequestDto.MatchInterventionsDto dto = e.getValue();
+                ModelSelectionRequest.MatchInterventionsDto dto = e.getValue();
 
                 if (matchNumber == null || matchNumber <= 0) {
                     throw new IllegalArgumentException("interventions keys must be positive matchNumbers");
@@ -127,23 +127,23 @@ public class ModelDtoMapper {
         return new ModelService.DomainRun(round, modelInput, req.budgetInSek());
     }
 
-    public ModelSelectionResponseDto toResponseDto(ModelSelectionResult result) {
+    public ModelSelectionResponse toResponseDto(ModelSelectionResult result) {
         Map<Integer, List<String>> selections = new TreeMap<>();
         for (Map.Entry<Integer, Set<Outcome>> e : result.selections().entrySet()) {
             List<String> outcomes = e.getValue().stream().map(Enum::name).toList();
             selections.put(e.getKey(), outcomes);
         }
 
-        Map<Integer, ModelSelectionResponseDto.ProbabilityTripleDto> internalProbabilities = new TreeMap<>();
+        Map<Integer, ModelSelectionResponse.ProbabilityTripleDto> internalProbabilities = new TreeMap<>();
         result.internalProbabilities().forEach((matchNumber, triple) ->
-                internalProbabilities.put(matchNumber, new ModelSelectionResponseDto.ProbabilityTripleDto(
+                internalProbabilities.put(matchNumber, new ModelSelectionResponse.ProbabilityTripleDto(
                         triple.get(Outcome.HOME_WIN),
                         triple.get(Outcome.DRAW),
                         triple.get(Outcome.AWAY_WIN)
                 ))
         );
 
-        return new ModelSelectionResponseDto(
+        return new ModelSelectionResponse(
                 result.modelName(),
                 result.generatedAt().toString(),
                 result.totalCostInSek(),
@@ -153,10 +153,10 @@ public class ModelDtoMapper {
         );
     }
 
-    private MatchInterventions toMatchInterventions(ModelSelectionRequestDto.MatchInterventionsDto dto) {
+    private MatchInterventions toMatchInterventions(ModelSelectionRequest.MatchInterventionsDto dto) {
         List<MatchTag> tags = new ArrayList<>();
         if (dto.tags() != null) {
-            for (ModelSelectionRequestDto.TagDto tagDto : dto.tags()) {
+            for (ModelSelectionRequest.TagDto tagDto : dto.tags()) {
                 tags.add(toMatchTag(tagDto));
             }
         }
@@ -169,7 +169,7 @@ public class ModelDtoMapper {
         return new MatchInterventions(tags, buff);
     }
 
-    private MatchTag toMatchTag(ModelSelectionRequestDto.TagDto dto) {
+    private MatchTag toMatchTag(ModelSelectionRequest.TagDto dto) {
         if (dto == null) {
             throw new IllegalArgumentException("tag cannot be null");
         }
@@ -194,7 +194,7 @@ public class ModelDtoMapper {
         return Side.valueOf(value);
     }
 
-    private MatchBuff toMatchBuff(ModelSelectionRequestDto.BuffDto dto) {
+    private MatchBuff toMatchBuff(ModelSelectionRequest.BuffDto dto) {
         if (dto.targetOutcome() == null || dto.targetOutcome().isBlank()) {
             throw new IllegalArgumentException("buff.targetOutcome is required");
         }
@@ -206,7 +206,7 @@ public class ModelDtoMapper {
         return new MatchBuff(outcome, dto.points());
     }
 
-    private ProbabilityTriple toProbabilityTriple(ModelSelectionRequestDto.ProbabilityTripleDto dto) {
+    private ProbabilityTriple toProbabilityTriple(ModelSelectionRequest.ProbabilityTripleDto dto) {
         if (dto == null) {
             throw new IllegalArgumentException("ProbabilityTriple cannot be null");
         }

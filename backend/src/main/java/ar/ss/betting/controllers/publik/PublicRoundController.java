@@ -1,4 +1,4 @@
-package ar.ss.betting.controllers;
+package ar.ss.betting.controllers.publik;
 
 import ar.ss.betting.domain.RoundStatus;
 import ar.ss.betting.domain.RoundType;

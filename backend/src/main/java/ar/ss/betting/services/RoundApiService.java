@@ -20,7 +20,7 @@ import ar.ss.betting.predictionproviders.service.model.PredictionQueryResponse;
 import ar.ss.betting.predictionproviders.service.model.ProviderPredictionResult;
 import ar.ss.betting.predictionproviders.service.model.ProviderPredictionStatus;
 import ar.ss.betting.predictionproviders.service.model.ProviderRawPredictionSnapshot;
-import ar.ss.betting.services.dto.ModelSelectionRequestDto;
+import ar.ss.betting.services.dto.ModelSelectionRequest;
 import org.springframework.stereotype.Service;
 
 import java.time.Clock;
@@ -63,14 +63,14 @@ public class RoundApiService {
 
     public long createRound(RoundType roundType,
                             Instant roundStartTime,
-                            List<ModelSelectionRequestDto.MatchDto> matches) {
+                            List<ModelSelectionRequest.MatchDto> matches) {
 
         Objects.requireNonNull(roundType, "roundType");
         Objects.requireNonNull(roundStartTime, "roundStartTime");
         Objects.requireNonNull(matches, "matches");
 
         List<Match> domainMatches = new ArrayList<>(matches.size());
-        for (ModelSelectionRequestDto.MatchDto m : matches) {
+        for (ModelSelectionRequest.MatchDto m : matches) {
             domainMatches.add(new Match(
                     m.matchNumber(),
                     Instant.parse(m.startDate()),
@@ -84,14 +84,14 @@ public class RoundApiService {
     }
 
     public List<CreatedModelRun> runPresetModelRuns(long roundId,
-                                                    Map<Integer, ModelSelectionRequestDto.MatchContextDto> contexts,
-                                                    Map<Integer, ModelSelectionRequestDto.MatchInterventionsDto> interventions) {
+                                                    Map<Integer, ModelSelectionRequest.MatchContextDto> contexts,
+                                                    Map<Integer, ModelSelectionRequest.MatchInterventionsDto> interventions) {
         return runPresetModelRunsWithTrigger(roundId, contexts, interventions, TRIGGER_MANUAL);
     }
 
     public List<CreatedModelRun> runPresetModelRunsWithTrigger(long roundId,
-                                                               Map<Integer, ModelSelectionRequestDto.MatchContextDto> contexts,
-                                                               Map<Integer, ModelSelectionRequestDto.MatchInterventionsDto> interventions,
+                                                               Map<Integer, ModelSelectionRequest.MatchContextDto> contexts,
+                                                               Map<Integer, ModelSelectionRequest.MatchInterventionsDto> interventions,
                                                                String trigger) {
 
         Objects.requireNonNull(contexts, "contexts");
@@ -107,7 +107,7 @@ public class RoundApiService {
                 providerSnapshots
         );
 
-        Map<Integer, List<ModelSelectionRequestDto.ProbabilityTripleDto>> fetchedProvidersByMatch =
+        Map<Integer, List<ModelSelectionRequest.ProbabilityTripleDto>> fetchedProvidersByMatch =
                 toFetchedProviderDtosByMatch(predictionQueryResponse);
 
         List<CreatedModelRun> createdRuns = new ArrayList<>();
@@ -201,10 +201,10 @@ public class RoundApiService {
         return requests;
     }
 
-    private Map<Integer, List<ModelSelectionRequestDto.ProbabilityTripleDto>> toFetchedProviderDtosByMatch(
+    private Map<Integer, List<ModelSelectionRequest.ProbabilityTripleDto>> toFetchedProviderDtosByMatch(
             PredictionQueryResponse predictionQueryResponse) {
 
-        Map<Integer, List<ModelSelectionRequestDto.ProbabilityTripleDto>> out = new HashMap<>();
+        Map<Integer, List<ModelSelectionRequest.ProbabilityTripleDto>> out = new HashMap<>();
 
         if (predictionQueryResponse == null || predictionQueryResponse.getResults() == null) {
             return out;
@@ -213,7 +213,7 @@ public class RoundApiService {
         for (MatchPredictionResult matchResult : predictionQueryResponse.getResults()) {
             int matchNumber = parseRequiredMatchNumber(matchResult.getClientMatchId());
 
-            List<ModelSelectionRequestDto.ProbabilityTripleDto> providerDtos = new ArrayList<>();
+            List<ModelSelectionRequest.ProbabilityTripleDto> providerDtos = new ArrayList<>();
 
             if (matchResult.getProviders() != null) {
                 for (ProviderPredictionResult providerResult : matchResult.getProviders()) {
@@ -228,7 +228,7 @@ public class RoundApiService {
 
                     ProviderProbabilityTriple probabilities = prediction.getProbabilities();
 
-                    providerDtos.add(new ModelSelectionRequestDto.ProbabilityTripleDto(
+                    providerDtos.add(new ModelSelectionRequest.ProbabilityTripleDto(
                             probabilities.getHomeWin(),
                             probabilities.getDraw(),
                             probabilities.getAwayWin()
@@ -259,14 +259,14 @@ public class RoundApiService {
     }
 
     private Map<Integer, MatchContext> toMatchContexts(
-            Map<Integer, ModelSelectionRequestDto.MatchContextDto> contexts,
-            Map<Integer, List<ModelSelectionRequestDto.ProbabilityTripleDto>> fetchedProvidersByMatch) {
+            Map<Integer, ModelSelectionRequest.MatchContextDto> contexts,
+            Map<Integer, List<ModelSelectionRequest.ProbabilityTripleDto>> fetchedProvidersByMatch) {
 
         Map<Integer, MatchContext> out = new HashMap<>();
 
-        for (Map.Entry<Integer, ModelSelectionRequestDto.MatchContextDto> e : contexts.entrySet()) {
+        for (Map.Entry<Integer, ModelSelectionRequest.MatchContextDto> e : contexts.entrySet()) {
             Integer matchNumber = e.getKey();
-            ModelSelectionRequestDto.MatchContextDto dto = e.getValue();
+            ModelSelectionRequest.MatchContextDto dto = e.getValue();
 
             ProbabilityTriple market = ProbabilityTriple.fromProbabilities(
                     dto.market().homeWin(),
@@ -283,17 +283,17 @@ public class RoundApiService {
             List<ProbabilityTriple> providers = new ArrayList<>();
 
             if (dto.providers() != null) {
-                for (ModelSelectionRequestDto.ProbabilityTripleDto p : dto.providers()) {
+                for (ModelSelectionRequest.ProbabilityTripleDto p : dto.providers()) {
                     providers.add(ProbabilityTriple.fromProbabilities(
                             p.homeWin(), p.draw(), p.awayWin()
                     ));
                 }
             }
 
-            List<ModelSelectionRequestDto.ProbabilityTripleDto> fetchedProviders =
+            List<ModelSelectionRequest.ProbabilityTripleDto> fetchedProviders =
                     fetchedProvidersByMatch.getOrDefault(matchNumber, List.of());
 
-            for (ModelSelectionRequestDto.ProbabilityTripleDto p : fetchedProviders) {
+            for (ModelSelectionRequest.ProbabilityTripleDto p : fetchedProviders) {
                 providers.add(ProbabilityTriple.fromProbabilities(
                         p.homeWin(), p.draw(), p.awayWin()
                 ));
@@ -306,20 +306,20 @@ public class RoundApiService {
     }
 
     private Map<Integer, MatchInterventions> toMatchInterventions(
-            Map<Integer, ModelSelectionRequestDto.MatchInterventionsDto> interventions) {
+            Map<Integer, ModelSelectionRequest.MatchInterventionsDto> interventions) {
 
         Map<Integer, MatchInterventions> out = new HashMap<>();
         if (interventions == null) {
             return out;
         }
 
-        for (Map.Entry<Integer, ModelSelectionRequestDto.MatchInterventionsDto> e : interventions.entrySet()) {
+        for (Map.Entry<Integer, ModelSelectionRequest.MatchInterventionsDto> e : interventions.entrySet()) {
             Integer matchNumber = e.getKey();
-            ModelSelectionRequestDto.MatchInterventionsDto dto = e.getValue();
+            ModelSelectionRequest.MatchInterventionsDto dto = e.getValue();
 
             List<MatchTag> tags = new ArrayList<>();
             if (dto != null && dto.tags() != null) {
-                for (ModelSelectionRequestDto.TagDto tagDto : dto.tags()) {
+                for (ModelSelectionRequest.TagDto tagDto : dto.tags()) {
                     tags.add(toTag(tagDto));
                 }
             }
@@ -338,7 +338,7 @@ public class RoundApiService {
         return out;
     }
 
-    private MatchTag toTag(ModelSelectionRequestDto.TagDto tagDto) {
+    private MatchTag toTag(ModelSelectionRequest.TagDto tagDto) {
         TagType type = TagType.valueOf(tagDto.type());
 
         return switch (type) {

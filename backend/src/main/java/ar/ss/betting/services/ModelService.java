@@ -4,10 +4,13 @@ import ar.ss.betting.domain.Round;
 import ar.ss.betting.model.EnsembleModel;
 import ar.ss.betting.model.ModelInput;
 import ar.ss.betting.model.ModelSelectionResult;
-import ar.ss.betting.services.dto.ModelSelectionRequestDto;
-import ar.ss.betting.services.dto.ModelSelectionResponseDto;
+import ar.ss.betting.security.UserEntity;
+import ar.ss.betting.services.dto.ModelSelectionRequest;
+import ar.ss.betting.services.dto.ModelSelectionResponse;
 import ar.ss.betting.services.dto.ModelDtoMapper;
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
+import org.springframework.web.server.ResponseStatusException;
 
 import java.time.Clock;
 import java.time.Instant;
@@ -31,7 +34,8 @@ public class ModelService {
         this.clock = Objects.requireNonNull(clock);
     }
 
-    public ModelSelectionResponseDto runModel(ModelSelectionRequestDto request) {
+    public ModelSelectionResponse runModel(UserEntity user, ModelSelectionRequest request) {
+        requireAuthenticatedUser(user);
         Objects.requireNonNull(request, "request cannot be null");
 
         DomainRun domain = mapper.toDomain(request);
@@ -43,6 +47,12 @@ public class ModelService {
                 model.generateSelection(domain.round(), domain.modelInput(), domain.budgetInSek(), generatedAt);
 
         return mapper.toResponseDto(result);
+    }
+
+    private void requireAuthenticatedUser(UserEntity user) {
+        if (user == null || user.getId() == null) {
+            throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Authentication required");
+        }
     }
 
     /**

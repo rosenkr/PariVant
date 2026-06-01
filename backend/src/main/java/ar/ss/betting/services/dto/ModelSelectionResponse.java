@@ -10,7 +10,7 @@ import java.util.Map;
  * - includes selections
  * - includes internal probabilities per match
  */
-public record ModelSelectionResponseDto(
+public record ModelSelectionResponse(
         String modelName,
         String generatedAt,
         Integer totalCostInSek,

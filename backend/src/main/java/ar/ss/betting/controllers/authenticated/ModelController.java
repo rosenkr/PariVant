@@ -1,9 +1,11 @@
-package ar.ss.betting.controllers;
+package ar.ss.betting.controllers.authenticated;
 
-import ar.ss.betting.services.dto.ModelSelectionRequestDto;
-import ar.ss.betting.services.dto.ModelSelectionResponseDto;
+import ar.ss.betting.security.UserEntity;
+import ar.ss.betting.services.dto.ModelSelectionRequest;
+import ar.ss.betting.services.dto.ModelSelectionResponse;
 import ar.ss.betting.services.ModelService;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.Objects;
@@ -25,7 +27,10 @@ public class ModelController {
     }
 
     @PostMapping("/selection")
-    public ResponseEntity<ModelSelectionResponseDto> generateSelection(@RequestBody ModelSelectionRequestDto request) {
-        return ResponseEntity.ok(modelService.runModel(request));
+    public ResponseEntity<ModelSelectionResponse> generateSelection(
+            @AuthenticationPrincipal UserEntity user,
+            @RequestBody ModelSelectionRequest request
+    ) {
+        return ResponseEntity.ok(modelService.runModel(user, request));
     }
 }

@@ -10,7 +10,7 @@ import java.util.Map;
  * - optional provider probabilities
  * - optional per-match tags / buff overlays
  */
-public record ModelSelectionRequestDto(
+public record ModelSelectionRequest(
         String roundType,
         String roundStartDate,
         List<MatchDto> matches,

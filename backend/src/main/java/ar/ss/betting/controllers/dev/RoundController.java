@@ -1,7 +1,7 @@
 package ar.ss.betting.controllers.dev;
 
 import ar.ss.betting.domain.RoundType;
-import ar.ss.betting.services.dto.ModelSelectionRequestDto;
+import ar.ss.betting.services.dto.ModelSelectionRequest;
 import ar.ss.betting.services.RoundApiService;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -53,14 +53,14 @@ public class RoundController {
     public record CreateRoundRequest(
             String roundType,
             String roundStartDate,
-            List<ModelSelectionRequestDto.MatchDto> matches
+            List<ModelSelectionRequest.MatchDto> matches
     ) { }
 
     public record CreateRoundResponse(long roundId) { }
 
     public record CreatePresetModelRunsRequest(
-            Map<Integer, ModelSelectionRequestDto.MatchContextDto> contexts,
-            Map<Integer, ModelSelectionRequestDto.MatchInterventionsDto> interventions
+            Map<Integer, ModelSelectionRequest.MatchContextDto> contexts,
+            Map<Integer, ModelSelectionRequest.MatchInterventionsDto> interventions
     ) { }
 
     public record CreatePresetModelRunsResponse(

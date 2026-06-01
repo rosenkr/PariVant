@@ -1,4 +1,4 @@
-package ar.ss.betting.controllers;
+package ar.ss.betting.controllers.publik;
 
 import ar.ss.betting.services.livescore.LiveScoreService;
 import org.springframework.http.MediaType;
